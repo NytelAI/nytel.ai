@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nytel — {{ m.tagline.linkedin_short }}</title>
+  <meta name="description" content="Nytel builds {{ m.subtitle.text }} {{ m.company.audience }}">
+  <meta property="og:title" content="Nytel — {{ m.tagline.text }}">
+  <meta property="og:description" content="{{ m.subtitle.text }}">
+  <meta property="og:image" content="https://nytel.ai/og-image.png">
+  <meta property="og:url" content="https://nytel.ai">
+  <meta property="og:type" content="website">
+  <link rel="canonical" href="https://nytel.ai/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Nytel — {{ m.tagline.text }}">
+  <meta name="twitter:description" content="{{ m.subtitle.text }}">
+  <meta name="twitter:image" content="https://nytel.ai/og-image.png">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="chrome.css">
+  <link rel="stylesheet" href="style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Nytel",
+    "url": "https://nytel.ai",
+    "logo": "https://nytel.ai/logo.svg",
+    "image": "https://nytel.ai/og-image.png",
+    "slogan": {{ m.tagline.text|tojson }},
+    "email": {{ m.contact.general_email|tojson }},
+    "description": {{ ("Nytel builds " ~ m.subtitle.text ~ " " ~ m.company.audience ~ " " ~ m.who_we_are.text ~ " " ~ m.capabilities.status_label ~ ".")|tojson }},
+    "founder": [{
+      "@type": "Person",
+      "name": "Vadim Sokolov",
+      "jobTitle": "Co-founder & Chief Science Officer",
+      "url": "https://vsokolov.org",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "George Mason University"
+      },
+      "sameAs": [
+        "https://arxiv.org/abs/2602.09208",
+        "https://arxiv.org/abs/2602.06379",
+        "https://vsokolov.quarto.pub/clinos/"
+      ]
+    }, {
+      "@type": "Person",
+      "name": "Matthew Wamsley",
+      "jobTitle": "Co-founder & Chief Executive Officer",
+      "description": "AI and automation engineer and systems architect with more than 20 years of technology experience across telecommunications, healthcare, and rail systems.",
+      "alumniOf": [
+        { "@type": "CollegeOrUniversity", "name": "Tarleton State University" },
+        { "@type": "CollegeOrUniversity", "name": "George Mason University" }
+      ],
+      "knowsAbout": ["AI and workflow automation", "systems architecture and integration", "deployment engineering"],
+      "homeLocation": { "@type": "Place", "name": "Northern Virginia (Washington, DC area)" }
+    }],
+    "contactPoint": [{
+      "@type": "ContactPoint",
+      "contactType": "sales",
+      "name": {{ m.contact.name|tojson }},
+      "email": {{ m.contact.email|tojson }},
+      "url": {{ cal_url|tojson }},
+      "areaServed": "US",
+      "availableLanguage": "English"
+    }, {
+      "@type": "ContactPoint",
+      "contactType": "customer support",
+      "email": {{ m.contact.general_email|tojson }},
+      "areaServed": "US",
+      "availableLanguage": "English"
+    }],
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Northern Virginia",
+      "addressRegion": "VA",
+      "addressCountry": "US"
+    },
+    "areaServed": "US",
+    "knowsAbout": {{ (m.company.specialties + ["ALCOA++ compliance", "Bayesian adaptive trial design", "ICH-GCP regulatory compliance"])|tojson }},
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": {{ (m.capabilities.label ~ " (" ~ m.capabilities.status_label ~ ")")|tojson }},
+      "itemListElement": [
+{%- for c in built %}
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": {{ c.name|tojson }},
+            "description": {{ (((c.get("detail") ~ ". ") if c.get("detail") else "") ~ m.capabilities.status_label ~ ".")|tojson }}
+          }
+        }{{ "," if not loop.last }}
+{%- endfor %}
+      ]
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Nytel",
+    "url": "https://nytel.ai/",
+    "description": {{ m.subtitle.text|tojson }},
+    "publisher": { "@type": "Organization", "name": "Nytel", "url": "https://nytel.ai" }
+  }
+  </script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="container">
+      <a href="/" class="header-logo"><img src="logo.svg" alt="Nytel" height="28"></a>
+      <nav class="header-nav">
+        <a href="overview.html">Overview</a>
+        <a href="whitepaper.html" class="hide-mobile">Whitepaper</a>
+        <a href="{{ cal_url }}">Schedule Call</a>
+        <a href="mailto:{{ m.contact.general_email }}">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-inner">
+        <span class="hero-eyebrow">Clinical Trial Operations</span>
+        <h1>{{ m.tagline.text.rstrip('.')|upper }}</h1>
+        <p class="hero-sub">
+          {{ m.subtitle.text }}
+        </p>
+        <div class="hero-actions">
+          <a href="overview.html" class="btn btn-primary">How It Works</a>
+          <a href="{{ cal_url }}" class="btn btn-outline">Schedule a Call</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problem -->
+  <section class="section">
+    <div class="container">
+      <span class="section-number">01</span>
+      <h2>The coordination problem</h2>
+      <p class="section-lead">
+        Medidata, Veeva, and IQVIA have improved their platforms. But the work
+        that lives in the seams between systems — chasing documents from sites,
+        reconciling data, tracking follow-ups — remains a manual job.
+      </p>
+      <div class="problem-grid">
+        <div class="problem-card">
+          <h3>Site activation</h3>
+          <p>CDA executed to site going live takes weeks of document collection, regulatory checks, and back-and-forth with coordinators. Delays here cascade into enrollment delays.</p>
+          <span class="stat-highlight">$500K+/day in enrollment delay costs (Smith, DiMasi &amp; Getz, Tufts CSDD, 2024)</span>
+        </div>
+        <div class="problem-card">
+          <h3>Systems lag reality</h3>
+          <p>eTMF and EDC are often populated after the fact for regulatory purposes — not maintained in real time. The actual source of truth during a trial lives in email, Slack, spreadsheets, and people's heads.</p>
+          <span class="stat-highlight">50+ vendors and a dozen platforms per Phase III trial</span>
+        </div>
+        <div class="problem-card">
+          <h3>Follow-up and escalation</h3>
+          <p>When sites don't respond, the escalation ladder runs from coordinator to field monitor to country monitor to study lead. Tracking where each site stands is a full-time job.</p>
+          <span class="stat-highlight">70% of clinical trials experience delays</span>
+        </div>
+        <div class="problem-card">
+          <h3>Institutional knowledge loss</h3>
+          <p>Median tenure in clinical operations is under 3 years. Every departure takes knowledge — which sites are slow, which sponsors have unusual requirements — with it.</p>
+          <span class="stat-highlight">~30% annual CRA turnover (BDO CRO Compensation &amp; Turnover Survey)</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Approach -->
+  <section class="section section-alt">
+    <div class="container">
+      <span class="section-number">02</span>
+      <h2>{{ m.capabilities.label }}</h2>
+      <p class="section-lead">
+        {{ m.who_we_are.text }} {{ m.capabilities.tested.text }}.
+        {{ m.capabilities.status_label }}.
+      </p>
+      <div class="agent-list">
+{%- for c in built %}
+        <div class="agent-row">
+          <div class="agent-head">
+            <span class="agent-index">{{ "%02d"|format(loop.index) }}</span>
+            <span class="agent-name">{{ c.name }}</span>
+          </div>
+          <div class="agent-body">
+            {%- if c.get("detail") %}
+            <p>{{ c.get("detail") }}.</p>
+            {%- endif %}
+            <span class="stat-highlight">{{ m.capabilities.status_label }}</span>
+          </div>
+        </div>
+{%- endfor %}
+      </div>
+      <p class="section-lead" style="margin-top: 2rem;">{{ m.capabilities.write_back.text }}.</p>
+    </div>
+  </section>
+
+  <!-- Approach Detail -->
+  <section class="section">
+    <div class="container">
+      <span class="section-number">03</span>
+      <h2>Built for regulated environments</h2>
+      <p class="section-lead">
+        {{ m.how_it_works.steps[3].text }}: CTMS, eTMF, EDC and email.
+        Nytel works alongside those systems and does not replace them.
+        {{ m.capabilities.write_back.text }}.
+      </p>
+      <div class="principle-row">
+        <div class="principle">
+          <h3>Deterministic where it matters</h3>
+          <p>Quality checks use code and rules, not generative models. Every decision is auditable and reproducible. LLMs handle document understanding, not compliance logic.</p>
+        </div>
+        <div class="principle">
+          <h3>Human-in-the-loop</h3>
+          <p>{{ m.how_it_works.safeguards[0].text }}. {{ m.how_it_works.safeguards[1].text }}.</p>
+        </div>
+        <div class="principle">
+          <h3>Starts where the data is</h3>
+          <p>Email, Slack, spreadsheets — Nytel meets trial teams where they actually work. No API credentials, no IT procurement, no changes to partner systems required to start.</p>
+        </div>
+        <div class="principle">
+          <h3>Rules from your SOPs</h3>
+          <p>{{ m.how_it_works.steps[1].text }}. Universal rules cover common checks; study- and sponsor-specific rules layer on top without touching the rule engine.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Partners -->
+  <section class="section section-alt">
+    <div class="container">
+      <span class="section-number">04</span>
+      <h2>{{ m.partners.label }}</h2>
+      <div class="principle-row cols-2">
+{%- for p in m.partners['items'] %}
+        <div class="principle">
+          <h3>{{ p.short }}</h3>
+          <p>{{ p.long }}{% if p.get("place") %}, {{ p.get("place") }}{% endif %}</p>
+        </div>
+{%- endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- Founder -->
+  <section class="section">
+    <div class="container">
+      <span class="section-number">05</span>
+      <h2>Who we are</h2>
+      <div class="founder-section">
+        <div class="founder-bio">
+          <h3>Vadim Sokolov, PhD</h3>
+          <div class="founder-title">Co-founder &amp; Chief Science Officer</div>
+          <p>
+            Associate Professor at George Mason University in Systems
+            Engineering and Operations Research. Previously a Principal
+            Computational Scientist at Argonne National Laboratory and
+            Visiting Professor at the University of Chicago Booth
+            School of Business.
+          </p>
+          <p>
+            Research in Bayesian statistics, machine learning, and
+            computational modeling of complex systems. Built POLARIS,
+            a large-scale simulation framework used by the Department
+            of Energy and the US Department of Transportation. Recent work applies Bayesian methods
+            to clinical trial design — including
+            <a href="https://arxiv.org/abs/2602.09208">Bayesian perspectives on clinical trials</a> and
+            <a href="https://arxiv.org/abs/2602.06379">anytime-valid monitoring for adaptive trials</a>.
+            Author of <a href="https://vsokolov.quarto.pub/clinos/">Clinical
+            Trials in Practice</a> — a guide to clinical trial methodology
+            from foundations through Phase III operations.
+          </p>
+        </div>
+        <div class="credentials">
+          <div class="credential">
+            <div class="cred-label">Expertise</div>
+            <div class="cred-value">Bayesian Statistics, Machine Learning, Complex Systems Modeling</div>
+          </div>
+          <div class="credential">
+            <div class="cred-label">Prior</div>
+            <div class="cred-value">Argonne National Laboratory, UChicago Booth</div>
+          </div>
+          <div class="credential">
+            <div class="cred-label">Federal Funding</div>
+            <div class="cred-value">ONR, DOE, NSF, DOT, FEMA, USAF — $10M+ as PI/co-PI</div>
+          </div>
+          <div class="credential">
+            <div class="cred-label">Location</div>
+            <div class="cred-value">Northern Virginia (Washington, DC area)</div>
+          </div>
+        </div>
+      </div>
+      <div class="founder-section founder-next">
+        <div class="founder-bio">
+          <h3>Matthew Wamsley</h3>
+          <div class="founder-title">Co-founder &amp; Chief Executive Officer</div>
+          <p>
+            AI and automation engineer and systems architect with more than
+            20 years of technology experience across telecommunications,
+            healthcare, and rail systems.
+          </p>
+          <p>
+            Previously co-founded Axon, an early-stage healthcare technology venture developing a longitudinal EHR/EMR platform designed to connect patient records across the continuum of care, and served as a director at Sq1, a digital marketing company later acquired by Ansira.
+          </p>
+          <p>
+            Built AI-enabled maintenance automation adopted across multiple
+            engineering teams at a large U.S. telecommunications company,
+            contributed to automated clinical interpretation using rules,
+            natural-language processing, and predictive analytics, and
+            architected a hosted positive train control platform at Herzog
+            Technologies.
+          </p>
+          <p>
+            At Nytel focuses on business strategy, company operations, partnerships,
+            and systems integration. As the father of a childhood
+            cancer survivor treated through a clinical trial, brings a personal
+            commitment to improving the operational work behind clinical research.
+          </p>
+        </div>
+        <div class="credentials">
+          <div class="credential">
+            <div class="cred-label">Expertise</div>
+            <div class="cred-value">AI and Workflow Automation, Systems Architecture and Integration, Deployment Engineering</div>
+          </div>
+          <div class="credential">
+            <div class="cred-label">Prior</div>
+            <div class="cred-value">Verizon, Herzog Technologies, Sq1 (acquired by Ansira), Texas Health Resources, Teradata, Tektronix</div>
+          </div>
+          <div class="credential">
+            <div class="cred-label">Education</div>
+            <div class="cred-value">BS, Computer Information Systems, Tarleton State University; graduate coursework in artificial intelligence, George Mason University</div>
+          </div>
+          <div class="credential">
+            <div class="cred-label">Location</div>
+            <div class="cred-value">Northern Virginia (Washington, DC area)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container">
+      <span class="label" style="color: rgba(255,255,255,0.4);">Whitepaper</span>
+      <h2>Architecture, Integration, and Operational Design</h2>
+      <p>
+        Read the technical whitepaper on how Nytel's agents are designed —
+        from SOP-IR and system architecture to follow-up cadence and
+        quality frameworks.
+      </p>
+      <p>
+        {{ m.call_to_action.ask }}. Contact {{ m.contact.name }},
+        <a href="mailto:{{ m.contact.email }}" style="color: inherit;">{{ m.contact.email }}</a>.
+      </p>
+      <div class="hero-actions">
+        <a href="whitepaper.html" class="btn btn-teal">Read the Whitepaper</a>
+        <a href="{{ cal_url }}" class="btn btn-outline" style="color: rgba(255,255,255,0.7); border-color: rgba(255,255,255,0.2);">Schedule a Call</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-left">
+        &copy; 2026 Nytel. Nightingale + Intelligence.
+      </div>
+      <div class="footer-right">
+        <a href="mailto:{{ m.contact.general_email }}">{{ m.contact.general_email }}</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

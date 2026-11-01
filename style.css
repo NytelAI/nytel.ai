@@ -284,6 +284,7 @@ a:hover {
 
 @media (min-width: 1024px) {
   .principle-row { grid-template-columns: repeat(4, 1fr); }
+  .principle-row.cols-2 { grid-template-columns: repeat(2, 1fr); }
 }
 
 .principle {

@@ -1,0 +1,49 @@
+# Nytel
+
+> {{ m.tagline.text }} Nytel builds {{ m.subtitle.text }} {{ m.company.audience }} {{ m.who_we_are.text }} {{ m.how_it_works.steps[3].text }} (CTMS, eTMF, EDC, email); {{ m.capabilities.write_back.text[0]|lower ~ m.capabilities.write_back.text[1:] }}. {{ m.capabilities.status_label }}. {{ m.company.regulated_work }} Co-founded by Matthew Wamsley (CEO) and Vadim Sokolov, PhD (CSO).
+
+## Pages
+- [Home](https://nytel.ai/): What Nytel does — the coordination problem, what we've built, partners, and the co-founders.
+- [How Nytel Works — Overview](https://nytel.ai/overview.html): One-page overview — architecture diagram, what we've built, key design principles, IIT focus, and partners.
+- [Whitepaper](https://nytel.ai/whitepaper.html): "A Clinical Operating System for Agentic Trial Operations" — architecture, integration, and operational design in depth.
+
+## {{ m.capabilities.label }} ({{ m.capabilities.status_label|lower }})
+{%- for c in built %}
+- {{ c.name }}{% if c.get("detail") %}: {{ c.get("detail") }}{% endif %}.
+{%- endfor %}
+- {{ m.capabilities.tested.text }}.
+- {{ m.capabilities.write_back.text }}.
+
+## How it works
+{%- for st in m.how_it_works.steps %}
+- {{ st.title }}: {{ st.text }}.
+{%- endfor %}
+{%- for sg in m.how_it_works.safeguards %}
+- {{ sg.text }}.
+{%- endfor %}
+- Every agent follows the same pattern: Retrieve data, Analyze with deterministic rules, Create auditable outputs.
+
+## {{ m.partners.label }}
+{%- for p in m.partners['items'] %}
+- {{ p.short }} ({{ p.long }}{% if p.get("place") %}, {{ p.get("place") }}{% endif %})
+{%- endfor %}
+
+## Co-founders
+- Matthew Wamsley — Co-founder & Chief Executive Officer (CEO). AI and automation engineer and systems architect with 20+ years across telecommunications, healthcare, and rail systems (Verizon, Herzog Technologies, Sq1, Texas Health Resources, Teradata, Tektronix). Previously co-founded Axon, an early-stage healthcare technology venture developing a longitudinal EHR/EMR platform designed to connect patient records across the continuum of care, and served as a director at Sq1, a digital marketing company later acquired by Ansira. Leads business strategy, operations, partnerships, and systems integration. BS, Computer Information Systems, Tarleton State University; graduate coursework in AI, George Mason University.
+- Vadim Sokolov, PhD — Co-founder & Chief Science Officer (CSO). Associate Professor at George Mason University (Systems Engineering & Operations Research); previously Principal Computational Scientist at Argonne National Laboratory and Visiting Professor at the University of Chicago Booth School of Business. Research in Bayesian statistics, machine learning, and computational modeling of complex systems.
+
+## Frequently asked questions
+- What does Nytel do? Nytel builds {{ m.subtitle.text }} {{ m.company.audience }} {{ m.company.value }}
+- Is it deployed? No. {{ m.capabilities.status_label }}. {{ m.capabilities.tested.text }}.
+- Does Nytel write to CTMS, eTMF or EDC? Not yet. {{ m.how_it_works.steps[3].text }}; {{ m.capabilities.write_back.text[0]|lower ~ m.capabilities.write_back.text[1:] }}.
+- How is Nytel different from Medidata, Veeva, or IQVIA? Those platforms optimize within their own silos; Nytel's agents are designed for the work between systems — document-chasing, data reconciliation, and follow-up tracking — that today lives in email, Slack, spreadsheets, and people's heads.
+- Does Nytel use generative AI for compliance decisions? No. {{ m.company.regulated_work }}
+- What does it take to get started? Nytel starts in email, Slack, and spreadsheets — no API credentials, IT procurement, or partner-system changes required to begin.
+- Who founded Nytel? Matthew Wamsley, CEO (AI and automation engineer and systems architect; previously Verizon and Herzog Technologies) and Vadim Sokolov, PhD, CSO (Associate Professor at George Mason University; previously Argonne National Laboratory and UChicago Booth).
+
+## Contact
+- {{ m.call_to_action.ask }}.
+- Contact: {{ m.contact.name }}, {{ m.contact.email }}
+- General inbox: {{ m.contact.general_email }}
+- Schedule a call: {{ cal_url }}
+- Location: Northern Virginia (Washington, DC area)

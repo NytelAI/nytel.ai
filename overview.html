@@ -4,16 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Overview — Nytel</title>
-  <meta name="description" content="One-page overview of how Nytel automates clinical trial operations with AI agents.">
+  <meta name="description" content="One-page overview of how Nytel works: AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs).">
   <meta property="og:title" content="Overview — Nytel">
-  <meta property="og:description" content="AI agents for clinical trial operations — one-page overview with architecture diagram.">
+  <meta property="og:description" content="AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs). One-page overview with architecture diagram.">
   <meta property="og:image" content="https://nytel.ai/og-image.png">
   <meta property="og:url" content="https://nytel.ai/overview.html">
   <meta property="og:type" content="article">
   <link rel="canonical" href="https://nytel.ai/overview.html">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Overview — Nytel">
-  <meta name="twitter:description" content="AI agents for clinical trial operations — one-page overview with architecture diagram.">
+  <meta name="twitter:description" content="AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs). One-page overview with architecture diagram.">
   <meta name="twitter:image" content="https://nytel.ai/og-image.png">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -30,14 +30,11 @@
       {
         "@type": "TechArticle",
         "headline": "How Nytel Works",
-        "description": "AI agents that automate the coordination work in clinical trials — sitting above existing systems, not replacing them. Orchestration layer, specialized agents, and design principles.",
+        "description": "AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs). Agents for the coordination work alongside CTMS, eTMF and EDC. Built and tested, not deployed.",
         "url": "https://nytel.ai/overview.html",
         "image": "https://nytel.ai/og-image.png",
         "about": [
-          "clinical trial operations",
-          "AI agents for clinical trials",
-          "site activation",
-          "trial master file quality control"
+          "clinical trial operations", "investigator-initiated trials", "IITs", "regulatory compliance", "SOP processing", "rule extraction", "protocol harmonization", "protocol-to-EDC build", "EDC", "eTMF", "CTMS", "AI agents", "auditable AI"
         ],
         "author": { "@type": "Organization", "name": "Nytel", "url": "https://nytel.ai" },
         "publisher": {
@@ -110,6 +107,7 @@
     }
     @media (min-width: 768px) {
       .key-points { grid-template-columns: repeat(3, 1fr); }
+      .key-points.cols-2 { grid-template-columns: repeat(2, 1fr); }
     }
     .key-point {
       background: var(--white);
@@ -154,7 +152,7 @@
     <div class="container">
       <span class="label">One-Page Overview</span>
       <h1>How Nytel Works</h1>
-      <p>AI agents that automate the coordination work in clinical trials — sitting above existing systems, not replacing them.</p>
+      <p>AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs). Agents for the coordination work alongside CTMS, eTMF and EDC.</p>
     </div>
   </div>
 
@@ -171,14 +169,14 @@
 
       <h2>Architecture</h2>
       <p>
-        Nytel is designed as an orchestration layer above existing clinical systems. Specialized AI agents each handle one operational workflow, sharing a common knowledge layer. Every agent follows the same pattern: <strong>Retrieve</strong> data → <strong>Analyze</strong> with deterministic rules → <strong>Create</strong> auditable outputs.
+        Nytel is designed as a layer alongside existing clinical systems. Agents read from the systems teams already use; in progress: write-back into CTMS, eTMF and EDC. Specialized AI agents each handle one operational workflow, sharing a common knowledge layer. Every agent follows the same pattern: <strong>Retrieve</strong> data → <strong>Analyze</strong> with deterministic rules → <strong>Create</strong> auditable outputs.
       </p>
 
       <!-- Architecture Diagram -->
       <div class="diagram">
         <svg viewBox="0 0 800 358" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="arch-title arch-desc" font-family="'IBM Plex Sans', system-ui, sans-serif">
           <title id="arch-title">Nytel architecture</title>
-          <desc id="arch-desc">Nytel's orchestration layer sits between human supervisors (Clinical Ops Lead, Study Manager, Medical Monitor) above and existing clinical systems (eTMF, CTMS, EDC, email, Slack, spreadsheets) below. It runs the Document QC, Site Activation, Follow-Up, and Monitoring agents, with room for additional agents such as Safety.</desc>
+          <desc id="arch-desc">Nytel's agent layer sits between human supervisors (Clinical Ops Lead, Study Manager, Medical Monitor) above and existing clinical systems (eTMF, CTMS, EDC, email, Slack, spreadsheets) below. It is designed around the Document QC, Site Activation, Follow-Up, and Monitoring agents plus SOP-IR rule extraction, compliance checks, protocol harmonization and protocol-to-EDC build. Agents read from the systems below; write-back is in progress.</desc>
 
           <!-- Human Supervision (height=80, matches bottom box) -->
           <rect x="0" y="0" width="800" height="80" rx="0" fill="#F7F8FA" stroke="#D1D5DB" stroke-width="1"/>
@@ -194,9 +192,9 @@
           <line x1="400" y1="82" x2="400" y2="108" stroke="#2D8B8B" stroke-width="1.5" stroke-dasharray="4,3"/>
           <polygon points="396,106 400,114 404,106" fill="#2D8B8B"/>
 
-          <!-- Nytel Orchestration Layer -->
+          <!-- Nytel Agent Layer -->
           <rect x="0" y="114" width="800" height="120" rx="0" fill="#1A3A4A"/>
-          <text x="400" y="134" text-anchor="middle" font-size="10" fill="#4B8F8F" font-weight="500" letter-spacing="0.08em" font-family="'IBM Plex Mono', monospace">NYTEL ORCHESTRATION LAYER</text>
+          <text x="400" y="134" text-anchor="middle" font-size="10" fill="#4B8F8F" font-weight="500" letter-spacing="0.08em" font-family="'IBM Plex Mono', monospace">NYTEL AGENT LAYER</text>
 
           <!-- Agent boxes -->
           <rect x="20" y="142" width="150" height="70" rx="4" fill="#1A3A4A" stroke="#2D8B8B" stroke-width="1"/>
@@ -220,12 +218,13 @@
           <text x="590" y="202" text-anchor="middle" font-size="9" fill="#7B9A9A" font-family="'IBM Plex Mono', monospace">Anomaly detection</text>
 
           <rect x="680" y="142" width="105" height="70" rx="4" fill="#1A3A4A" stroke="#2D8B8B" stroke-width="1" stroke-dasharray="4,3"/>
-          <text x="732" y="162" text-anchor="middle" font-size="11" fill="#7B9A9A" font-weight="500">Safety</text>
-          <text x="732" y="180" text-anchor="middle" font-size="9" fill="#7B9A9A">+ more agents</text>
+          <text x="732" y="162" text-anchor="middle" font-size="11" fill="#7B9A9A" font-weight="500">SOP-IR</text>
+          <text x="732" y="180" text-anchor="middle" font-size="9" fill="#7B9A9A">+ protocol, EDC</text>
 
           <!-- Arrow up from systems to Nytel -->
           <line x1="400" y1="270" x2="400" y2="242" stroke="#2D8B8B" stroke-width="1.5" stroke-dasharray="4,3"/>
           <polygon points="396,244 400,236 404,244" fill="#2D8B8B"/>
+          <text x="412" y="260" font-size="9" fill="#9CA3AF" letter-spacing="0.08em" font-family="'IBM Plex Mono', monospace">READ · WRITE-BACK IN PROGRESS</text>
 
           <!-- Clinical Systems Layer -->
           <rect x="0" y="274" width="800" height="80" rx="0" fill="#F7F8FA" stroke="#D1D5DB" stroke-width="1"/>
@@ -246,11 +245,48 @@
         </svg>
       </div>
 
+      <h2>What we’ve built</h2>
+      <p>Tested on multiple protocols, in multi-country settings. <strong>Built and tested, not deployed.</strong></p>
+      <div class="key-points cols-2">
+        <div class="key-point">
+          <h3>SOP processing and rule extraction</h3>
+          <p>SOP-IR: SOPs compiled into a verified, executable graph. Built and tested, not deployed.</p>
+        </div>
+        <div class="key-point">
+          <h3>Regulatory document compliance checks</h3>
+          <p>Built and tested, not deployed.</p>
+        </div>
+        <div class="key-point">
+          <h3>Document QC Agent</h3>
+          <p>Classifies documents against the TMF reference model, runs ALCOA++ quality checks, and flags issues for human review. Built and tested, not deployed.</p>
+        </div>
+        <div class="key-point">
+          <h3>Site Activation Agent</h3>
+          <p>Tracks the path from CDA execution to site go-live: milestones, blockers and outstanding documents. Built and tested, not deployed.</p>
+        </div>
+        <div class="key-point">
+          <h3>Follow-Up Agent</h3>
+          <p>Plans escalation cadence with batching: outstanding items grouped per contact, reminders paused while awaiting a response. Built and tested, not deployed.</p>
+        </div>
+        <div class="key-point">
+          <h3>Monitoring Agent</h3>
+          <p>Tracks site visit schedules, enrollment progress and data review status, and surfaces anomalies for review. Built and tested, not deployed.</p>
+        </div>
+        <div class="key-point">
+          <h3>Protocol harmonization</h3>
+          <p>Built and tested, not deployed.</p>
+        </div>
+        <div class="key-point">
+          <h3>Protocol-to-EDC build</h3>
+          <p>Built and tested, not deployed.</p>
+        </div>
+      </div>
+
       <h2>Key Design Principles</h2>
       <div class="key-points">
         <div class="key-point">
           <h3>Starts where the data is</h3>
-          <p>Email, Slack, spreadsheets — not API integrations. No IT procurement needed to begin. Direct system APIs come in Phase 2.</p>
+          <p>Agents read from the systems teams already use. Email, Slack and spreadsheets first — no IT procurement needed to begin. In progress: write-back into CTMS, eTMF and EDC.</p>
         </div>
         <div class="key-point">
           <h3>Deterministic compliance</h3>
@@ -258,17 +294,26 @@
         </div>
         <div class="key-point">
           <h3>Human-in-the-loop</h3>
-          <p>Agents execute; humans supervise. Low-confidence OCR triggers review. Safety exceptions bypass automation. Teams can pause and override.</p>
+          <p>People supervise and can override; uncertain cases go to human review. Every decision can be traced: each action is recorded in an audit trail.</p>
         </div>
       </div>
 
-      <h2>Entry Point: Site Activation</h2>
+      <h2>Focus: Investigator-Initiated Trials</h2>
       <p>
-        The first workflow targets site activation — CDA execution to site go-live. This is where timelines slip first, where document-chasing is most acute, and where a measurable KPI (CDA-to-activated time) makes success easy to demonstrate. A small set of document types — investigator CVs, medical licenses, GCP certificates, FDA 1572 forms, delegation logs — drives the majority of QC work during activation.
+        Nytel builds AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs). The same agents serve CROs, sponsors and other trials. Our agents catch those gaps and flag them to the right people, so your team can focus on decisions instead of chasing.
       </p>
-      <p>
-        From there: TMF readiness → site monitoring → issue triage and CAPA. Each workflow added reuses the same knowledge layer, so marginal effort drops as the system matures. Institutional knowledge — which sites are slow, which sponsors have unusual requirements — accumulates as data rather than disappearing with every staff change.
-      </p>
+
+      <h2>Partners</h2>
+      <div class="key-points cols-2">
+        <div class="key-point">
+          <h3>PCCTC</h3>
+          <p>Prostate Cancer Clinical Trials Consortium</p>
+        </div>
+        <div class="key-point">
+          <h3>POETIC</h3>
+          <p>Pediatric Oncology Experimental Therapeutics Investigators&#39; Consortium, Stanford</p>
+        </div>
+      </div>
 
       <div class="read-more">
         <p><strong>Want the full picture?</strong></p>
@@ -286,13 +331,12 @@
     <div class="container">
       <h2>Interested in working together?</h2>
       <p>
-        Nytel is working with clinical operations teams to pilot AI-driven
-        trial workflows. If you're dealing with site activation delays,
-        document QC bottlenecks, or inspection readiness gaps — let's talk.
+        Let’s team up: IIT investigators and sites, platform teams, sponsors, CROs. Contact Matthew Wamsley at
+        mw@nytel.ai, or write to contact@nytel.ai.
       </p>
       <div class="hero-actions">
         <a href="https://cal.com/nytel" class="btn btn-teal">Schedule a Call</a>
-        <a href="mailto:contact@nytel.ai" class="btn btn-outline" style="color: rgba(255,255,255,0.7); border-color: rgba(255,255,255,0.2);">contact@nytel.ai</a>
+        <a href="mailto:mw@nytel.ai" class="btn btn-outline" style="color: rgba(255,255,255,0.7); border-color: rgba(255,255,255,0.2);">mw@nytel.ai</a>
       </div>
     </div>
   </section>

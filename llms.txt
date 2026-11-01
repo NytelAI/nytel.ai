@@ -1,37 +1,53 @@
 # Nytel
 
-> Nytel builds AI agents that automate the coordination work in clinical trial operations — document QC, site activation, follow-up/escalation, and monitoring. The agents sit above existing systems (CTMS, eTMF, EDC, email, Slack, spreadsheets) as an orchestration layer: they read state and write auditable actions back, but do not replace those systems. Compliance logic is deterministic (rules and code, not generative models); LLMs handle document and communication understanding only; humans supervise. Co-founded by Vadim Sokolov, PhD, and Matthew Wamsley (CEO).
+> Trials, on time. Nytel builds AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs). The same agents serve CROs, sponsors and other trials. Agents for the coordination work alongside CTMS, eTMF and EDC. Agents read from the systems teams already use (CTMS, eTMF, EDC, email); in progress: write-back into CTMS, eTMF and EDC. Built and tested, not deployed. Compliance checks run on deterministic rules and code, not generative models, so every decision can be traced and audited. Language models read documents and messages; people supervise and can override, and uncertain cases go to human review. Co-founded by Matthew Wamsley (CEO) and Vadim Sokolov, PhD (CSO).
 
 ## Pages
-- [Home](https://nytel.ai/): What Nytel does — AI agents for clinical trial operations, the coordination problem, the agents, and the co-founders.
-- [How Nytel Works — Overview](https://nytel.ai/overview.html): One-page architecture overview — the orchestration layer, the four agents, key design principles, and the site-activation entry point.
+- [Home](https://nytel.ai/): What Nytel does — the coordination problem, what we've built, partners, and the co-founders.
+- [How Nytel Works — Overview](https://nytel.ai/overview.html): One-page overview — architecture diagram, what we've built, key design principles, IIT focus, and partners.
 - [Whitepaper](https://nytel.ai/whitepaper.html): "A Clinical Operating System for Agentic Trial Operations" — architecture, integration, and operational design in depth.
 
-## The agents
-- Document QC Agent: classifies documents against the TMF reference model, runs ALCOA++ quality checks, flags issues for human review.
-- Site Activation Agent: tracks CDA execution to site go-live; monitors milestones and blockers; measurable KPI is CDA-to-activated time.
-- Follow-Up Agent: manages escalation cadence with intelligent batching; reminders pause while awaiting a response.
-- Monitoring Agent: tracks site visits, enrollment, and data review; surfaces anomalies before they become inspection findings.
+## What we’ve built (built and tested, not deployed)
+- SOP processing and rule extraction: SOP-IR: SOPs compiled into a verified, executable graph.
+- Regulatory document compliance checks.
+- Document QC Agent: Classifies documents against the TMF reference model, runs ALCOA++ quality checks, and flags issues for human review.
+- Site Activation Agent: Tracks the path from CDA execution to site go-live: milestones, blockers and outstanding documents.
+- Follow-Up Agent: Plans escalation cadence with batching: outstanding items grouped per contact, reminders paused while awaiting a response.
+- Monitoring Agent: Tracks site visit schedules, enrollment progress and data review status, and surfaces anomalies for review.
+- Protocol harmonization.
+- Protocol-to-EDC build.
+- Tested on multiple protocols, in multi-country settings.
+- In progress: write-back into CTMS, eTMF and EDC.
 
 ## How it works
-- Orchestration layer above existing clinical systems (CTMS, eTMF, EDC) plus where work really happens (email, Slack, spreadsheets).
+- Protocol & SOPs: Language models read documents and messages.
+- Executable rules: Rules extracted from SOPs and protocols.
+- Agents: Compliance checks run on deterministic rules and code.
+- CTMS · eTMF · EDC · email: Agents read from the systems teams already use.
+- People supervise and can override; uncertain cases go to human review.
+- Every decision can be traced: each action is recorded in an audit trail.
 - Every agent follows the same pattern: Retrieve data, Analyze with deterministic rules, Create auditable outputs.
-- Deterministic compliance: quality checks use rules and code, not generative models, so every decision is auditable. Human-in-the-loop; low-confidence OCR triggers review; safety exceptions bypass automation.
-- Entry point: site activation, then TMF readiness, site monitoring, and issue triage/CAPA — each reusing a shared knowledge layer.
+
+## Partners
+- PCCTC (Prostate Cancer Clinical Trials Consortium)
+- POETIC (Pediatric Oncology Experimental Therapeutics Investigators' Consortium, Stanford)
 
 ## Co-founders
-- Vadim Sokolov, PhD — Co-founder. Associate Professor at George Mason University (Systems Engineering & Operations Research); previously Principal Computational Scientist at Argonne National Laboratory and Visiting Professor at the University of Chicago Booth School of Business. Research in Bayesian statistics, machine learning, and computational modeling of complex systems.
-- Matthew Wamsley — Co-founder & Chief Executive Officer. AI and automation engineer and systems architect with 20+ years across telecommunications, healthcare, and rail systems (Verizon, Herzog Technologies, Sq1, Texas Health Resources, Teradata, Tektronix). Previously co-founded Axon, an early-stage healthcare technology venture developing a longitudinal EHR/EMR platform designed to connect patient records across the continuum of care, and served as a director at Sq1, a digital marketing company later acquired by Ansira. Leads business strategy, operations, partnerships, systems integration, and deployment. BS, Computer Information Systems, Tarleton State University; graduate coursework in AI, George Mason University.
+- Matthew Wamsley — Co-founder & Chief Executive Officer (CEO). AI and automation engineer and systems architect with 20+ years across telecommunications, healthcare, and rail systems (Verizon, Herzog Technologies, Sq1, Texas Health Resources, Teradata, Tektronix). Previously co-founded Axon, an early-stage healthcare technology venture developing a longitudinal EHR/EMR platform designed to connect patient records across the continuum of care, and served as a director at Sq1, a digital marketing company later acquired by Ansira. Leads business strategy, operations, partnerships, and systems integration. BS, Computer Information Systems, Tarleton State University; graduate coursework in AI, George Mason University.
+- Vadim Sokolov, PhD — Co-founder & Chief Science Officer (CSO). Associate Professor at George Mason University (Systems Engineering & Operations Research); previously Principal Computational Scientist at Argonne National Laboratory and Visiting Professor at the University of Chicago Booth School of Business. Research in Bayesian statistics, machine learning, and computational modeling of complex systems.
 
 ## Frequently asked questions
-- What does Nytel do? Nytel builds AI agents that automate the coordination work in clinical trials — document QC, site activation, follow-up/escalation, and monitoring — as an orchestration layer above CTMS, eTMF, and EDC that reads state and writes auditable actions back without replacing those systems.
-- How is Nytel different from Medidata, Veeva, or IQVIA? Those platforms optimize within their own silos; Nytel automates the work between systems — document-chasing, data reconciliation, and follow-up tracking — that today lives in email, Slack, spreadsheets, and people's heads.
-- Does Nytel use generative AI for compliance decisions? No. Quality checks use deterministic rules and code (not generative models), so every decision is auditable; LLMs handle document and communication understanding only. Low-confidence OCR triggers human review and safety exceptions bypass automation.
-- Which workflow does Nytel automate first? Site activation, from CDA execution to site go-live — the measurable KPI is CDA-to-activated time.
+- What does Nytel do? Nytel builds AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs). The same agents serve CROs, sponsors and other trials. Our agents catch those gaps and flag them to the right people, so your team can focus on decisions instead of chasing.
+- Is it deployed? No. Built and tested, not deployed. Tested on multiple protocols, in multi-country settings.
+- Does Nytel write to CTMS, eTMF or EDC? Not yet. Agents read from the systems teams already use; in progress: write-back into CTMS, eTMF and EDC.
+- How is Nytel different from Medidata, Veeva, or IQVIA? Those platforms optimize within their own silos; Nytel's agents are designed for the work between systems — document-chasing, data reconciliation, and follow-up tracking — that today lives in email, Slack, spreadsheets, and people's heads.
+- Does Nytel use generative AI for compliance decisions? No. Compliance checks run on deterministic rules and code, not generative models, so every decision can be traced and audited. Language models read documents and messages; people supervise and can override, and uncertain cases go to human review.
 - What does it take to get started? Nytel starts in email, Slack, and spreadsheets — no API credentials, IT procurement, or partner-system changes required to begin.
-- Who founded Nytel? Vadim Sokolov, PhD (Associate Professor at George Mason University; previously Argonne National Laboratory and UChicago Booth) and Matthew Wamsley, CEO (AI and automation engineer and systems architect; previously Verizon and Herzog Technologies).
+- Who founded Nytel? Matthew Wamsley, CEO (AI and automation engineer and systems architect; previously Verizon and Herzog Technologies) and Vadim Sokolov, PhD, CSO (Associate Professor at George Mason University; previously Argonne National Laboratory and UChicago Booth).
 
 ## Contact
-- Email: contact@nytel.ai
+- Let’s team up: IIT investigators and sites, platform teams, sponsors, CROs.
+- Contact: Matthew Wamsley, mw@nytel.ai
+- General inbox: contact@nytel.ai
 - Schedule a call: https://cal.com/nytel
 - Location: Northern Virginia (Washington, DC area)

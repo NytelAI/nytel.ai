@@ -24,7 +24,9 @@ When site engagement slips, the costs compound quickly. Enrollment delays cost $
 
 Major vendors—Medidata, Veeva, IQVIA—have responded with real improvements: document classifiers, enrollment predictors, anomaly detection. But each optimizes within its own platform. The coordination work that lives in the seams between systems—chasing documents, reconciling data, tracking who owes what—remains a human job. Past tools also struggled because they asked clinical teams to change how they work. **Nytel is built to fit existing workflows, not replace them.**
 
-**Nytel** is designed to turn clinical trial SOPs into executable, audit-ready AI workflows—one clinical operations expert and an agentic system running trial execution around the clock, with humans supervising rather than manually driving every step.
+**Nytel** builds AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs). The same agents serve CROs, sponsors and other trials. The system is designed to turn clinical trial SOPs into executable, audit-ready AI workflows—one clinical operations expert and an agentic system that can carry trial operations around the clock, with humans supervising rather than manually driving every step.
+
+**Status.** What we've built: SOP processing and rule extraction (SOP-IR: SOPs compiled into a verified, executable graph); regulatory document compliance checks; the MVP agents for document QC, site activation, follow-up and monitoring; protocol harmonization; and protocol-to-EDC build. All of it is built and tested, not deployed—tested on multiple protocols, in multi-country settings. The agents read from CTMS, eTMF and EDC; write-back into those systems is in progress. Partners: PCCTC (Prostate Cancer Clinical Trials Consortium) and POETIC (Pediatric Oncology Experimental Therapeutics Investigators' Consortium, Stanford). The rest of this paper describes the design.
 
 A common question is whether clinical trials really need a purpose-built ontology when other complex industries, like aviation, manage without one. The comparison actually argues the other way. Airlines run on systems that are already fully digitized: decision logic is narrow and deterministic, encoded directly into software. Clinical trials run on *regulatory text*—SOPs and Working Practices in natural language, full of conditional rules ("if the site does not respond within 10 business days, escalate"), expiry constraints ("GCP training must be current within 3 years"), and cross-document dependencies ("sub-investigators on the FDA 1572 must appear on the Delegation of Authority Log"). You can't hardcode that; you need an intermediate representation (SOP-IR) that preserves regulatory intent, stays editable by humans, and can be executed by agents. The ontology isn't extra complexity—it's the minimum structure needed to make a PDF into a workflow.
 
@@ -36,7 +38,7 @@ The choice between a single agent and a multi-agent pipeline is worth thinking t
 
 For the MVP, a **single agent** covering the full TMF review workflow is the right starting point. The workflow is well-defined, document volume is modest, and the faster iteration cycle matters more early on. Moving to a pipeline makes sense when specific failure modes emerge—not before.
 
-A production deployment for a full Phase III trial calls for roughly **5–8 specialized agents** sharing a common knowledge layer: the SOP-IR ontology, a site status database, and message history. They communicate via structured handoffs, not natural language.
+The design for a full Phase III trial calls for roughly **5–8 specialized agents** sharing a common knowledge layer: the SOP-IR ontology, a site status database, and message history. They communicate via structured handoffs, not natural language.
 
 | Tier | Agent | Function |
 |------|-------|----------|
@@ -51,16 +53,18 @@ A production deployment for a full Phase III trial calls for roughly **5–8 spe
 
 : Agent roles for full trial coverage. {#tbl-agents tbl-colwidths="[13,22,65]"}
 
+The built MVP agents—Document QC, Site Activation, Follow-Up and Monitoring—cover the ingestion, processing, orchestration and monitoring roles above. Safety and Protocol Deviation agents are part of the design, not of the built MVP.
+
 On cost: classification and extraction—the high-frequency, lower-stakes work—runs well on smaller, cheaper models (Haiku/Flash tier) and accounts for 70–80% of LLM calls. Verification and draft generation, where reasoning quality matters, warrants frontier models (Sonnet/Opus). The savings from this split are substantial, though the exact figures depend on volume and how complex the reasoning tasks turn out to be in practice.
 
 # Integration Strategy {#sec-integration}
 
-Nytel is designed to sit above CTMS, eTMF, and EDC as an orchestration layer—reading state from those systems and writing actions back, without replacing them. Integration unfolds in two phases. Phase 1 runs through email and a standalone UI: no API credentials needed, no IT procurement, no changes to partner systems. Phase 2 moves to direct API integration once the workflows have been validated and sponsors are ready to grant access—a process that typically takes weeks to months in enterprise environments and should not be assumed to happen quickly.
+Nytel is designed to sit alongside CTMS, eTMF, and EDC—reading state from those systems without replacing them. Today the agents read only; write-back into CTMS, eTMF and EDC is in progress. Integration unfolds in two phases. Phase 1 runs through email and a standalone UI: no API credentials needed, no IT procurement, no changes to partner systems. Phase 2 moves to direct API integration once the workflows have been validated and sponsors are ready to grant access—a process that typically takes weeks to months in enterprise environments and should not be assumed to happen quickly.
 
 | System | Mode | Data Objects |
 |--------|------|--------------|
 | **eTMF** | Read-only | Doc metadata, artifact status, TOC, zones |
-| **CTMS** | Read + write | Activation dates, visits, contacts, milestones |
+| **CTMS** | Read (write-back in progress) | Activation dates, visits, contacts, milestones |
 | **EDC** | Read-only | CRF status, query counts, data lock |
 | **Email** | Read + send | Doc submissions, coordinator comms |
 
@@ -70,11 +74,11 @@ In practice, eTMF read-only means replicating what a CRA does in a periodic revi
 
 CTMS systems track at site level (visit dates, enrollment counts, contacts); Nytel is designed to operate at milestone level (Pre-SIV, Site Activated, First Patient In). Bridging these views requires a per-sponsor mapping table that translates vendor-specific field names into Nytel's milestone vocabulary. It's a one-time configuration, not an ongoing burden—but it does need to be validated against the sponsor's actual CTMS setup, since field naming varies even within the same vendor's platform.
 
-Whether integration is working can be assessed on three questions: Are all the data objects the agent needs accessible without manual entry? Is the data fresh enough that decisions aren't made on stale state? Do status updates actually propagate back to the system of record?
+Whether integration is working can be assessed on three questions: Are all the data objects the agent needs accessible without manual entry? Is the data fresh enough that decisions aren't made on stale state? Once write-back is available, do status updates actually propagate back to the system of record?
 
 # Operations: Follow-Up, Escalation, and Quality {#sec-operations}
 
-The target for site activation—based on early pilots—is a **50% reduction in median time from CDA executed to site activated**, with a parallel reduction in the staffing required. Real-time inspection readiness, meaning the TMF is always current rather than assembled in a rush before an audit, is the third goal. These are targets under favorable conditions: cooperative sites, reliable document submissions, and working integrations. They are not guarantees.
+The design goals for site activation are a shorter median time from CDA executed to site activated and less staff time spent chasing documents. Real-time inspection readiness, meaning the TMF is always current rather than assembled in a rush before an audit, is the third goal. These are design goals, not measured results, and they depend on cooperative sites, reliable document submissions, and working integrations.
 
 The follow-up cadence is designed to keep pressure on without overwhelming coordinators:
 
@@ -100,7 +104,7 @@ For scans, an OCR confidence below **0.80** triggers human review. That's where 
 
 # Product Direction {#sec-product}
 
-The entry point is **site activation**—the stretch from CDA execution to a site going live. It's where timelines slip first, where the document-chasing burden is most acute, and where a measurable KPI (CDA-to-activated time) makes success easy to demonstrate. The worry about scope is reasonable: a full Phase III trial spans hundreds of SOP steps across 15–20 documents. The system doesn't try to automate all of it upfront. A small set of TMF document types—investigator CVs, medical licenses, GCP certificates, FDA 1572 forms, and delegation logs—drives the majority of QC work during activation. Each workflow added after that reuses the same ontology objects, so the marginal effort drops as the system matures.
+Nytel's focus is **investigator-initiated trials (IITs)**; the same agents serve CROs, sponsors and other trials. Protocol work is one part of what's built, alongside SOP processing and rule extraction, regulatory document compliance checks, and the MVP agents—not the lead on its own. Within trial operations, **site activation**—the stretch from CDA execution to a site going live—is a natural first workflow. It's where timelines slip first, where the document-chasing burden is most acute, and where a measurable KPI (CDA-to-activated time) makes success easy to demonstrate. The worry about scope is reasonable: a full Phase III trial spans hundreds of SOP steps across 15–20 documents. The system doesn't try to automate all of it upfront. A small set of TMF document types—investigator CVs, medical licenses, GCP certificates, FDA 1572 forms, and delegation logs—drives the majority of QC work during activation. Each workflow added after that reuses the same ontology objects, so the marginal effort drops as the system matures.
 
 From there, the natural expansion is TMF readiness → site monitoring → issue triage and CAPA. Institutional knowledge—which sites are slow, which document types generate the most corrections, which sponsors have unusual requirements—accumulates as data rather than disappearing with every staff change.
 

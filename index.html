@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nytel — AI Agents for Clinical Trial Operations</title>
-  <meta name="description" content="Nytel builds AI agents that automate the coordination work in clinical trials — document QC, site activation, escalation workflows — so operations teams can focus on what matters.">
-  <meta property="og:title" content="Nytel — AI Agents for Clinical Trial Operations">
-  <meta property="og:description" content="Automating the coordination work between clinical systems — document QC, site activation, escalation workflows.">
+  <title>Nytel — Trials, on time. AI agents for regulatory compliance, protocols and EDC, focused on IITs.</title>
+  <meta name="description" content="Nytel builds AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs). The same agents serve CROs, sponsors and other trials.">
+  <meta property="og:title" content="Nytel — Trials, on time.">
+  <meta property="og:description" content="AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs).">
   <meta property="og:image" content="https://nytel.ai/og-image.png">
   <meta property="og:url" content="https://nytel.ai">
   <meta property="og:type" content="website">
   <link rel="canonical" href="https://nytel.ai/">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Nytel — AI Agents for Clinical Trial Operations">
-  <meta name="twitter:description" content="Automating the coordination work between clinical systems.">
+  <meta name="twitter:title" content="Nytel — Trials, on time.">
+  <meta name="twitter:description" content="AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs).">
   <meta name="twitter:image" content="https://nytel.ai/og-image.png">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -33,7 +33,7 @@
     "image": "https://nytel.ai/og-image.png",
     "slogan": "Trials, on time.",
     "email": "contact@nytel.ai",
-    "description": "Nytel builds AI agents that automate coordination work in clinical trials — document QC, site activation, follow-up workflows, and monitoring — sitting above existing systems like CTMS, eTMF, and EDC as an orchestration layer.",
+    "description": "Nytel builds AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs). The same agents serve CROs, sponsors and other trials. Agents for the coordination work alongside CTMS, eTMF and EDC. Built and tested, not deployed.",
     "founder": [{
       "@type": "Person",
       "name": "Vadim Sokolov",
@@ -60,14 +60,21 @@
       "knowsAbout": ["AI and workflow automation", "systems architecture and integration", "deployment engineering"],
       "homeLocation": { "@type": "Place", "name": "Northern Virginia (Washington, DC area)" }
     }],
-    "contactPoint": {
+    "contactPoint": [{
       "@type": "ContactPoint",
       "contactType": "sales",
-      "email": "contact@nytel.ai",
+      "name": "Matthew Wamsley",
+      "email": "mw@nytel.ai",
       "url": "https://cal.com/nytel",
       "areaServed": "US",
       "availableLanguage": "English"
-    },
+    }, {
+      "@type": "ContactPoint",
+      "contactType": "customer support",
+      "email": "contact@nytel.ai",
+      "areaServed": "US",
+      "availableLanguage": "English"
+    }],
     "address": {
       "@type": "PostalAddress",
       "addressLocality": "Northern Virginia",
@@ -75,27 +82,33 @@
       "addressCountry": "US"
     },
     "areaServed": "US",
-    "knowsAbout": [
-      "clinical trial operations",
-      "AI agents for clinical trials",
-      "trial master file quality control",
-      "site activation automation",
-      "CTMS eTMF EDC orchestration",
-      "ALCOA++ compliance",
-      "Bayesian adaptive trial design",
-      "clinical trial follow-up automation",
-      "ICH-GCP regulatory compliance"
-    ],
+    "knowsAbout": ["clinical trial operations", "investigator-initiated trials", "IITs", "regulatory compliance", "SOP processing", "rule extraction", "protocol harmonization", "protocol-to-EDC build", "EDC", "eTMF", "CTMS", "AI agents", "auditable AI", "ALCOA++ compliance", "Bayesian adaptive trial design", "ICH-GCP regulatory compliance"],
     "hasOfferCatalog": {
       "@type": "OfferCatalog",
-      "name": "AI agents for clinical trial operations",
+      "name": "What we\u2019ve built (Built and tested, not deployed)",
       "itemListElement": [
         {
           "@type": "Offer",
           "itemOffered": {
             "@type": "Service",
+            "name": "SOP processing and rule extraction",
+            "description": "SOP-IR: SOPs compiled into a verified, executable graph. Built and tested, not deployed."
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Regulatory document compliance checks",
+            "description": "Built and tested, not deployed."
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
             "name": "Document QC Agent",
-            "description": "Ingests documents via email or upload, classifies against the TMF reference model, runs ALCOA++ quality checks, and flags issues for human review."
+            "description": "Classifies documents against the TMF reference model, runs ALCOA++ quality checks, and flags issues for human review. Built and tested, not deployed."
           }
         },
         {
@@ -103,7 +116,7 @@
           "itemOffered": {
             "@type": "Service",
             "name": "Site Activation Agent",
-            "description": "Tracks the end-to-end path from CDA execution to site go-live — milestone completion, blockers, and coordination across sponsor, CRO, and site teams."
+            "description": "Tracks the path from CDA execution to site go-live: milestones, blockers and outstanding documents. Built and tested, not deployed."
           }
         },
         {
@@ -111,7 +124,7 @@
           "itemOffered": {
             "@type": "Service",
             "name": "Follow-Up Agent",
-            "description": "Manages escalation cadence with intelligent batching — outstanding items grouped per contact, reminders paused while awaiting a response."
+            "description": "Plans escalation cadence with batching: outstanding items grouped per contact, reminders paused while awaiting a response. Built and tested, not deployed."
           }
         },
         {
@@ -119,7 +132,23 @@
           "itemOffered": {
             "@type": "Service",
             "name": "Monitoring Agent",
-            "description": "Tracks site visit schedules, enrollment progress, and data review status, surfacing anomalies before they become inspection findings."
+            "description": "Tracks site visit schedules, enrollment progress and data review status, and surfaces anomalies for review. Built and tested, not deployed."
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Protocol harmonization",
+            "description": "Built and tested, not deployed."
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Protocol-to-EDC build",
+            "description": "Built and tested, not deployed."
           }
         }
       ]
@@ -132,7 +161,7 @@
     "@type": "WebSite",
     "name": "Nytel",
     "url": "https://nytel.ai/",
-    "description": "AI agents for clinical trial operations.",
+    "description": "AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs).",
     "publisher": { "@type": "Organization", "name": "Nytel", "url": "https://nytel.ai" }
   }
   </script>
@@ -159,8 +188,7 @@
         <span class="hero-eyebrow">Clinical Trial Operations</span>
         <h1>TRIALS, ON TIME</h1>
         <p class="hero-sub">
-          AI agents that automate the coordination work in clinical
-          trials — so nothing falls through the cracks between systems.
+          AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs).
         </p>
         <div class="hero-actions">
           <a href="overview.html" class="btn btn-primary">How It Works</a>
@@ -209,53 +237,91 @@
   <section class="section section-alt">
     <div class="container">
       <span class="section-number">02</span>
-      <h2>Specialized agents for trial operations</h2>
+      <h2>What we’ve built</h2>
       <p class="section-lead">
-        Each agent handles a specific operational workflow — fitting into existing
-        processes, not replacing them. Humans supervise; agents execute.
+        Agents for the coordination work alongside CTMS, eTMF and EDC. Tested on multiple protocols, in multi-country settings.
+        Built and tested, not deployed.
       </p>
       <div class="agent-list">
         <div class="agent-row">
           <div class="agent-head">
             <span class="agent-index">01</span>
-            <span class="agent-name">Document QC Agent</span>
+            <span class="agent-name">SOP processing and rule extraction</span>
           </div>
           <div class="agent-body">
-            <p>Ingests documents via email or upload, classifies against the TMF reference model, runs ALCOA++ quality checks, and flags issues for review. Handles CVs, licenses, training certificates, regulatory forms.</p>
-            <span class="stat-highlight">Deterministic rules, not generative models, for compliance logic</span>
+            <p>SOP-IR: SOPs compiled into a verified, executable graph.</p>
+            <span class="stat-highlight">Built and tested, not deployed</span>
           </div>
         </div>
         <div class="agent-row">
           <div class="agent-head">
             <span class="agent-index">02</span>
-            <span class="agent-name">Site Activation Agent</span>
+            <span class="agent-name">Regulatory document compliance checks</span>
           </div>
           <div class="agent-body">
-            <p>Tracks the end-to-end path from CDA execution to site go-live. Monitors milestone completion, identifies blockers, and coordinates across sponsor, CRO, and site teams.</p>
-            <span class="stat-highlight">Measurable KPI: CDA-to-activated time</span>
+            <span class="stat-highlight">Built and tested, not deployed</span>
           </div>
         </div>
         <div class="agent-row">
           <div class="agent-head">
             <span class="agent-index">03</span>
-            <span class="agent-name">Follow-Up Agent</span>
+            <span class="agent-name">Document QC Agent</span>
           </div>
           <div class="agent-body">
-            <p>Manages escalation cadence with intelligent batching — outstanding items grouped per contact, reminders paused when awaiting response, site responsiveness profiles adjusting timing.</p>
-            <span class="stat-highlight">Configurable escalation ladder per sponsor SOP</span>
+            <p>Classifies documents against the TMF reference model, runs ALCOA++ quality checks, and flags issues for human review.</p>
+            <span class="stat-highlight">Built and tested, not deployed</span>
           </div>
         </div>
         <div class="agent-row">
           <div class="agent-head">
             <span class="agent-index">04</span>
+            <span class="agent-name">Site Activation Agent</span>
+          </div>
+          <div class="agent-body">
+            <p>Tracks the path from CDA execution to site go-live: milestones, blockers and outstanding documents.</p>
+            <span class="stat-highlight">Built and tested, not deployed</span>
+          </div>
+        </div>
+        <div class="agent-row">
+          <div class="agent-head">
+            <span class="agent-index">05</span>
+            <span class="agent-name">Follow-Up Agent</span>
+          </div>
+          <div class="agent-body">
+            <p>Plans escalation cadence with batching: outstanding items grouped per contact, reminders paused while awaiting a response.</p>
+            <span class="stat-highlight">Built and tested, not deployed</span>
+          </div>
+        </div>
+        <div class="agent-row">
+          <div class="agent-head">
+            <span class="agent-index">06</span>
             <span class="agent-name">Monitoring Agent</span>
           </div>
           <div class="agent-body">
-            <p>Tracks site visit schedules, enrollment progress, and data review status. Surfaces anomalies and deviations before they become inspection findings.</p>
-            <span class="stat-highlight">Institutional knowledge persists as data, not tribal memory</span>
+            <p>Tracks site visit schedules, enrollment progress and data review status, and surfaces anomalies for review.</p>
+            <span class="stat-highlight">Built and tested, not deployed</span>
+          </div>
+        </div>
+        <div class="agent-row">
+          <div class="agent-head">
+            <span class="agent-index">07</span>
+            <span class="agent-name">Protocol harmonization</span>
+          </div>
+          <div class="agent-body">
+            <span class="stat-highlight">Built and tested, not deployed</span>
+          </div>
+        </div>
+        <div class="agent-row">
+          <div class="agent-head">
+            <span class="agent-index">08</span>
+            <span class="agent-name">Protocol-to-EDC build</span>
+          </div>
+          <div class="agent-body">
+            <span class="stat-highlight">Built and tested, not deployed</span>
           </div>
         </div>
       </div>
+      <p class="section-lead" style="margin-top: 2rem;">In progress: write-back into CTMS, eTMF and EDC.</p>
     </div>
   </section>
 
@@ -265,9 +331,9 @@
       <span class="section-number">03</span>
       <h2>Built for regulated environments</h2>
       <p class="section-lead">
-        Nytel sits above your existing clinical systems as an orchestration
-        layer — it reads state from CTMS, eTMF, and EDC and writes actions
-        back, but does not replace them.
+        Agents read from the systems teams already use: CTMS, eTMF, EDC and email.
+        Nytel works alongside those systems and does not replace them.
+        In progress: write-back into CTMS, eTMF and EDC.
       </p>
       <div class="principle-row">
         <div class="principle">
@@ -276,24 +342,42 @@
         </div>
         <div class="principle">
           <h3>Human-in-the-loop</h3>
-          <p>OCR confidence below 0.80 triggers human review. Safety exceptions skip the escalation ladder. Study teams can pause, override, and flag sites as quiet.</p>
+          <p>People supervise and can override; uncertain cases go to human review. Every decision can be traced: each action is recorded in an audit trail.</p>
         </div>
         <div class="principle">
           <h3>Starts where the data is</h3>
           <p>Email, Slack, spreadsheets — Nytel meets trial teams where they actually work. No API credentials, no IT procurement, no changes to partner systems required to start.</p>
         </div>
         <div class="principle">
-          <h3>Sponsor-configurable</h3>
-          <p>Universal rules handle the majority of checks. Sponsor overrides — stricter thresholds, custom templates, additional fields — configure on top without touching the rule engine.</p>
+          <h3>Rules from your SOPs</h3>
+          <p>Rules extracted from SOPs and protocols. Universal rules cover common checks; study- and sponsor-specific rules layer on top without touching the rule engine.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Partners -->
+  <section class="section section-alt">
+    <div class="container">
+      <span class="section-number">04</span>
+      <h2>Partners</h2>
+      <div class="principle-row cols-2">
+        <div class="principle">
+          <h3>PCCTC</h3>
+          <p>Prostate Cancer Clinical Trials Consortium</p>
+        </div>
+        <div class="principle">
+          <h3>POETIC</h3>
+          <p>Pediatric Oncology Experimental Therapeutics Investigators&#39; Consortium, Stanford</p>
         </div>
       </div>
     </div>
   </section>
 
   <!-- Founder -->
-  <section class="section section-alt">
+  <section class="section">
     <div class="container">
-      <span class="section-number">04</span>
+      <span class="section-number">05</span>
       <h2>Who we are</h2>
       <div class="founder-section">
         <div class="founder-bio">
@@ -360,7 +444,7 @@
           </p>
           <p>
             At Nytel focuses on business strategy, company operations, partnerships,
-            systems integration, and deployment. As the father of a childhood
+            and systems integration. As the father of a childhood
             cancer survivor treated through a clinical trial, brings a personal
             commitment to improving the operational work behind clinical research.
           </p>
@@ -393,9 +477,13 @@
       <span class="label" style="color: rgba(255,255,255,0.4);">Whitepaper</span>
       <h2>Architecture, Integration, and Operational Design</h2>
       <p>
-        Read the full technical whitepaper on how AI agents can automate
-        clinical trial operations — from system architecture to follow-up
-        cadence to quality frameworks.
+        Read the technical whitepaper on how Nytel's agents are designed —
+        from SOP-IR and system architecture to follow-up cadence and
+        quality frameworks.
+      </p>
+      <p>
+        Let’s team up: IIT investigators and sites, platform teams, sponsors, CROs. Contact Matthew Wamsley,
+        <a href="mailto:mw@nytel.ai" style="color: inherit;">mw@nytel.ai</a>.
       </p>
       <div class="hero-actions">
         <a href="whitepaper.html" class="btn btn-teal">Read the Whitepaper</a>

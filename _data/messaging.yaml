@@ -1,0 +1,211 @@
+# Nytel messaging: the single source of truth for reusable facts and phrases.
+# Used by marketing/surpass-2026/lightning-talk and marketing/surpass-2026/poster builds,
+# and copied to NytelAI/nytel.ai as _data/messaging.yaml (website build.py).
+# Every item carries `source`: a repo file, or "Vadim, Nov 1 2026" for facts Vadim gave directly.
+# Also the source for marketing/linkedin-page.md (company page copy). Sources citing linkedin-page.md
+# mean its Oct 19, 2026 version (git history), before it was aligned with this file.
+# Edit here, then rebuild. Do not copy these phrases into templates.
+# Hyphenated words render with non-breaking hyphens; `accent` / `emphasis` name the part drawn in a second style.
+
+brand:
+  name: NYTEL
+  logo_svg: marketing/brand/linkedin-logo.svg
+  font_family: IBM Plex Sans
+  fonts_dir: marketing/brand/fonts
+  colors:
+    navy: "#0A1628"
+    teal: "#2D8B8B"
+    teal_dark: "#1F6B6B"
+    teal_light: "#E8F4F4"
+  tints:            # design tints derived for these layouts (not site variables)
+    mint: "#8FD8D8"
+    mint_line: "#5FC4C4"
+    mint_text: "#CFE9E9"
+    rule: "#B9DADA"
+  source: "marketing/brand/build.py (colors, IBM Plex Sans 600, 0.16 em wordmark tracking), marketing/brand/linkedin-logo.svg"
+
+tagline:
+  text: "Trials, on time."
+  accent: "on time."
+  source: "marketing/linkedin-page.md as of Oct 19, 2026 (tagline)"
+  usage: "Slogan, always followed by subtitle.text. Kept on the site, in this file and on LinkedIn (Vadim, Nov 1 2026)."
+  linkedin: "Trials, on time. AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials."
+  linkedin_short: "Trials, on time. AI agents for regulatory compliance, protocols and EDC, focused on IITs."
+  linkedin_source: "tagline + subtitle (Vadim, Nov 1 2026), trimmed to LinkedIn's 120-character limit"
+
+subtitle:
+  text: "AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs)."
+  emphasis: "investigator-initiated trials (IITs)"
+  source: "Vadim, Nov 1 2026 (exact wording; IIT focus)"
+
+who_we_are:
+  label: "Who we are"
+  text: "Agents for the coordination work alongside CTMS, eTMF and EDC."
+  source: "marketing/linkedin-page.md as of Oct 19, 2026 (Description)"
+
+capabilities:
+  label: "What we’ve built"
+  slide_prefix: "Built:"
+  items:
+    - name: "SOP processing and rule extraction"
+      short: "SOP processing (SOP-IR)"
+      detail: "SOP-IR: SOPs compiled into a verified, executable graph"
+      source: "Vadim, Nov 1 2026; SOP-IR definition from design/6-ontology.md and proposals/arpah/fabric-diagram-wide.svg (SOP-IR Compiler -> Verified Graph)"
+    - name: "Regulatory document compliance checks"
+      short: "regulatory compliance checks"
+      source: "Vadim, Nov 1 2026"
+    - name: "Protocol harmonization"
+      short: "protocol harmonization"
+      source: "Vadim, Nov 1 2026"
+    - name: "Protocol-to-EDC build"
+      short: "protocol-to-EDC"
+      source: "Vadim, Nov 1 2026"
+  mvp_agents:       # MVP agents, built and tested alongside the items above; listed separately so existing slide/poster builds that loop over `items` don't change
+    label: "MVP agents"
+    items:
+      - name: "Document QC Agent"
+        short: "document QC"
+        detail: "Classifies documents against the TMF reference model, runs ALCOA++ quality checks, and flags issues for human review"
+        source: "Vadim, Nov 1 2026 (MVP agent; built and tested, not deployed); description from nytel.ai index.html"
+      - name: "Site Activation Agent"
+        short: "site activation tracking"
+        detail: "Tracks the path from CDA execution to site go-live: milestones, blockers and outstanding documents"
+        source: "Vadim, Nov 1 2026 (MVP agent; built and tested, not deployed); description from nytel.ai index.html"
+      - name: "Follow-Up Agent"
+        short: "follow-up and escalation"
+        detail: "Plans escalation cadence with batching: outstanding items grouped per contact, reminders paused while awaiting a response"
+        source: "Vadim, Nov 1 2026 (MVP agent; built and tested, not deployed); description from nytel.ai index.html"
+      - name: "Monitoring Agent"
+        short: "monitoring"
+        detail: "Tracks site visit schedules, enrollment progress and data review status, and surfaces anomalies for review"
+        source: "Vadim, Nov 1 2026 (MVP agent; built and tested, not deployed); description from nytel.ai index.html"
+  tested:
+    text: "Tested on multiple protocols, in multi-country settings"
+    short: "Tested on multiple protocols."
+    source: "Vadim, Nov 1 2026"
+  status_label: "Built and tested, not deployed"
+  status_label_source: "Vadim, Nov 1 2026 (applies to items and mvp_agents)"
+  status_note: "Built and tested, not deployed. No protocol count, names or countries are stated."
+  status_source: "Vadim, Nov 1 2026 (correction: the protocol-to-EDC build is not deployed)"
+  write_back:
+    text: "In progress: write-back into CTMS, eTMF and EDC"
+    next: "Next: write-back into CTMS, eTMF and EDC"
+    note: "Agents do not write to CTMS, eTMF or EDC today. Nothing may claim current write-back; copy says agents read from or work alongside these systems."
+    source: "Vadim, Nov 1 2026 (\"For now agents do not write to CTMS, eTMF or EDC, but we are working on it.\")"
+
+problem:
+  label: { text: "The problem", accent: "The" }
+  items:
+    - text: "Coordination work falls between CTMS, eTMF and EDC, and ends up in email and spreadsheets."
+      source: "marketing/linkedin-page.md as of Oct 19, 2026 (Description)"
+    - text: "Trials slip in the gaps: a document nobody checked, a site that never got a reminder, a milestone that quietly moved."
+      source: "marketing/linkedin-page.md as of Oct 19, 2026 (Description)"
+    - text: "Adaptive trials need dedicated coordinating centers, so they stay at a few academic centers."
+      source: "proposals/arpah/meetingnotes/arpah-continuous-trial-concept.md"
+
+how_it_works:
+  label: { text: "How it works", accent: "How it" }
+  steps:
+    - title: "Protocol & SOPs"
+      text: "Language models read documents and messages"
+      source: "marketing/linkedin-page.md as of Oct 19, 2026"
+    - title: "Executable rules"
+      text: "Rules extracted from SOPs and protocols"
+      source: "design/6-ontology.md; Vadim, Nov 1 2026 (rule extraction)"
+    - title: "Agents"
+      text: "Compliance checks run on deterministic rules and code"
+      source: "marketing/linkedin-page.md as of Oct 19, 2026"
+    - title: "CTMS · eTMF · EDC · email"
+      text: "Agents read from the systems teams already use"
+      reads: true     # poster draws this arrow pointing into Agents: data is read from these systems, not written to them
+      source: "marketing/linkedin-page.md as of Oct 19, 2026 (\"We start where the work already happens\"); proposals/arpah/fabric-diagram-wide.svg; read-only per Vadim, Nov 1 2026"
+  safeguards:
+    - text: "People supervise and can override; uncertain cases go to human review"
+      source: "marketing/linkedin-page.md as of Oct 19, 2026; proposals/arpah/fabric-diagram-wide.svg (conf < θ -> Tandem Human Review)"
+    - text: "Every decision can be traced: each action is recorded in an audit trail"
+      source: "marketing/linkedin-page.md as of Oct 19, 2026; proposals/arpah/fabric-diagram-wide.svg (Bitemporal Audit Trail); design/7-agent.md"
+
+why_nytel:
+  label: "Why Nytel"
+  auditable: "Auditable by design: deterministic compliance checks, people supervise."
+  source: "marketing/linkedin-page.md as of Oct 19, 2026"
+
+company:            # longer company-page phrases (LinkedIn description)
+  audience: "The same agents serve CROs, sponsors and other trials."
+  audience_source: "Vadim, Nov 1 2026 (\"we also work with CROs\"; approved speaker-script wording)"
+  value: "Our agents catch those gaps and flag them to the right people, so your team can focus on decisions instead of chasing."
+  value_source: "marketing/linkedin-page.md as of Oct 19, 2026 (Description), reworded per Vadim, Nov 1 2026 (no write-back yet)"
+  regulated_work: "Compliance checks run on deterministic rules and code, not generative models, so every decision can be traced and audited. Language models read documents and messages; people supervise and can override, and uncertain cases go to human review."
+  regulated_work_source: "marketing/linkedin-page.md as of Oct 19, 2026 (Description); human review from proposals/arpah/fabric-diagram-wide.svg"
+  specialties: [clinical trial operations, investigator-initiated trials, IITs, regulatory compliance, SOP processing, rule extraction, protocol harmonization, protocol-to-EDC build, EDC, eTMF, CTMS, AI agents, auditable AI]
+  specialties_source: "keywords from subtitle and capabilities above"
+
+offer:
+  label: { text: "What we offer SURPASS", accent: "What we offer" }
+  lead: "The agentic operations layer for adaptive, simulation-augmented, continuous trials."
+  lead_short: "The agentic operations layer that runs adaptive, simulation-augmented trials continuously."
+  reach_short: "Including at sites without dedicated research staff."
+  points:
+    - "Agents run trial operations continuously, alongside Bayesian inference and simulation."
+    - "Humans stay in the loop for safety signals and high-stakes calls."
+    - "Brings these trials to sites without dedicated research staff."
+  source: "proposals/arpah/meetingnotes/arpah-continuous-trial-concept.md; proposals/arpah/PHO-core.md (an offer, not a shipped capability)"
+
+team:
+  label: "Co-founders"
+  label_accent: "Co-"
+  people:
+    - name: "Vadim Sokolov"
+      title: "CSO"
+      credential: "GMU systems engineering professor; Bayesian trial design; agent-based simulation (Argonne)"
+      source: "co-founder and CSO, proposals/nsf-sbir-pitch.md, proposals/arpah/PHO-budget-model.md; professor and Argonne POLARIS, proposals/nytel-executive-summary.md; Bayesian trial design, proposals/arpah/meetingnotes/arpah-continuous-trial-concept.md"
+    - name: "Matthew Wamsley"
+      title: "CEO"
+      credential: "AI/automation engineer; supported clinical trials and Epic go-lives at Texas Health Resources"
+      source: "co-founder per Vadim, Nov 1 2026 and proposals/nsf-sbir-pitch.md; CEO and Texas Health Resources, proposals/arpah/PHO-technical-volume.qmd; AI/automation engineer, proposals/nsf-sbir-pitch.md"
+
+partners:
+  label: "Partners"
+  items:
+    - short: "PCCTC"
+      long: "Prostate Cancer Clinical Trials Consortium"
+      url: "https://www.pcctc.org/about/"
+      source: "naming approved by Vadim, Nov 1 2026; name from proposals/arpah/PHO-core.md"
+    - short: "POETIC"
+      long: "Pediatric Oncology Experimental Therapeutics Investigators' Consortium"
+      place: "Stanford"
+      source: "naming approved by Vadim, Nov 1 2026; name from meetings/2026-10-19-poetic.md (central office, RDMC, at Stanford)"
+  claim_note: "Named as partners only; no pilot, deployment or result is claimed."
+
+call_to_action:
+  ask: "Let’s team up: IIT investigators and sites, platform teams, sponsors, CROs"
+  source: "Vadim, Nov 1 2026"
+
+contact:            # who people should reach (slide bar, poster call to action, script close)
+  name: "Matthew Wamsley"
+  email: "mw@nytel.ai"
+  general_email: "contact@nytel.ai"
+  general_email_source: "Vadim, Nov 1 2026 (keep contact@nytel.ai as the general inbox; Matthew is the named contact)"
+  source: "Vadim, Nov 1 2026 (\"use Matthew's information for contact\")"
+
+links:
+  - label: "nytel.ai"
+    url: "https://nytel.ai"
+    source: "marketing/linkedin-page.md as of Oct 19, 2026"
+  - label: "Book a call"
+    url: "https://cal.com/nytel"
+    source: "marketing/linkedin-page.md as of Oct 19, 2026 (\"schedule a call at cal.com/nytel\")"
+
+pages:              # web pages linked in copy (not QR codes; `links` above feeds the poster QR codes)
+  overview: { label: "nytel.ai/overview.html", url: "https://nytel.ai/overview.html", source: "marketing/linkedin-page.md as of Oct 19, 2026 (homepage \"How It Works\" link)" }
+
+event:
+  program: "ARPA-H SURPASS"
+  program_long: "Simulation-augmented, Real-time Platform Adaptive Seamless Trials"
+  topic: "TA3 Agentic Operations"
+  topic_code: "TA3"
+  name: "ARPA-H SURPASS Proposers' Day"
+  date: "November 6, 2026"
+  venue: "Washington Marriott Georgetown"
+  presenter: "Vadim Sokolov"   # speaks at the event; used in ARPA-H's required slide filename, not as the contact
+  source: "event brief (Proposers' Day Nov 6, 2026 in person, Nov 9 virtual); topic choice in marketing/surpass-2026/lightning-talk/README.md"
