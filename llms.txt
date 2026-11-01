@@ -1,13 +1,12 @@
 # Nytel
 
-> Trials, on time. Nytel builds AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs). The same agents serve CROs, sponsors and other trials. Agents for the coordination work alongside CTMS, eTMF and EDC. Agents read from the systems teams already use (CTMS, eTMF, EDC, email); in progress: write-back into CTMS, eTMF and EDC. Built and tested, not deployed. Compliance checks run on deterministic rules and code, not generative models, so every decision can be traced and audited. Language models read documents and messages; people supervise and can override, and uncertain cases go to human review. Co-founded by Matthew Wamsley (CEO) and Vadim Sokolov, PhD (CSO).
+> Trials, on time. Nytel builds AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs). The same agents serve CROs, sponsors and other trials. Agents for the coordination work alongside CTMS, eTMF and EDC. Agents read from the systems teams already use (CTMS, eTMF, EDC, email); in progress: write-back into CTMS, eTMF and EDC. Built and tested. Compliance checks run on deterministic rules and code, not generative models, so every decision can be traced and audited. Language models read documents and messages; people supervise and can override, and uncertain cases go to human review. Co-founded by Matthew Wamsley (CEO) and Vadim Sokolov, PhD (CSO).
 
 ## Pages
-- [Home](https://nytel.ai/): What Nytel does — the coordination problem, what we've built, partners, and the co-founders.
-- [How Nytel Works — Overview](https://nytel.ai/overview.html): One-page overview — architecture diagram, what we've built, key design principles, IIT focus, and partners.
+- [Home](https://nytel.ai/): What Nytel does — what we've built, how it works, co-founders, partners, and contact.
 - [Whitepaper](https://nytel.ai/whitepaper.html): "A Clinical Operating System for Agentic Trial Operations" — architecture, integration, and operational design in depth.
 
-## What we’ve built (built and tested, not deployed)
+## What we’ve built (built and tested)
 - SOP processing and rule extraction: SOP-IR: SOPs compiled into a verified, executable graph.
 - Regulatory document compliance checks.
 - Document QC Agent: Classifies documents against the TMF reference model, runs ALCOA++ quality checks, and flags issues for human review.
@@ -38,7 +37,7 @@
 
 ## Frequently asked questions
 - What does Nytel do? Nytel builds AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs). The same agents serve CROs, sponsors and other trials. Our agents catch those gaps and flag them to the right people, so your team can focus on decisions instead of chasing.
-- Is it deployed? No. Built and tested, not deployed. Tested on multiple protocols, in multi-country settings.
+- What has Nytel built and tested? SOP processing and rule extraction; Regulatory document compliance checks; Document QC Agent; Site Activation Agent; Follow-Up Agent; Monitoring Agent; Protocol harmonization; Protocol-to-EDC build. Tested on multiple protocols, in multi-country settings.
 - Does Nytel write to CTMS, eTMF or EDC? Not yet. Agents read from the systems teams already use; in progress: write-back into CTMS, eTMF and EDC.
 - How is Nytel different from Medidata, Veeva, or IQVIA? Those platforms optimize within their own silos; Nytel's agents are designed for the work between systems — document-chasing, data reconciliation, and follow-up tracking — that today lives in email, Slack, spreadsheets, and people's heads.
 - Does Nytel use generative AI for compliance decisions? No. Compliance checks run on deterministic rules and code, not generative models, so every decision can be traced and audited. Language models read documents and messages; people supervise and can override, and uncertain cases go to human review.

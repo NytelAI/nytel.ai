@@ -1,18 +1,17 @@
 <section class="nytel-cta">
-  <h2>Interested in working together?</h2>
+  <h2>{{ call_to_action.heading }}</h2>
   <p>
-    {{ m.call_to_action.ask }}. Contact {{ m.contact.name }} at
-    {{ m.contact.email }}, or write to {{ m.contact.general_email }}.
+    {{ call_to_action.audience }}.
   </p>
   <div class="nytel-cta-actions">
-    <a href="{{ cal_url }}" class="nytel-btn nytel-btn-teal">Schedule a Call</a>
-    <a href="mailto:{{ m.contact.email }}" class="nytel-btn nytel-btn-ghost">{{ m.contact.email }}</a>
+    <a href="mailto:{{ contact.email }}" class="nytel-btn nytel-btn-teal">{{ call_to_action.button }}</a>
+    <a href="{{ call_to_action.secondary.url }}" class="nytel-btn nytel-btn-ghost">{{ call_to_action.secondary.label }}</a>
   </div>
 </section>
 <footer class="nytel-footer-bar">
-  <div>&copy; 2026 Nytel. Nightingale + Intelligence.</div>
+  <div>{{ site.footer }}</div>
   <div class="nytel-footer-links">
     <a href="/">Home</a>
-    <a href="mailto:{{ m.contact.general_email }}">{{ m.contact.general_email }}</a>
+    <a href="mailto:{{ contact.general_email }}">{{ contact.general_email }}</a>
   </div>
 </footer>

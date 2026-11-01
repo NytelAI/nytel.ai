@@ -26,7 +26,7 @@ Major vendors—Medidata, Veeva, IQVIA—have responded with real improvements: 
 
 **Nytel** builds AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs). The same agents serve CROs, sponsors and other trials. The system is designed to turn clinical trial SOPs into executable, audit-ready AI workflows—one clinical operations expert and an agentic system that can carry trial operations around the clock, with humans supervising rather than manually driving every step.
 
-**Status.** What we've built: SOP processing and rule extraction (SOP-IR: SOPs compiled into a verified, executable graph); regulatory document compliance checks; the MVP agents for document QC, site activation, follow-up and monitoring; protocol harmonization; and protocol-to-EDC build. All of it is built and tested, not deployed—tested on multiple protocols, in multi-country settings. The agents read from CTMS, eTMF and EDC; write-back into those systems is in progress. Partners: PCCTC (Prostate Cancer Clinical Trials Consortium) and POETIC (Pediatric Oncology Experimental Therapeutics Investigators' Consortium, Stanford). The rest of this paper describes the design.
+**Status.** What we've built: SOP processing and rule extraction (SOP-IR: SOPs compiled into a verified, executable graph); regulatory document compliance checks; the MVP agents for document QC, site activation, follow-up and monitoring; protocol harmonization; and protocol-to-EDC build. All of it is built and tested on multiple protocols, in multi-country settings. The agents read from CTMS, eTMF and EDC; write-back into those systems is in progress. Partners: PCCTC (Prostate Cancer Clinical Trials Consortium) and POETIC (Pediatric Oncology Experimental Therapeutics Investigators' Consortium, Stanford). The rest of this paper describes the design.
 
 A common question is whether clinical trials really need a purpose-built ontology when other complex industries, like aviation, manage without one. The comparison actually argues the other way. Airlines run on systems that are already fully digitized: decision logic is narrow and deterministic, encoded directly into software. Clinical trials run on *regulatory text*—SOPs and Working Practices in natural language, full of conditional rules ("if the site does not respond within 10 business days, escalate"), expiry constraints ("GCP training must be current within 3 years"), and cross-document dependencies ("sub-investigators on the FDA 1572 must appear on the Delegation of Authority Log"). You can't hardcode that; you need an intermediate representation (SOP-IR) that preserves regulatory intent, stays editable by humans, and can be executed by agents. The ontology isn't extra complexity—it's the minimum structure needed to make a PDF into a workflow.
 
@@ -53,7 +53,7 @@ The design for a full Phase III trial calls for roughly **5–8 specialized agen
 
 : Agent roles for full trial coverage. {#tbl-agents tbl-colwidths="[13,22,65]"}
 
-The built MVP agents—Document QC, Site Activation, Follow-Up and Monitoring—cover the ingestion, processing, orchestration and monitoring roles above. Safety and Protocol Deviation agents are part of the design, not of the built MVP.
+The built MVP agents—Document QC, Site Activation, Follow-Up and Monitoring—cover the ingestion, processing, orchestration and monitoring roles above. Safety and Protocol Deviation agents are part of the design.
 
 On cost: classification and extraction—the high-frequency, lower-stakes work—runs well on smaller, cheaper models (Haiku/Flash tier) and accounts for 70–80% of LLM calls. Verification and draft generation, where reasoning quality matters, warrants frontier models (Sonnet/Opus). The savings from this split are substantial, though the exact figures depend on volume and how complex the reasoning tasks turn out to be in practice.
 
@@ -78,7 +78,7 @@ Whether integration is working can be assessed on three questions: Are all the d
 
 # Operations: Follow-Up, Escalation, and Quality {#sec-operations}
 
-The design goals for site activation are a shorter median time from CDA executed to site activated and less staff time spent chasing documents. Real-time inspection readiness, meaning the TMF is always current rather than assembled in a rush before an audit, is the third goal. These are design goals, not measured results, and they depend on cooperative sites, reliable document submissions, and working integrations.
+The design goals for site activation are a shorter median time from CDA executed to site activated and less staff time spent chasing documents. Real-time inspection readiness, meaning the TMF is always current rather than assembled in a rush before an audit, is the third goal. These are design goals, and they depend on cooperative sites, reliable document submissions, and working integrations.
 
 The follow-up cadence is designed to keep pressure on without overwhelming coordinators:
 

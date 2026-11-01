@@ -3134,7 +3134,7 @@ src: url(data:font/ttf;base64,AAEAAAASAQAABAAgR0RFRhFeEQQAAAHgAAAAUkdQT1OnVAlAAA
 <header class="nytel-topbar">
   <a href="/" class="nytel-topbar-logo"><img role="img" aria-label="Nytel" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMzAgMzQiPgogIDxyZWN0IHdpZHRoPSIxMzAiIGhlaWdodD0iMzQiIHJ4PSI2IiBmaWxsPSIjMkQ4QjhCIi8+CiAgPHRleHQgeD0iNjUiIHk9IjIzLjUiIGZvbnQtZmFtaWx5PSJzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sICdIZWx2ZXRpY2EgTmV1ZScsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTgiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiNGRkZGRkYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGxldHRlci1zcGFjaW5nPSIzIj5OWVRFTDwvdGV4dD4KPC9zdmc+" alt="Nytel" height="26"></a>
   <nav class="nytel-topbar-nav">
-    <a href="overview.html">Overview</a>
+    <a href="/#built">What we’ve built</a>
     <a href="whitepaper.html" aria-current="page">Whitepaper</a>
     <a href="https://cal.com/nytel">Schedule Call</a>
     <a href="mailto:contact@nytel.ai">Contact</a>
@@ -3167,7 +3167,7 @@ src: url(data:font/ttf;base64,AAEAAAASAQAABAAgR0RFRhFeEQQAAAHgAAAAUkdQT1OnVAlAAA
 <p>When site engagement slips, the costs compound quickly. Enrollment delays cost $500,000 or more per day in lost peak sales, with blockbuster drugs losing several million per day; roughly 70% of trials are delayed; and manual document management generates the kind of rework that consumes most of inspection preparation time.</p>
 <p>Major vendors—Medidata, Veeva, IQVIA—have responded with real improvements: document classifiers, enrollment predictors, anomaly detection. But each optimizes within its own platform. The coordination work that lives in the seams between systems—chasing documents, reconciling data, tracking who owes what—remains a human job. Past tools also struggled because they asked clinical teams to change how they work. <strong>Nytel is built to fit existing workflows, not replace them.</strong></p>
 <p><strong>Nytel</strong> builds AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs). The same agents serve CROs, sponsors and other trials. The system is designed to turn clinical trial SOPs into executable, audit-ready AI workflows—one clinical operations expert and an agentic system that can carry trial operations around the clock, with humans supervising rather than manually driving every step.</p>
-<p><strong>Status.</strong> What we’ve built: SOP processing and rule extraction (SOP-IR: SOPs compiled into a verified, executable graph); regulatory document compliance checks; the MVP agents for document QC, site activation, follow-up and monitoring; protocol harmonization; and protocol-to-EDC build. All of it is built and tested, not deployed—tested on multiple protocols, in multi-country settings. The agents read from CTMS, eTMF and EDC; write-back into those systems is in progress. Partners: PCCTC (Prostate Cancer Clinical Trials Consortium) and POETIC (Pediatric Oncology Experimental Therapeutics Investigators’ Consortium, Stanford). The rest of this paper describes the design.</p>
+<p><strong>Status.</strong> What we’ve built: SOP processing and rule extraction (SOP-IR: SOPs compiled into a verified, executable graph); regulatory document compliance checks; the MVP agents for document QC, site activation, follow-up and monitoring; protocol harmonization; and protocol-to-EDC build. All of it is built and tested on multiple protocols, in multi-country settings. The agents read from CTMS, eTMF and EDC; write-back into those systems is in progress. Partners: PCCTC (Prostate Cancer Clinical Trials Consortium) and POETIC (Pediatric Oncology Experimental Therapeutics Investigators’ Consortium, Stanford). The rest of this paper describes the design.</p>
 <p>A common question is whether clinical trials really need a purpose-built ontology when other complex industries, like aviation, manage without one. The comparison actually argues the other way. Airlines run on systems that are already fully digitized: decision logic is narrow and deterministic, encoded directly into software. Clinical trials run on <em>regulatory text</em>—SOPs and Working Practices in natural language, full of conditional rules (“if the site does not respond within 10 business days, escalate”), expiry constraints (“GCP training must be current within 3 years”), and cross-document dependencies (“sub-investigators on the FDA 1572 must appear on the Delegation of Authority Log”). You can’t hardcode that; you need an intermediate representation (SOP-IR) that preserves regulatory intent, stays editable by humans, and can be executed by agents. The ontology isn’t extra complexity—it’s the minimum structure needed to make a PDF into a workflow.</p>
 </section>
 <section id="sec-architecture" class="level1" data-number="2">
@@ -3241,7 +3241,7 @@ Table 1: Agent roles for full trial coverage.
 </div>
 </figure>
 </div>
-<p>The built MVP agents—Document QC, Site Activation, Follow-Up and Monitoring—cover the ingestion, processing, orchestration and monitoring roles above. Safety and Protocol Deviation agents are part of the design, not of the built MVP.</p>
+<p>The built MVP agents—Document QC, Site Activation, Follow-Up and Monitoring—cover the ingestion, processing, orchestration and monitoring roles above. Safety and Protocol Deviation agents are part of the design.</p>
 <p>On cost: classification and extraction—the high-frequency, lower-stakes work—runs well on smaller, cheaper models (Haiku/Flash tier) and accounts for 70–80% of LLM calls. Verification and draft generation, where reasoning quality matters, warrants frontier models (Sonnet/Opus). The savings from this split are substantial, though the exact figures depend on volume and how complex the reasoning tasks turn out to be in practice.</p>
 </section>
 <section id="sec-integration" class="level1" data-number="3">
@@ -3289,7 +3289,7 @@ Table 1: Agent roles for full trial coverage.
 </section>
 <section id="sec-operations" class="level1" data-number="4">
 <h1 data-number="4"><span class="header-section-number">4</span> Operations: Follow-Up, Escalation, and Quality</h1>
-<p>The design goals for site activation are a shorter median time from CDA executed to site activated and less staff time spent chasing documents. Real-time inspection readiness, meaning the TMF is always current rather than assembled in a rush before an audit, is the third goal. These are design goals, not measured results, and they depend on cooperative sites, reliable document submissions, and working integrations.</p>
+<p>The design goals for site activation are a shorter median time from CDA executed to site activated and less staff time spent chasing documents. Real-time inspection readiness, meaning the TMF is always current rather than assembled in a rush before an audit, is the third goal. These are design goals, and they depend on cooperative sites, reliable document submissions, and working integrations.</p>
 <p>The follow-up cadence is designed to keep pressure on without overwhelming coordinators:</p>
 <table class="caption-top table">
 <colgroup>
@@ -3350,14 +3350,13 @@ Table 1: Agent roles for full trial coverage.
 </main>
 <!-- /main column -->
 <section class="nytel-cta">
-  <h2>Interested in working together?</h2>
+  <h2>Let’s team up</h2>
   <p>
-    Let’s team up: IIT investigators and sites, platform teams, sponsors, CROs. Contact Matthew Wamsley at
-    mw@nytel.ai, or write to contact@nytel.ai.
+    IIT investigators and sites, platform teams, sponsors, CROs.
   </p>
   <div class="nytel-cta-actions">
-    <a href="https://cal.com/nytel" class="nytel-btn nytel-btn-teal">Schedule a Call</a>
-    <a href="mailto:mw@nytel.ai" class="nytel-btn nytel-btn-ghost">mw@nytel.ai</a>
+    <a href="mailto:mw@nytel.ai" class="nytel-btn nytel-btn-teal">Email Matthew</a>
+    <a href="https://cal.com/nytel" class="nytel-btn nytel-btn-ghost">or book a call</a>
   </div>
 </section>
 <footer class="nytel-footer-bar">
