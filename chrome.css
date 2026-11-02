@@ -10,7 +10,7 @@
   --teal: #2D8B8B;
   --teal-dark: #1F6B6B;
   --muted: rgba(10, 22, 40, 0.72);
-  --border: rgba(10, 22, 40, 0.10);
+  --rule: #E3E7EC;   /* the one hairline colour for every divider on both pages (about navy at 11%) */
   /* --sans and --mono are defined in fonts.css (loaded before this file; do not redefine here) */
 }
 
@@ -22,7 +22,7 @@
 .skip:focus { transform: none; top: .5rem; }
 
 /* Header and nav */
-header { border-bottom: 1px solid var(--border); }
+header { border-bottom: 1px solid var(--rule); }
 header .wrap { display: flex; align-items: center; justify-content: space-between; min-height: 4rem; gap: 1rem; }
 .logo { display: flex; align-items: center; gap: .5rem; text-decoration: none; color: var(--navy); font-weight: 600; font-size: 1.25rem; letter-spacing: -.01em; min-height: 44px; }
 .logo img { width: 28px; height: 28px; border-radius: 5px; }
@@ -40,7 +40,7 @@ nav a[aria-current=page] { color: var(--teal-dark); font-weight: 600; }
 /* The one button style: dark-teal fill */
 
 /* Footer */
-footer { border-top: 1px solid var(--border); padding: 2rem 0; font-size: .875rem; color: var(--muted); }
+footer { border-top: 1px solid var(--rule); padding: 2rem 0; font-size: .875rem; color: var(--muted); }
 footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem 1.5rem; align-items: center; }
 
 /* 44px tap targets for text links */
