@@ -2,13 +2,14 @@
 """Render the site's static files from templates/*.j2 and _data/messaging.yaml.
 
 _data/messaging.yaml is a STRIPPED copy of NytelAI/knowledge-base marketing/messaging.yaml
-(the master). It carries only copy: no comments, *source* fields, status_note, claim_note,
+(the master). It carries only copy: no comments, source or *_source fields, status_note, claim_note,
 note or usage. Refresh it from a knowledge-base checkout, then build:
 
     pip install jinja2 pyyaml
     python3 build.py --sync ../knowledge-base/marketing/messaging.yaml   # strip + copy the master
-    python3 build.py                  # writes index.html, _footer.html, llms.txt
-    quarto render whitepaper.qmd      # only if whitepaper.qmd or _footer.html changed
+    python3 build.py                  # writes index.html, llms.txt
+
+whitepaper.html is static, hand-maintained HTML; build.py does not touch it.
 
 GitHub Pages serves the committed output as-is, so commit the rendered files too.
 """
@@ -22,7 +23,6 @@ ROOT = Path(__file__).resolve().parent
 DATA = ROOT / "_data" / "messaging.yaml"
 OUTPUTS = {
     "index.html.j2": "index.html",
-    "_footer.html.j2": "_footer.html",
     "llms.txt.j2": "llms.txt",
 }
 INTERNAL_KEYS = {"status_note", "claim_note", "note", "usage"}
@@ -30,10 +30,12 @@ PRIVATE_TOP = {"offer", "event"}  # event-specific (ARPA-H SURPASS) copy stays o
 
 
 def strip_internal(node):
-    """Drop internal fields: any key containing 'source', plus INTERNAL_KEYS."""
+    """Drop internal fields: keys named 'source' or ending in '_source', plus INTERNAL_KEYS.
+
+    Only exact 'source' / '*_source' keys are provenance; copy keys such as hero.source_label must survive."""
     if isinstance(node, dict):
         return {k: strip_internal(v) for k, v in node.items()
-                if "source" not in k and k not in INTERNAL_KEYS}
+                if k != "source" and not k.endswith("_source") and k not in INTERNAL_KEYS}
     if isinstance(node, list):
         return [strip_internal(v) for v in node]
     return node
@@ -68,6 +70,8 @@ def build() -> None:
         undefined=StrictUndefined,
         keep_trailing_newline=True,
     )
+    # Typographic render step (not copy): bind the last two words so a clause never ends on a one-word line
+    env.filters['noorphan'] = lambda s: '\u00a0'.join(s.rsplit(' ', 1))
     for src, dst in OUTPUTS.items():
         out = env.get_template(src).render(**m, m=m, built=built, site_points=site_points)
         (ROOT / dst).write_text(out, encoding="utf-8")

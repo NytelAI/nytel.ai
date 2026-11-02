@@ -1,20 +1,20 @@
 # Nytel
 
-> Trials, on time. Nytel builds AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs). The same agents serve CROs, sponsors and other trials. Agents for the coordination work alongside CTMS, eTMF and EDC. Agents read from the systems teams already use (CTMS, eTMF, EDC, email); in progress: write-back into CTMS, eTMF and EDC. Built and tested. Compliance checks run on deterministic rules and code, not generative models, so every decision can be traced and audited. Language models read documents and messages; people supervise and can override, and uncertain cases go to human review. Co-founded by Matthew Wamsley (CEO) and Vadim Sokolov, PhD (CSO).
+> Trials, on time. Nytel builds AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs). The same agents serve CROs, sponsors and other trials. Agents for the coordination work alongside CTMS, eTMF and EDC. Agents read from the systems teams already use (CTMS, eTMF, EDC, email); in progress: write-back into CTMS, eTMF and EDC. Built and tested. Compliance checks run on deterministic rules and code, not generative models, so every decision can be traced and audited. Language models read documents and messages; people supervise and can override, and uncertain cases go to human review. Co-founded by Matthew Wamsley (CEO) and Vadim Sokolov (CSO).
 
 ## Pages
 - [Home](https://nytel.ai/): What Nytel does — what we've built, how it works, co-founders, partners, and contact.
-- [Whitepaper](https://nytel.ai/whitepaper.html): "A Clinical Operating System for Agentic Trial Operations" — architecture, integration, and operational design in depth.
+- [Whitepaper](https://nytel.ai/whitepaper.html): "SOP-IR: Compiling SOPs and Protocols into a Verified, Executable Graph" — architecture, integration, and operational design in depth.
 
 ## What we’ve built (built and tested)
 - SOP processing and rule extraction: SOP-IR: SOPs compiled into a verified, executable graph.
-- Regulatory document compliance checks.
+- Regulatory document compliance checks: Deterministic checks of regulatory documents against executable rules.
 - Document QC Agent: Classifies documents against the TMF reference model, runs ALCOA++ quality checks, and flags issues for human review.
 - Site Activation Agent: Tracks the path from CDA execution to site go-live: milestones, blockers and outstanding documents.
 - Follow-Up Agent: Plans escalation cadence with batching: outstanding items grouped per contact, reminders paused while awaiting a response.
 - Monitoring Agent: Tracks site visit schedules, enrollment progress and data review status, and surfaces anomalies for review.
-- Protocol harmonization.
-- Protocol-to-EDC build.
+- Protocol harmonization: Aligns protocol requirements into one consistent, rule-based form.
+- Protocol-to-EDC build: Turns protocol requirements into an EDC build specification.
 - Tested on multiple protocols, in multi-country settings.
 - In progress: write-back into CTMS, eTMF and EDC.
 
@@ -28,25 +28,24 @@
 - Every agent follows the same pattern: Retrieve data, Analyze with deterministic rules, Create auditable outputs.
 
 ## Partners
-- PCCTC (Prostate Cancer Clinical Trials Consortium)
-- POETIC (Pediatric Oncology Experimental Therapeutics Investigators' Consortium, Stanford)
+- [PCCTC](https://www.pcctc.org/about/) (Prostate Cancer Clinical Trials Consortium)
+- [POETIC](https://poeticphase1.org) (Pediatric Oncology Experimental Therapeutics Investigators’ Consortium, Stanford)
 
 ## Co-founders
-- Matthew Wamsley — Co-founder & Chief Executive Officer (CEO). AI and automation engineer and systems architect with 20+ years across telecommunications, healthcare, and rail systems (Verizon, Herzog Technologies, Sq1, Texas Health Resources, Teradata, Tektronix). Previously co-founded Axon, an early-stage healthcare technology venture developing a longitudinal EHR/EMR platform designed to connect patient records across the continuum of care, and served as a director at Sq1, a digital marketing company later acquired by Ansira. Leads business strategy, operations, partnerships, and systems integration. BS, Computer Information Systems, Tarleton State University; graduate coursework in AI, George Mason University.
-- Vadim Sokolov, PhD — Co-founder & Chief Science Officer (CSO). Associate Professor at George Mason University (Systems Engineering & Operations Research); previously Principal Computational Scientist at Argonne National Laboratory and Visiting Professor at the University of Chicago Booth School of Business. Research in Bayesian statistics, machine learning, and computational modeling of complex systems.
+- Vadim Sokolov — Co-founder & CSO. GMU systems engineering professor; Bayesian trial design; agent-based simulation (Argonne).
+- Matthew Wamsley — Co-founder & CEO. AI/automation engineer; supported clinical trials and Epic go-lives at Texas Health Resources.
 
 ## Frequently asked questions
 - What does Nytel do? Nytel builds AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs). The same agents serve CROs, sponsors and other trials. Our agents catch those gaps and flag them to the right people, so your team can focus on decisions instead of chasing.
 - What has Nytel built and tested? SOP processing and rule extraction; Regulatory document compliance checks; Document QC Agent; Site Activation Agent; Follow-Up Agent; Monitoring Agent; Protocol harmonization; Protocol-to-EDC build. Tested on multiple protocols, in multi-country settings.
 - Does Nytel write to CTMS, eTMF or EDC? Not yet. Agents read from the systems teams already use; in progress: write-back into CTMS, eTMF and EDC.
-- How is Nytel different from Medidata, Veeva, or IQVIA? Those platforms optimize within their own silos; Nytel's agents are designed for the work between systems — document-chasing, data reconciliation, and follow-up tracking — that today lives in email, Slack, spreadsheets, and people's heads.
+- How is Nytel different from Medidata, Veeva, or IQVIA? Those platforms optimize within their own silos; Nytel's agents are designed for the work between systems — document-chasing, data reconciliation, and follow-up tracking — that today lives in email, spreadsheets, and people's heads.
 - Does Nytel use generative AI for compliance decisions? No. Compliance checks run on deterministic rules and code, not generative models, so every decision can be traced and audited. Language models read documents and messages; people supervise and can override, and uncertain cases go to human review.
-- What does it take to get started? Nytel starts in email, Slack, and spreadsheets — no API credentials, IT procurement, or partner-system changes required to begin.
-- Who founded Nytel? Matthew Wamsley, CEO (AI and automation engineer and systems architect; previously Verizon and Herzog Technologies) and Vadim Sokolov, PhD, CSO (Associate Professor at George Mason University; previously Argonne National Laboratory and UChicago Booth).
+- What does it take to get started? Phase 1 runs through email and a standalone UI — no API credentials, IT procurement, or partner-system changes required to begin.
+- Who founded Nytel? Vadim Sokolov, Co-founder & CSO: GMU systems engineering professor; Bayesian trial design; agent-based simulation (Argonne). Matthew Wamsley, Co-founder & CEO: AI/automation engineer; supported clinical trials and Epic go-lives at Texas Health Resources.
 
 ## Contact
 - Let’s team up: IIT investigators and sites, platform teams, sponsors, CROs.
 - Contact: Matthew Wamsley, mw@nytel.ai
 - General inbox: contact@nytel.ai
 - Schedule a call: https://cal.com/nytel
-- Location: Northern Virginia (Washington, DC area)

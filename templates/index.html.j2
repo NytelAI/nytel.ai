@@ -12,22 +12,23 @@
   <meta name="description" content="{{ subtitle.text }}">
   <meta property="og:title" content="{{ site.title }}">
   <meta property="og:description" content="{{ subtitle.text }}">
-  <meta property="og:image" content="https://nytel.ai/og-image.png">
+  <meta property="og:image" content="https://nytel.ai/og-image.png?v=2026-11-01e">
   <meta property="og:url" content="https://nytel.ai/">
   <meta property="og:type" content="website">
   <link rel="canonical" href="https://nytel.ai/">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{{ site.title }}">
   <meta name="twitter:description" content="{{ subtitle.text }}">
-  <meta name="twitter:image" content="https://nytel.ai/og-image.png">
+  <meta name="twitter:image" content="https://nytel.ai/og-image.png?v=2026-11-01e">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="chrome.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="preload" href="fonts/ibm-plex-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/ibm-plex-sans-latin-300-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/ibm-plex-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="fonts.css?v=2026-11-01e">
+  <link rel="stylesheet" href="chrome.css?v=2026-11-01e">
+  <link rel="stylesheet" href="style.css?v=2026-11-01e">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -35,7 +36,7 @@
     "name": "Nytel",
     "url": "https://nytel.ai",
     "logo": "https://nytel.ai/logo.svg",
-    "image": "https://nytel.ai/og-image.png",
+    "image": "https://nytel.ai/og-image.png?v=2026-11-01e",
     "slogan": {{ tagline.text|tojson }},
     "description": {{ ("Nytel builds " ~ subtitle.text ~ " " ~ company.audience)|tojson }},
     "email": {{ contact.general_email|tojson }},
@@ -48,7 +49,6 @@
       { "@type": "ContactPoint", "contactType": "sales", "name": {{ contact.name|tojson }}, "email": {{ contact.email|tojson }}, "url": {{ call_to_action.secondary.url|tojson }}, "areaServed": "US", "availableLanguage": "English" },
       { "@type": "ContactPoint", "contactType": "general inquiries", "email": {{ contact.general_email|tojson }}, "areaServed": "US", "availableLanguage": "English" }
     ],
-    "address": { "@type": "PostalAddress", "addressLocality": "Northern Virginia", "addressRegion": "VA", "addressCountry": "US" },
     "areaServed": "US",
     "knowsAbout": {{ company.specialties|tojson }},
     "hasOfferCatalog": {
@@ -68,51 +68,98 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header><div class="wrap">
+<header class="site"><div class="wrap">
  <a class="logo" href="/"><img src="mark.svg" alt="" width="28" height="28">Nytel</a>
- <nav aria-label="Primary"><a href="#built">{{ site.nav.built }}</a><a href="{{ pages.whitepaper.url }}">{{ site.nav.whitepaper }}</a><a href="#contact">{{ site.nav.contact }}</a></nav>
+ <nav aria-label="Primary"><a href="#built">{{ site.nav.built }}</a><a href="#how">{{ how_it_works.label.text }}</a><a href="{{ pages.whitepaper.url }}">{{ site.nav.whitepaper }}</a><a href="#contact">{{ site.nav.contact }}</a></nav>
 </div></header>
-<main id="main">
+<main id="main" tabindex="-1">
  <div class="hero"><div class="wrap">
-  <h1>{{ mark(tagline.text, tagline.accent, 'span', 'accent') }}</h1>
-  <p class="lead">{{ mark(subtitle.text, subtitle.emphasis, 'strong') }}</p>
-  <a class="btn" href="mailto:{{ contact.email }}">{{ call_to_action.button }}</a>
+  <div class="hero-top"><h1>{{ mark(tagline.text, tagline.accent, 'span', 'accent') }}</h1>
+  <p class="lead">{{ mark(subtitle.text, subtitle.emphasis, 'strong') }}</p></div>
+  {%- set ex = hero.examples %}{% set L = hero_local %}{% set order = [3, 0, 1, 2] %}
+  {%- macro nctl(ctl) -%}{% if ctl %}<label class="n-chip"><input class="n-in" id="hx-n" type="number" inputmode="numeric" min="1" max="30" step="1" value="{{ L.n_default }}" aria-label="{{ L.n_label }}"></label>{% else %}<span class="n-mirror" data-n-mirror>{{ L.n_default }}</span>{% endif %}{%- endmacro %}
+  {#- N and the word after it sit in one no-wrap span joined by a non-breaking space, so "N business days" never splits (an nbsp alone does not stop a break after the inline-block chip) -#}
+  {%- macro ntext(text, ctl) -%}{%- set parts = text.split('{N}') -%}{{ parts[0] }}{%- for part in parts[1:] -%}{%- set rest = part[1:].split(' ', 1) if part[:1] == ' ' else ['', part] -%}<span class="n-keep">{{ nctl(ctl) }}{% if rest[0] %}&nbsp;{{ rest[0] }}{% endif %}</span>{% if rest|length > 1 %}{{ '' if rest[0] == '' else ' ' }}{{ rest[1] }}{% endif %}{%- endfor -%}{%- endmacro %}
+  <figure class="hx" aria-labelledby="spec-cap">
+   <p class="k" id="spec-k">{{ hero.source_label }}</p>
+   <div class="hx-tabs" role="tablist" aria-labelledby="spec-k">{% for i in order %}<button type="button" role="tab" id="hx-t{{ i }}" aria-controls="hx-p{{ i }}" aria-selected="{{ 'true' if loop.first else 'false' }}" tabindex="{{ '0' if loop.first else '-1' }}">{{ L.topics[i] }}</button>{% endfor %}</div>
+   <div class="hx-stage">{% for i in order %}{% set e = ex[i] %}
+    <div class="hx-ex" role="tabpanel" id="hx-p{{ i }}" aria-labelledby="hx-t{{ i }}"{% if not loop.first %} data-off{% endif %}>
+     <blockquote class="hx-clause"><p>“<mark>{{ ntext(e.line|noorphan, true) }}</mark>”</p></blockquote>
+     <div class="hx-rule"><dl>
+      <div><dt>{{ hero.rule_labels[0] }}</dt><dd>{{ e.condition|noorphan }}</dd></div>
+      <div><dt>{{ hero.rule_labels[1] }}</dt><dd>{% if i == 3 %}{{ ntext(L.check_lead|noorphan, false) }}{% else %}{{ e.check|noorphan }}{% endif %}</dd></div>
+      {%- if i == 3 %}
+      <div><dt>{{ L.schedule_label }}</dt><dd class="sched"><code>{{ L.schedule_cron }}</code><span class="gloss">{{ L.schedule_cron_gloss }}</span></dd></div>
+      {%- endif %}
+      <div><dt>{{ hero.rule_labels[2] }}</dt><dd class="acts">{% set segs = e.action.split('; ') %}{% for c in L.action_chips[i] %}<code>{{ c }}<span class="sr-only"> {{ segs[loop.index0] }}</span></code>{% endfor %}</dd></div>
+     </dl></div>
+    </div>{% endfor %}
+   </div>
+   <figcaption id="spec-cap">{{ capabilities['items'][0].detail }}</figcaption>
+  </figure>
  </div></div>
+
  <section id="built" aria-labelledby="built-h"><div class="wrap">
-  <h2 id="built-h">{{ capabilities.label }} <span class="tag">{{ capabilities.status_label }}</span></h2>
-  <ul class="list">{% for c in built %}
-   <li>{{ c.name }}</li>{% endfor %}
-  </ul>
-  <p class="note">{{ capabilities.tested.text }}</p>
-  <p class="note note-next">{{ capabilities.read_only_line }}</p>
-  <p class="more"><a href="{{ pages.whitepaper.url }}">{{ pages.whitepaper.label }}</a></p>
+  <div class="body">
+   <h2 id="built-h">{{ capabilities.label }} <span class="tag">{{ capabilities.status_label }}</span></h2>
+   <div class="groups">{% for g in capabilities.mockup_groups %}
+    <div class="group{% if g.rows|length > 2 %} wide{% endif %}">
+     <h3>{{ g.heading }}</h3>
+     <ul>{% for r in g.rows %}{% set c = (capabilities['items'] if r.group == 'items' else capabilities.mvp_agents['items'])[r.index] %}
+      <li><span class="nm">{{ c.name }}</span>{% if c.get('detail_short') %}<span class="ds ds-short">{{ c.detail_short }}</span><span class="ds ds-full">{{ c.detail }}</span>{% else %}<span class="ds{{ '' if c.get('detail') else ' ph' }}">{{ c.get('detail', '') }}</span>{% endif %}</li>{% endfor %}
+     </ul>
+    </div>{% endfor %}
+   </div>
+   <p class="note">{{ capabilities.tested.text }}. {{ capabilities.read_only_line }}</p>
+   <p class="more"><a href="{{ pages.whitepaper.url }}">{{ pages.whitepaper.label }}</a></p>
+  </div>
  </div></section>
- <section id="how" aria-labelledby="how-h"><div class="wrap">
+
+ <section id="how" class="hiw-a" aria-labelledby="how-h"><div class="wrap">
   <h2 id="how-h">{{ how_it_works.label.text }}</h2>
-  <ul class="list">{% for pt in site_points %}
-   <li>{{ pt }}</li>{% endfor %}
-  </ul>
- </div></section>
- <section class="team" aria-labelledby="team-h"><div class="wrap">
-  <h2 id="team-h">{{ team.label }}</h2>
-  <div class="grid">{% for p in team.people %}
-   <div class="item"><h3>{{ p.name }}</h3><p>{{ p.title }}</p><p class="cred">{{ p.credential }}</p></div>{% endfor %}
+  <div class="line">
+   <ol class="stations">{% for s in how_it_works.steps %}
+    <li><h3>{{ s.title }}</h3><span class="st-dot" aria-hidden="true"></span><p>{{ s.text }}</p>{% if loop.index == 3 %}
+     <div class="branch"><span class="st-ring" aria-hidden="true"></span><p>{{ how_it_works.safeguards[0].text }}</p></div>{% endif %}</li>{% endfor %}
+   </ol>
+   <p class="audit">{{ how_it_works.safeguards[1].text }}</p>
   </div>
  </div></section>
- {%- set link_partners = partners['items'] | selectattr('url', 'defined') | list | length == partners['items'] | length %}
- <section class="partners" aria-labelledby="partners-h"><div class="wrap">
-  <h2 id="partners-h">{{ partners.label }}</h2>
-  <div class="grid">{% for p in partners['items'] %}
-   <div class="item"><h3>{% if link_partners %}<a href="{{ p.url }}">{{ p.short }}</a>{% else %}{{ p.short }}{% endif %}</h3><p>{{ p.long }}{% if p.get("place") %} · {{ p.place }}{% endif %}</p></div>{% endfor %}
+
+ <section class="s-people" aria-label="{{ team.label }} · {{ partners.label }}"><div class="wrap">
+  <div class="body spread">
+   <div><h2 id="team-h">{{ team.label }}</h2>
+   <ul class="people">{% for p in team.people %}
+    <li><h3>{{ p.name }} <span class="role">{{ p.title }}</span></h3><p>{{ p.credential }}</p></li>{% endfor %}
+   </ul></div>
+   <div><h2 id="partners-h">{{ partners.label }}</h2>
+   <ul class="people partners">{% for p in partners['items'] %}
+    <li><h3>{% if p.get('url') %}<a href="{{ p.url }}" rel="noopener">{{ p.short }}</a>{% else %}{{ p.short }}{% endif %}</h3><p>{{ p.long }}{% if p.get("place") %} · {{ p.place }}{% endif %}</p></li>{% endfor %}
+   </ul></div>
   </div>
  </div></section>
- <section id="contact" class="close" aria-labelledby="cta-h"><div class="wrap">
-  <h2 id="cta-h">{{ call_to_action.heading }}</h2>
-  <p class="audience">{{ call_to_action.audience }}</p>
-  <div class="actions"><a class="btn" href="mailto:{{ contact.email }}">{{ call_to_action.button }}</a>
-  <a class="quiet" href="{{ call_to_action.secondary.url }}">{{ call_to_action.secondary.label }}</a></div>
+
+ <section id="contact" aria-labelledby="cta-h"><div class="wrap">
+  <div class="body">
+   <h2 id="cta-h">{{ call_to_action.heading }}</h2>
+   <p class="audience">{{ call_to_action.audience }}</p>
+   <div class="cta-pair"><a href="mailto:{{ contact.email }}">{{ call_to_action.button }}</a><a href="{{ call_to_action.secondary.url }}">{{ call_to_action.secondary.label }}</a></div>
+   <p class="cta-who">{{ contact.name }} · {{ contact.email }}</p>
+  </div>
  </div></section>
 </main>
 <footer><div class="wrap"><span>{{ site.footer }}</span><a href="{{ pages.whitepaper.url }}">{{ site.nav.whitepaper }}</a></div></footer>
+<script>
+(()=>{const n=document.getElementById('hx-n'),ms=[...document.querySelectorAll('[data-n-mirror]')];
+const clamp=v=>Math.min(30,Math.max(1,Math.round(+v||1)));
+const sync=()=>{if(n.value==='')return;const v=clamp(n.value);if(String(v)!==n.value)n.value=v;ms.forEach(m=>m.textContent=v);};
+if(n){n.addEventListener('input',sync);n.addEventListener('change',()=>{n.value=clamp(n.value);sync();});}
+const tabs=[...document.querySelectorAll('.hx [role=tab]')];if(!tabs.length)return;
+const select=(t,focus)=>{tabs.forEach(x=>{const on=x===t;x.setAttribute('aria-selected',on);x.tabIndex=on?0:-1;const p=document.getElementById(x.getAttribute('aria-controls'));if(on){p.removeAttribute('data-off');p.classList.add('in');}else p.setAttribute('data-off','');});if(focus)t.focus();};
+tabs.forEach((t,i)=>{t.addEventListener('click',()=>select(t,false));t.addEventListener('keydown',e=>{const k=e.key;let n=null;
+ if(k==='ArrowRight'||k==='ArrowDown')n=(i+1)%tabs.length;else if(k==='ArrowLeft'||k==='ArrowUp')n=(i-1+tabs.length)%tabs.length;else if(k==='Home')n=0;else if(k==='End')n=tabs.length-1;
+ if(n!==null){e.preventDefault();select(tabs[n],true);}});});})();
+</script>
 </body>
 </html>

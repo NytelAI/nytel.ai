@@ -2,8 +2,7 @@
    Nytel — shared chrome (home page)
    Design tokens, skip link, header/nav, button, footer, focus ring
    and 44px tap targets. Layout and section styles are in style.css.
-   No global reset here. The Quarto whitepaper has its own chrome
-   in nytel.scss and does not load this file.
+   No global reset here. Also loaded by the static whitepaper.html.
    ============================================================ */
 
 :root {
@@ -12,7 +11,7 @@
   --teal-dark: #1F6B6B;
   --muted: rgba(10, 22, 40, 0.72);
   --border: rgba(10, 22, 40, 0.10);
-  --sans: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  /* --sans and --mono are defined in fonts.css (loaded before this file; do not redefine here) */
 }
 
 /* Visible keyboard focus indicator */
@@ -39,13 +38,11 @@ nav a[aria-current=page] { color: var(--teal-dark); font-weight: 600; }
 }
 
 /* The one button style: dark-teal fill */
-.btn { display: inline-flex; align-items: center; min-height: 48px; padding: 0 1.5rem; background: #1F6B6B; color: #fff; text-decoration: none; font-weight: 500; border-radius: 4px; font-size: 1rem; }
-.btn:hover { background: var(--navy); }
 
 /* Footer */
 footer { border-top: 1px solid var(--border); padding: 2rem 0; font-size: .875rem; color: var(--muted); }
 footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem 1.5rem; align-items: center; }
 
 /* 44px tap targets for text links */
-footer a, .more a, .quiet, .partners h3 a, .close p a { display: inline-flex; align-items: center; min-height: 44px; }
+footer a, .more a, .partners h3 a, .close p a { display: inline-flex; align-items: center; min-height: 44px; }
 footer a { color: var(--navy); }

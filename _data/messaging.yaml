@@ -35,25 +35,39 @@ capabilities:
     detail: 'SOP-IR: SOPs compiled into a verified, executable graph'
   - name: Regulatory document compliance checks
     short: regulatory compliance checks
+    # LOCAL: one-liner from Marketing, approved 1 Nov 2026
+    detail: Deterministic checks of regulatory documents against executable rules
   - name: Protocol harmonization
     short: protocol harmonization
+    # LOCAL: one-liner from Marketing, approved 1 Nov 2026
+    detail: Aligns protocol requirements into one consistent, rule-based form
   - name: Protocol-to-EDC build
     short: protocol-to-EDC
+    # LOCAL: one-liner from Marketing, approved 1 Nov 2026
+    detail: Turns protocol requirements into an EDC build specification
   mvp_agents:
     label: MVP agents
     items:
     - name: Document QC Agent
       short: document QC
       detail: Classifies documents against the TMF reference model, runs ALCOA++ quality checks, and flags issues for human review
+      # LOCAL: one-line cut of detail (words cut only, Marketing rule 1 Nov 2026)
+      detail_short: Classifies documents against the TMF reference model
     - name: Site Activation Agent
       short: site activation tracking
       detail: 'Tracks the path from CDA execution to site go-live: milestones, blockers and outstanding documents'
+      # LOCAL: one-line cut of detail (words cut only, Marketing rule 1 Nov 2026)
+      detail_short: Tracks the path from CDA execution to site go-live
     - name: Follow-Up Agent
       short: follow-up and escalation
       detail: 'Plans escalation cadence with batching: outstanding items grouped per contact, reminders paused while awaiting a response'
+      # LOCAL: one-line cut of detail (words cut only, Marketing rule 1 Nov 2026)
+      detail_short: Plans escalation cadence with batching
     - name: Monitoring Agent
       short: monitoring
       detail: Tracks site visit schedules, enrollment progress and data review status, and surfaces anomalies for review
+      # LOCAL: one-line cut of detail (words cut only, Marketing rule 1 Nov 2026)
+      detail_short: Tracks site visit schedules, enrollment progress and data review status
   tested:
     text: Tested on multiple protocols, in multi-country settings
     short: Tested on multiple protocols.
@@ -75,6 +89,14 @@ capabilities:
     index: 2
   - group: items
     index: 3
+  # LOCAL MOCKUP KEYS (not in the knowledge-base master yet). Headings approved by Marketing 1 Nov 2026.
+  mockup_groups:
+  - heading: Compliance & SOPs
+    rows: [{group: items, index: 0}, {group: items, index: 1}]
+  - heading: Protocols & EDC
+    rows: [{group: items, index: 2}, {group: items, index: 3}]
+  - heading: Trial operations agents
+    rows: [{group: mvp_agents, index: 0}, {group: mvp_agents, index: 1}, {group: mvp_agents, index: 2}, {group: mvp_agents, index: 3}]
   read_only_line: Agents read from CTMS, eTMF and EDC today; write-back is in progress.
   write_back:
     text: 'In progress: write-back into CTMS, eTMF and EDC'
@@ -152,14 +174,16 @@ partners:
     long: Prostate Cancer Clinical Trials Consortium
     url: https://www.pcctc.org/about/
   - short: POETIC
-    long: Pediatric Oncology Experimental Therapeutics Investigators' Consortium
+    long: Pediatric Oncology Experimental Therapeutics Investigators’ Consortium
+    url: https://poeticphase1.org
     place: Stanford
 call_to_action:
   heading: Let’s team up
   audience: IIT investigators and sites, platform teams, sponsors, CROs
   button: Email Matthew
   secondary:
-    label: or book a call
+    # Approved by Marketing 1 Nov 2026 (was "or book a call"); merge into the knowledge base as call_to_action.secondary.label
+    label: Book a call
     url: https://cal.com/nytel
   ask: 'Let’s team up: IIT investigators and sites, platform teams, sponsors, CROs'
 contact:
@@ -182,3 +206,43 @@ site:
     whitepaper: Whitepaper
     contact: Contact
   footer: © 2026 Nytel. Nightingale + Intelligence.
+# LOCAL MOCKUP KEY: which design direction this copy renders (not copy)
+mockup_direction: compiler
+# LOCAL MOCKUP KEYS for the interactive hero (not in the knowledge-base master).
+# Hero examples approved (Marketing copy, 1 Nov 2026). Clauses are illustrative examples, not quotes from the whitepaper.
+# {N} marks a configurable parameter; the template renders it from hero_local (n_default, n_label). Not literal brackets.
+hero:
+  source_label: Example SOP clauses
+  rule_labels: [CONDITION, CHECK, ACTION]
+  examples:
+  - line: No site shall be initiated or receive investigational product until every required essential document is collected, reviewed, and the readiness checklist is signed off.
+    condition: site initiation or drug shipment requested
+    check: essential documents on file; readiness checklist signed
+    action: hold; list missing items for the owner
+  - line: For IND studies, every sub-investigator on Form 1572 must appear on the delegation log, and delegated investigator-level staff must appear on the current 1572.
+    condition: 1572 or delegation log changes (IND study)
+    check: 1572 sub-investigators on the log, and the reverse
+    action: flag for the regulatory coordinator and PI
+  - line: When a revised consent form receives IRB approval, participants the IRB requires to re-consent must sign that version before further study procedures.
+    condition: revised consent form approved, or any consent signed
+    check: each active participant the IRB requires signed the current version
+    action: flag for re-consent; draft a notice for the PI and coordinator
+  - line: A critical monitoring finding must reach the study lead at once and be escalated if unresolved after {N} business days.
+    condition: critical finding logged
+    check: unresolved > {N} business days
+    action: draft a notice for the study lead; draft an escalation to the next named level if overdue
+
+# Hero option A (approved by Vadim via Kate, 1 Nov 2026). Merge into the knowledge-base master under hero:
+hero_local:
+  n_default: 5
+  n_label: 'N, configurable, in business days'
+  topics: [Site activation, Delegation log, Re-consent, Escalation]   # tab labels, in hero.examples order
+  check_lead: 'finding unresolved > {N} business days'
+  schedule_label: SCHEDULE
+  schedule_cron: '0 7 * * 1-5'
+  schedule_cron_gloss: '07:00, Monday to Friday'
+  action_chips:   # ACTION command chips, in hero.examples order; one chip per '; '-separated part of the action (approved 1 Nov 2026)
+  - ['hold(site)', 'draft_missing_items(owner)']
+  - ['flag(reg_coord, pi)']
+  - ['flag(re_consent)', 'draft_notice(pi, coord)']
+  - ['draft_notice(study_lead)', 'draft_escalation(next_level)']
