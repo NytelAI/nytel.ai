@@ -7,14 +7,14 @@
 - [Whitepaper](https://nytel.ai/whitepaper.html): "SOP-IR: Compiling SOPs and Protocols into a Verified, Executable Graph" — architecture, integration, and operational design in depth.
 
 ## What we’ve built (built and tested)
-- SOP processing and rule extraction: SOP-IR: SOPs compiled into a verified, executable graph.
-- Regulatory document compliance checks: Deterministic checks of regulatory documents against executable rules.
+- SOP processing and rule extraction: SOPs compiled into a verified, executable graph.
+- Regulatory document compliance checks: Deterministic checks against executable rules.
 - Document QC Agent: Classifies documents against the TMF reference model, runs ALCOA++ quality checks, and flags issues for human review.
 - Site Activation Agent: Tracks the path from CDA execution to site go-live: milestones, blockers and outstanding documents.
 - Follow-Up Agent: Plans escalation cadence with batching: outstanding items grouped per contact, reminders paused while awaiting a response.
 - Monitoring Agent: Tracks site visit schedules, enrollment progress and data review status, and surfaces anomalies for review.
-- Protocol harmonization: Aligns protocol requirements into one consistent, rule-based form.
-- Protocol-to-EDC build: Turns protocol requirements into an EDC build specification.
+- Protocol harmonization: Aligns protocol requirements into one form.
+- Protocol-to-EDC build: Turns protocol requirements into an EDC build spec.
 - Tested on multiple protocols, in multi-country settings.
 - In progress: write-back into CTMS, eTMF and EDC.
 
