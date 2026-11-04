@@ -1,12 +1,12 @@
 # Nytel
 
-> Trials, on time. Nytel builds AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs). The same agents serve CROs, sponsors and other trials. Agents for the coordination work alongside CTMS, eTMF and EDC. Agents read from the systems teams already use (CTMS, eTMF, EDC, email); in progress: write-back into CTMS, eTMF and EDC. Built and tested. Compliance checks run on deterministic rules and code, not generative models, so every decision can be traced and audited. Language models read documents and messages; people supervise and can override, and uncertain cases go to human review. Co-founded by Matthew Wamsley (CEO) and Vadim Sokolov (CSO).
+> Trials, on time. Nytel builds AI agents for regulatory compliance, protocols and EDC, focused on investigator-initiated trials (IITs). The same agents serve CROs, sponsors and other trials. Agents for the coordination work alongside CTMS, eTMF and EDC. Agents read from the systems teams already use (CTMS, eTMF, EDC, email); in progress: write-back into CTMS, eTMF and EDC. Compliance checks run on deterministic rules and code, not generative models, so every decision can be traced and audited. Language models read documents and messages; people supervise and can override, and uncertain cases go to human review. Co-founded by Matthew Wamsley (CEO) and Vadim Sokolov (CSO).
 
 ## Pages
 - [Home](https://nytel.ai/): What Nytel does — what we've built, how it works, co-founders, partners, and contact.
 - [Whitepaper](https://nytel.ai/whitepaper.html): "SOP-IR: Compiling SOPs and Protocols into a Verified, Executable Graph" — architecture, integration, and operational design in depth.
 
-## What we’ve built (built and tested)
+## What we’ve built
 - SOP processing and rule extraction: SOPs compiled into a verified, executable graph.
 - Regulatory document compliance checks: Deterministic checks against executable rules.
 - Document QC Agent: Classifies documents against the TMF reference model, runs ALCOA++ quality checks, and flags issues for human review.
