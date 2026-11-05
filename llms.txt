@@ -29,7 +29,7 @@
 
 ## Partners
 - [PCCTC](https://www.pcctc.org/about/) (Prostate Cancer Clinical Trials Consortium)
-- [POETIC](https://poeticphase1.org) (Pediatric Oncology Experimental Therapeutics Investigators’ Consortium, Stanford)
+- [POETIC](https://poeticphase1.org) (Pediatric Oncology Experimental Therapeutics Investigators’ Consortium)
 
 ## Co-founders
 - Vadim Sokolov — Co-founder & CSO. GMU systems engineering professor; Bayesian trial design; agent-based simulation (Argonne).
