@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What a p-value is (and isn't) | Nytel Testing</title>
+<meta name="description" content="Interactive lesson: simulate a world where nothing is going on, and see what a p-value really measures.">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../chrome.css">
+<link rel="stylesheet" href="lab.css">
+<script>window.MathJax = { tex: { inlineMath: [['\\(', '\\)']] } };</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
+<style>
+  .tip { border-bottom: 1.5px dotted var(--teal-dark); cursor: help; position: relative; white-space: nowrap; }
+  .tip:hover::after, .tip:focus::after { content: attr(data-tip); position: absolute; left: 0; top: 1.6em; z-index: 30; width: 15rem; white-space: normal; background: var(--navy); color: #fff; font-size: .85rem; font-weight: 400; padding: .5rem .7rem; border-radius: 8px; line-height: 1.35; }
+  .minibox { margin-top: .75rem; border-top: 1px dashed var(--border-strong); padding-top: .5rem; }
+  .fig { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.2rem; margin: 1.5rem 0; }
+  .fig h2 { font-size: 1.35rem; }
+  .figgrid { display: grid; grid-template-columns: 300px 1fr; gap: 1.1rem; align-items: start; }
+  .dots { display: block; width: 100%; height: auto; }
+  .qrow { margin: .5rem 0 .75rem; font-weight: 600; }
+  input[type=range] { width: 100%; accent-color: var(--teal-dark); }
+  .field output { font-family: var(--mono); font-weight: 600; color: var(--teal-dark); min-width: 2.5rem; text-align: right; }
+  .field.col { flex-direction: column; align-items: stretch; gap: .1rem; }
+  .field.col label { display: flex; justify-content: space-between; }
+  .ref { font-size: .9rem; }
+  #berger, #eolia { max-width: 640px; }
+  .field.col input[type=range] { width: 100%; flex: none; }
+  @media (max-width: 800px) { .figgrid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body class="lab">
+<a class="skip" href="#lab">Skip to the lab</a>
+<div class="topbar"><div class="wrap">
+  <a href="/"><img src="../logo.svg" alt="Nytel"></a>
+  <span class="crumb"><a href="./">Testing</a></span>
+  <span class="title">2. What a p-value is (and isn't)</span>
+  <span class="pn"><a href="01-prior-posterior.html">&larr; Prev</a><a href="03-errors-power.html">Next &rarr;</a></span>
+</div></div>
+
+<main class="wrap">
+<section class="hero">
+  <div class="kicker">Module 2</div>
+  <h1>What a p-value is (and isn't)</h1>
+  <p class="hook">If nothing is going on, how surprising is your result?</p>
+  <div class="presets" id="examples"><span class="lbl">Try an example:</span></div>
+</section>
+
+<section id="lab" class="labgrid" aria-label="Simulate the null lab">
+  <div class="panel">
+    <h3>1. Set the story</h3>
+    <p class="note" id="story" style="margin:0 0 .5rem"></p>
+    <div class="field col"><label for="sN">Tries <output id="oN"></output></label><input id="sN" type="range" min="5" max="200" step="1" value="12"></div>
+    <div class="field col"><label for="sK">Successes <output id="oK"></output></label><input id="sK" type="range" min="0" max="12" step="1" value="9"></div>
+    <div class="field col"><label for="sP"><span><span class="tip" tabindex="0" data-tip="The boring claim, called the null: nothing is going on, only luck.">Luck-only</span> chance <output id="oP"></output></span></label><input id="sP" type="range" min="0.1" max="0.9" step="0.05" value="0.5"></div>
+    <h3>2. Play the luck-only world</h3>
+    <div class="row"><button class="btn primary" id="simBtn" type="button">Simulate 1,000 experiments</button><button class="btn" id="clrBtn" type="button">Clear</button></div>
+    <p class="note" id="simNote"></p>
+  </div>
+  <div>
+    <div class="plotbox"><svg id="plot"></svg>
+      <div class="chips" aria-live="polite" id="chips"></div>
+      <p class="note" id="plotNote" style="margin:.5rem 0 0">Orange = results as extreme as yours or more. Its share is the <span class="tip" tabindex="0" data-tip="How often luck alone gives a result at least this extreme.">p-value</span>.</p>
+      <p class="note" style="margin:.3rem 0 0">By custom, p below 0.05 is called <b>significant</b>: surprising enough to take seriously. Why 0.05? It is a convention, as in the <a href="00-are-they-different.html">shuffle test in module 0</a>.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <h2>Predict, then check</h2>
+  <div class="scorebar" id="score"></div>
+  <div class="qcards" id="qcards"></div>
+</section>
+
+<section class="fig" id="figPlan">
+  <h2>Same data, different plan</h2>
+  <p>You saw 9 heads and 3 tails. Did you plan to flip 12 times, or to stop at the third tail?</p>
+  <div class="figgrid">
+    <div>
+      <div class="row"><button class="btn on" id="planA" type="button">Plan A: 12 flips</button><button class="btn" id="planB" type="button">Plan B: stop at 3rd tail</button></div>
+      <p class="note" style="margin-top:.6rem">The data are the same. Only the story about how you got them changes.</p>
+    </div>
+    <div><svg id="planPlot"></svg><div class="chips" id="planChips"></div></div>
+  </div>
+</section>
+
+<section class="fig" id="figPeek">
+  <h2>Peeking at the data</h2>
+  <p>A fair coin, tested for "unfair" each time you look. Stop as soon as the result looks <span class="tip" tabindex="0" data-tip="Far enough from 50:50 that p is below 0.05.">significant</span>.</p>
+  <div class="figgrid">
+    <div>
+      <div class="qrow">How often you look:</div>
+      <div class="row" id="peekBtns"></div>
+      <div class="row" style="margin-top:.7rem"><button class="btn primary" id="peekOne" type="button">New study</button><button class="btn" id="peekMany" type="button">Run 2,000 studies</button></div>
+      <p class="note" id="peekNote"></p>
+    </div>
+    <div><svg id="peekPlot"></svg><div class="chips" id="peekChips" aria-live="polite"></div></div>
+  </div>
+</section>
+
+<section class="fig" id="figFish">
+  <h2>Fishing in many comparisons</h2>
+  <p>The drug does nothing, but you test it in several groups of patients. Each dot is one test.</p>
+  <div class="figgrid">
+    <div>
+      <div class="field col"><label for="sT">Number of tests <output id="oT"></output></label><input id="sT" type="range" min="1" max="30" step="1" value="20"></div>
+      <div class="row"><button class="btn primary" id="fishBtn" type="button">Run the tests</button></div>
+      <p class="note">Orange dot = a false alarm (p below 0.05). The tests are made by computer.</p>
+    </div>
+    <div><svg id="dots" class="dots" role="img" aria-label="Dots for each test, orange when p is below 0.05"></svg><div class="chips" id="fishChips" aria-live="polite"></div></div>
+  </div>
+</section>
+
+<section class="fig" id="figBerger">
+  <h2>p = 0.05 is not "5% chance the null is true"</h2>
+  <p>Orange: the p-value. Teal: the smallest chance that luck alone (the null) could still explain the result, given that p-value.</p>
+  <svg id="berger" class="plot" role="img" aria-label="Grouped bars: p-value and the lowest possible chance the null is true, for four p-values"></svg>
+  <p class="note">This assumes a 50:50 chance before the trial. The real chance is usually even higher. Source: Berger table in <a href="https://vsokolov.org/html/_book/06-hyp.html">Bayes, AI and Deep Learning, chapter 6</a>.</p>
+</section>
+
+<section class="example">
+  <h2>A real example: EOLIA</h2>
+  <p>EOLIA tested ECMO (a machine that does the lungs' work) against usual care in severe lung failure. The p-value for 60-day deaths was 0.09, so the trial was called "not significant".</p>
+  <svg id="eolia" class="plot" role="img" aria-label="A number line from 0 to 0.2 with the 0.05 cutoff and the EOLIA p-value 0.09"></svg>
+  <p>A later reanalysis that starts from a prior (module 1) put the chance that ECMO lowers deaths between 88% and 99%, depending on the prior. "Not significant" did not mean "no effect".</p>
+  <p class="note">Sources: Combes A. et al. (2018), N Engl J Med 378:1965-1975 (EOLIA). Goligher E.C. et al. (2018), JAMA 320:2251-2259 (reanalysis with priors).</p>
+</section>
+
+<div id="code"></div>
+
+<section class="reg">
+  <h3>Regulator's corner</h3>
+  <p>Why do trials write the main outcome down before they see any data?</p>
+  <blockquote>"To avoid multiplicity concerns arising from post hoc definitions, it is critical to specify in the protocol the precise definition of the primary variable ..."</blockquote>
+  <p class="note">Plain words: the protocol is the trial's written plan, fixed before it starts. Post hoc means chosen after seeing the data, and multiplicity means running many tests, as in Fishing above.</p>
+  <p class="note">ICH (International Council for Harmonisation) is the group of regulators and industry that writes trial rules shared by the US, Europe and Japan.</p>
+  <p class="ref">ICH E9, Statistical Principles for Clinical Trials, section 2.2.2. <a href="https://database.ich.org/sites/default/files/E9_Guideline.pdf">Read the guideline</a></p>
+</section>
+
+<section class="takeaway">
+  <h2>Takeaway</h2>
+  <ul>
+    <li>A p-value asks: if nothing is going on, how often would luck look this good?</li>
+    <li>It is not the chance that the drug works, and it depends on the plan you had before you looked.</li>
+    <li>Peeking and fishing make luck look like a discovery.</li>
+  </ul>
+</section>
+</main>
+
+<footer class="labfoot"><div class="wrap">
+  <strong>Sources</strong>
+  <ul>
+    <li>Combes A. et al. (2018), N Engl J Med 378:1965-1975 (EOLIA). Goligher E.C. et al. (2018), JAMA 320:2251-2259.</li>
+    <li>ICH E9, <a href="https://database.ich.org/sites/default/files/E9_Guideline.pdf">Statistical Principles for Clinical Trials</a>.</li>
+  </ul>
+  <strong>Further reading</strong>
+  <ul>
+    <li>Polson, N. and Sokolov, V. (2026). <a href="https://vsokolov.org/books/bayes_ai_deep_learning/">Bayes, AI and Deep Learning: Foundations of Data Science</a> (chapters <a href="https://vsokolov.org/html/_book/03-bl.html">3</a> and <a href="https://vsokolov.org/html/_book/06-hyp.html">6</a>). doi:10.5281/zenodo.23992805</li>
+    <li>Sokolova, A. and Sokolov, V. (2026). <a href="https://vsokolov.org/books/clinical_trials_in_practice/">Clinical Trials in Practice: From Foundations to AI Agents</a> (<a href="https://vsokolov.org/clinos-book/">chapters</a>). doi:10.5281/zenodo.23933570</li>
+    <li>Sokolova, A., Sokolov, V. and Polson, N. (2026). Some Bayesian Perspectives on Clinical Trials. <a href="https://arxiv.org/abs/2602.09208">arXiv:2602.09208</a></li>
+  </ul>
+  <div class="nyt">&copy; 2026 Nytel. Nightingale + Intelligence. <a href="mailto:contact@nytel.ai">contact@nytel.ai</a></div>
+</div></footer>
+
+<script src="lab.js"></script>
+<script>
+(function () {
+  var TEAL = '#2D8B8B', ORANGE = '#E07A3F', ORANGE_D = '#B8531A', NAVY = '#0A1628';
+  var rng = Lab.rng(602), PW = window.innerWidth < 800 ? 380 : 640;
+  var $ = function (id) { return document.getElementById(id); };
+  function chip(txt, val, warm) { return '<span class="chip' + (warm ? ' warm' : '') + '">' + txt + ' <b>' + val + '</b></span>'; }
+  function pfmt(p) { return p < 0.001 ? '< 0.001' : p.toFixed(p < 0.1 ? 3 : 2); }
+  function pctf(x, d) { return (100 * x).toFixed(d == null ? 1 : d) + '%'; }
+
+  /* ---------- math helpers ---------- */
+  function pmfArr(n, p) { var a = []; for (var i = 0; i <= n; i++) a.push(Lab.binomPmf(i, n, p)); return a; }
+  function tailBin(n, k, p) { var s = 0; for (var i = k; i <= n; i++) s += Lab.binomPmf(i, n, p); return s; }
+  // Negative binomial: heads before the 3rd tail, fair coin: P(H=h) = C(h+2,2) / 2^(h+3).
+  function nbPmf(h) { return (h + 2) * (h + 1) / 2 / Math.pow(2, h + 3); }
+  function tailNB(h0) { var s = 0, h; for (h = 0; h < h0; h++) s += nbPmf(h); return 1 - s; }
+  // Simulate one fair-coin study: returns {z: path of z-scores, stop: first look index that crosses, or 0}
+  function study(step) {
+    var k = 0, z = [0], stop = 0, n;
+    for (n = 1; n <= 100; n++) {
+      if (rng() < 0.5) k++;
+      var zz = (2 * k - n) / Math.sqrt(n);
+      z.push(zz);
+      if (!stop && n % step === 0 && Math.abs(zz) >= 1.96) stop = n;
+    }
+    return { z: z, stop: stop };
+  }
+  function rate(step, runs) { var c = 0, i; for (i = 0; i < runs; i++) if (study(step).stop) c++; return c / runs; }
+
+  /* ---------- bar chart helper (page-local) ---------- */
+  function groupBars(svg, groups, series, ymax, fmt, ylabel) {
+    var W = PW, H = 240, ml = 52, mr = 12, mt = 26, mb = 46, iw = W - ml - mr, ih = H - mt - mb;
+    var gw = iw / groups.length, bw = gw * 0.72 / series.length, h = '', i, j;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('class', 'plot');
+    [0, 0.5, 1].forEach(function (f) {
+      var y = mt + ih - f * ih;
+      h += '<line class="grid" x1="' + ml + '" x2="' + (W - mr) + '" y1="' + y + '" y2="' + y + '"/><text x="' + (ml - 6) + '" y="' + (y + 4) + '" text-anchor="end">' + fmt(f * ymax) + '</text>';
+    });
+    for (i = 0; i < groups.length; i++) {
+      var gx = ml + i * gw + gw * 0.14;
+      for (j = 0; j < series.length; j++) {
+        var v = groups[i].v[j], bh = Math.max(1, v / ymax * ih), x = gx + j * bw;
+        h += '<rect x="' + x.toFixed(1) + '" y="' + (mt + ih - bh).toFixed(1) + '" width="' + (bw - 3).toFixed(1) + '" height="' + bh.toFixed(1) + '" fill="' + series[j].color + '" opacity=".9"/>';
+        h += '<text x="' + (x + (bw - 3) / 2).toFixed(1) + '" y="' + (mt + ih - bh - 4).toFixed(1) + '" text-anchor="middle" style="font-weight:600;fill:#0A1628">' + fmt(v) + '</text>';
+      }
+      h += '<text x="' + (ml + i * gw + gw / 2).toFixed(1) + '" y="' + (H - 24) + '" text-anchor="middle">' + groups[i].label + '</text>';
+    }
+    h += '<line class="axis" x1="' + ml + '" x2="' + (W - mr) + '" y1="' + (mt + ih) + '" y2="' + (mt + ih) + '"/>';
+    if (ylabel) h += '<text x="' + ml + '" y="12" class="axis-label" style="text-anchor:start">' + ylabel + '</text>';
+    svg.innerHTML = h;
+  }
+  function addMini(card) {
+    var box = card.el.querySelector('.minibox');
+    if (!box) { box = document.createElement('div'); box.className = 'minibox'; box.innerHTML = '<svg></svg>'; card.el.appendChild(box); }
+    return box.querySelector('svg');
+  }
+  // Mini pmf plot with the tail from x0 shaded orange. xs 0..len-1
+  function miniPmf(card, pm, x0, xlabel, extra) {
+    var svg = addMini(card), n = pm.length - 1;
+    var pl = Lab.Plot(svg, { w: PW, h: 220, xlim: [-0.5, n + 0.5], ylim: [0, Math.ceil(Math.max.apply(null, pm) * 115) / 100], xlabel: xlabel, ylabel: 'Share of experiments', yfmt: function (v) { return Math.round(v * 100) + '%'; }, label: 'Histogram of results if nothing is going on, tail shaded' });
+    pl.bars('b', pm, -0.5, n + 0.5, { fill: TEAL, opacity: 0.4 }, 0);
+    pl.bars('t', pm.map(function (v, i) { return i >= x0 ? v : 0; }), -0.5, n + 0.5, { fill: ORANGE, opacity: 0.9 }, 600);
+    if (extra) extra(pl);
+    return pl;
+  }
+
+  /* =============== Main lab =============== */
+  var S = { n: 12, k: 9, p: 0.5, counts: null, total: 0, timer: null };
+  var EXAMPLES = [
+    { label: 'Coin: 9 heads of 12', n: 12, k: 9, p: 0.5, story: 'A fair coin has a 50% chance of heads. You got 9 heads in 12 flips.', one: 'heads' },
+    { label: 'Free throws', n: 20, k: 17, p: 0.7, story: 'An average player makes 70% of free throws. Maya made 17 of 20.', one: 'made' },
+    { label: 'A drug (made up)', n: 30, k: 20, p: 0.5, story: 'With a dummy pill, half the patients improve. On the drug, 20 of 30 did.', one: 'improved' },
+    { label: 'Big sample', n: 200, k: 110, p: 0.5, story: '110 heads in 200 flips: 55%, like 11 of 20.', one: 'heads' }
+  ];
+  var plot;
+  function drawMain(animate) {
+    var pm = pmfArr(S.n, S.p), top = Math.max.apply(null, pm);
+    plot = Lab.Plot($('plot'), { w: PW, h: 340, xlim: [-0.5, S.n + 0.5], ylim: [0, Math.ceil(top * 115) / 100], xlabel: 'Successes in ' + S.n + ' tries if nothing is going on', ylabel: 'Share of experiments', yfmt: function (v) { return Math.round(v * 100) + '%'; }, label: 'Histogram of results in a world where nothing is going on, tail from your result shaded orange' });
+    plot.bars('pmf', pm, -0.5, S.n + 0.5, { fill: TEAL, opacity: 0.4 }, 0);
+    plot.bars('tail', pm.map(function (v, i) { return i >= S.k ? v : 0; }), -0.5, S.n + 0.5, { fill: ORANGE, opacity: 0.9 }, animate ? 700 : 0);
+    plot.vline('you', S.k, 'you: ' + S.k, { color: NAVY, dash: '4 3' }, 0);
+    drawSim();
+    plot.legend([{ label: 'All results (luck only)', color: TEAL, kind: 'box' }, { label: 'As extreme as yours', color: ORANGE, kind: 'box' }, { label: 'Computer count', color: NAVY, kind: 'line' }].slice(0, S.total ? 3 : 2));
+    var p = tailBin(S.n, S.k, S.p);
+    var h = '' + chip('p-value (exact)', pfmt(p), true);
+    if (S.total) { var hits = 0, i; for (i = S.k; i <= S.n; i++) hits += S.counts[i]; h += chip('Computer count', pctf(hits / S.total, 1) + ' (' + hits + ' of ' + S.total.toLocaleString('en-US') + ')'); }
+    h += chip('Below 0.05?', p < 0.05 ? 'Yes, surprising' : 'No, could be luck');
+    $('chips').innerHTML = h;
+    $('oN').textContent = S.n; $('oK').textContent = S.k; $('oP').textContent = pctf(S.p, 0);
+  }
+  function drawSim() {
+    if (!S.total) return;
+    var xs = [], ys = [], i;
+    for (i = 0; i <= S.n; i++) { xs.push(i); ys.push(S.counts[i] / S.total); }
+    plot.line('sim', xs, ys, { stroke: NAVY, width: 2 }, 0);
+  }
+  function clearSim() { if (S.timer) { clearInterval(S.timer); S.timer = null; } S.counts = null; S.total = 0; $('simNote').textContent = ''; }
+  function setParams(n, k, p, anim) {
+    clearSim(); S.n = n; S.k = Math.min(k, n); S.p = p;
+    $('sN').value = S.n; $('sK').max = S.n; $('sK').value = S.k; $('sP').value = S.p;
+    drawMain(anim);
+  }
+  EXAMPLES.forEach(function (ex) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = ex.label;
+    b.addEventListener('click', function () {
+      setParams(ex.n, ex.k, ex.p, true); $('story').textContent = ex.story;
+      document.querySelectorAll('#examples .btn').forEach(function (x) { x.classList.toggle('on', x === b); });
+    });
+    $('examples').appendChild(b);
+  });
+  ['sN', 'sK', 'sP'].forEach(function (id) {
+    $(id).addEventListener('input', function () {
+      var n = +$('sN').value, k = +$('sK').value, p = +$('sP').value;
+      if (id === 'sN') k = Math.min(k, n);
+      setParams(n, k, p, false);
+      document.querySelectorAll('#examples .btn').forEach(function (x) { x.classList.remove('on'); });
+    });
+  });
+  $('simBtn').addEventListener('click', function () {
+    if (S.timer) return;
+    S.counts = new Array(S.n + 1).fill(0); S.total = 0;
+    var steps = 0;
+    $('simNote').textContent = 'The computer repeats your experiment 1,000 times, with luck only.';
+    S.timer = setInterval(function () {
+      var j;
+      for (j = 0; j < 100; j++) { S.counts[Lab.binomial(rng, S.n, S.p)]++; S.total++; }
+      steps++; drawMain(false);
+      if (steps >= 10) { clearInterval(S.timer); S.timer = null; }
+    }, 120);
+  });
+  $('clrBtn').addEventListener('click', function () { clearSim(); drawMain(false); });
+
+  /* =============== Question cards =============== */
+  var score = Lab.Score($('score')), _add = score.add; score.add = function (ok) { _add(ok); try { localStorage.setItem('nytel-testing-2', '1'); } catch (e) {} };
+  var Q = $('qcards'), card;
+
+  // 1: p for 9 of 12
+  var p912 = tailBin(12, 9, 0.5);
+  card = Lab.QuestionCard(Q, {
+    tag: 'Predict 1', score: score, type: 'choice',
+    q: 'A fair coin lands heads 9 times in 12 flips. How often would luck alone give 9 or more heads?',
+    options: [{ value: 'a', label: 'About 1 time in 100' }, { value: 'b', label: 'About 7 times in 100' }, { value: 'c', label: 'About 25 times in 100' }, { value: 'd', label: 'About 50 times in 100' }],
+    answer: function () { return Math.abs(p912 - 0.07) < Math.abs(p912 - 0.01) && Math.abs(p912 - 0.07) < Math.abs(p912 - 0.25) ? 'b' : 'c'; },
+    onReveal: function () { miniPmf(card, pmfArr(12, 0.5), 9, 'Heads in 12 flips (luck only)'); },
+    explain: function () { return 'Exact: ' + pfmt(p912) + ', so about ' + Math.round(p912 * 100) + ' in 100. Not below 0.05, so not surprising enough.'; }
+  });
+
+  // 2: change the plan
+  var pNB = tailNB(9);
+  card = Lab.QuestionCard(Q, {
+    tag: 'Predict 2', score: score, type: 'choice',
+    q: 'Same 9 heads and 3 tails. But your friend says: "I planned to stop at the third tail." Does the p-value change?',
+    options: [{ value: 'up', label: 'Goes up' }, { value: 'same', label: 'Stays the same' }, { value: 'down', label: 'Goes down' }],
+    answer: function () { return pNB < p912 ? 'down' : pNB > p912 ? 'up' : 'same'; },
+    onReveal: function () {
+      var pm = []; for (var h = 0; h <= 20; h++) pm.push(nbPmf(h));
+      miniPmf(card, pm, 9, 'Heads before the 3rd tail (luck only)');
+    },
+    explain: function () { return 'p goes from ' + pfmt(p912) + ' to ' + pfmt(pNB) + '. Same data, new verdict, because the plan changed the "what else could have happened" list.'; }
+  });
+
+  // 3: simulate 1000 experiments of 12 flips
+  var simCounts = new Array(13).fill(0), si;
+  for (si = 0; si < 1000; si++) simCounts[Lab.binomial(rng, 12, 0.5)]++;
+  var simHits = 0; for (si = 9; si <= 12; si++) simHits += simCounts[si];
+  card = Lab.QuestionCard(Q, {
+    tag: 'Predict 3', score: score, type: 'slider', min: 0, max: 400, step: 1, start: 200, tol: 25, fmt: function (v) { return Math.round(v) + ' of 1,000'; },
+    q: 'Do 1,000 experiments of 12 fair flips. In how many will you see 9 or more heads? Drag your guess.',
+    answer: function () { return simHits; },
+    onReveal: function () {
+      var svg = addMini(card), pl = Lab.Plot(svg, { w: PW, h: 220, xlim: [-0.5, 12.5], ylim: [0, 0.3], xlabel: 'Heads in 12 flips (computer flips)', ylabel: 'Experiments', yfmt: function (v) { return Math.round(v * 1000); }, label: 'Histogram of heads in 1000 computer experiments' });
+      pl.bars('b', simCounts.map(function (c) { return c / 1000; }), -0.5, 12.5, { fill: TEAL, opacity: 0.4 }, 0);
+      pl.bars('t', simCounts.map(function (c, i) { return i >= 9 ? c / 1000 : 0; }), -0.5, 12.5, { fill: ORANGE, opacity: 0.9 }, 600);
+    },
+    explain: function () { return simHits + ' of 1,000 pretend experiments reached 9 or more. That is the p-value, found by counting.'; }
+  });
+
+  // 4: p = 0.03 means 97% chance drug works?
+  card = Lab.QuestionCard(Q, {
+    tag: 'True or false', score: score, type: 'choice',
+    q: 'A trial gives p = 0.03. So there is a 97% chance the drug works.',
+    options: [{ value: 'true', label: 'True' }, { value: 'false', label: 'False' }],
+    answer: 'false',
+    onReveal: function () {
+      var svg = addMini(card); svg.setAttribute('viewBox', '0 0 640 170'); svg.style.minWidth = '0'; svg.setAttribute('class', 'plot');
+      svg.innerHTML =
+        '<rect x="10" y="20" width="250" height="60" rx="10" fill="#E8F4F4" stroke="#1F6B6B"/><text x="135" y="47" text-anchor="middle" style="font-weight:600;fill:#0A1628">Assume: drug does nothing</text><text x="135" y="66" text-anchor="middle">(called the null)</text>' +
+        '<line x1="260" y1="50" x2="380" y2="50" stroke="#1F6B6B" stroke-width="3"/><polygon points="380,42 396,50 380,58" fill="#1F6B6B"/>' +
+        '<rect x="396" y="20" width="234" height="60" rx="10" fill="#E8F4F4" stroke="#1F6B6B"/><text x="513" y="47" text-anchor="middle" style="font-weight:600;fill:#0A1628">How likely is data this extreme or more?</text><text x="513" y="66" text-anchor="middle" style="fill:#1F6B6B;font-weight:600">That is the p-value</text>' +
+        '<rect x="10" y="100" width="250" height="60" rx="10" fill="#FDF0E8" stroke="#B8531A"/><text x="135" y="127" text-anchor="middle" style="font-weight:600;fill:#0A1628">Given the data</text><text x="135" y="146" text-anchor="middle">is the drug useless?</text>' +
+        '<line x1="260" y1="130" x2="396" y2="130" stroke="#B8531A" stroke-width="3" stroke-dasharray="6 5"/><text x="513" y="136" text-anchor="middle" style="fill:#B8531A;font-weight:600">NOT what p tells you</text>';
+    },
+    explain: 'The p-value starts from "drug does nothing". It cannot flip that around into "chance the drug works".'
+  });
+
+  // 5: peeking
+  var peekRates = null;
+  function getPeek() { if (!peekRates) peekRates = [rate(100, 3000), rate(10, 3000), rate(1, 3000)]; return peekRates; }
+  var peekOpts = [{ value: 'p5', label: 'About 5%', v: 0.05 }, { value: 'p10', label: 'About 10%', v: 0.10 }, { value: 'p20', label: 'About 20%', v: 0.20 }, { value: 'p37', label: 'About 37%', v: 0.37 }];
+  card = Lab.QuestionCard(Q, {
+    tag: 'Predict 4', score: score, type: 'choice',
+    q: 'A fair coin. You test after every flip, up to 100 flips, and stop once it looks unfair. How often do you cry "unfair"?',
+    options: peekOpts,
+    answer: function () { var r = getPeek()[2], best = peekOpts[0]; peekOpts.forEach(function (o) { if (Math.abs(o.v - r) < Math.abs(best.v - r)) best = o; }); return best.value; },
+    onReveal: function () {
+      var r = getPeek(), svg = addMini(card);
+      groupBars(svg, [{ label: 'Look once (n = 100)', v: [r[0]] }, { label: 'Every 10 flips', v: [r[1]] }, { label: 'Every flip', v: [r[2]] }], [{ name: 'False alarms', color: ORANGE }], 0.5, function (v) { return pctf(v, 0); }, 'False alarm rate (computer count, 3,000 studies each)');
+    },
+    explain: function () { var r = getPeek(); return 'Computer count: ' + pctf(r[0], 1) + ', ' + pctf(r[1], 1) + ', ' + pctf(r[2], 1) + '. The more you look, the more luck gets a chance to fool you.'; }
+  });
+
+  // 6: 20 subgroups
+  var p20 = 1 - Math.pow(0.95, 20);
+  card = Lab.QuestionCard(Q, {
+    tag: 'Predict 5', score: score, type: 'choice',
+    q: 'The drug does nothing. You test 20 groups of patients, each with a 0.05 cutoff. Chance that at least one looks "significant"?',
+    options: [{ value: 'a', label: '5%' }, { value: 'b', label: '20%' }, { value: 'c', label: '64%' }, { value: 'd', label: '95%' }],
+    answer: function () { return Math.abs(p20 - 0.64) < 0.02 ? 'c' : 'b'; },
+    onReveal: function () {
+      var svg = addMini(card), xs = [], ys = [], k;
+      for (k = 1; k <= 40; k++) { xs.push(k); ys.push(1 - Math.pow(0.95, k)); }
+      var pl = Lab.Plot(svg, { w: PW, h: 220, xlim: [1, 40], ylim: [0, 1], xlabel: 'Number of tests', ylabel: 'Chance of a false alarm', yfmt: function (v) { return Math.round(v * 100) + '%'; }, label: 'Curve of the chance of at least one false alarm' });
+      pl.line('c', xs, ys, { stroke: ORANGE_D, width: 2.5, fill: ORANGE, opacity: 0.2 }, 800);
+      pl.vline('k', 20, '20 tests: ' + pctf(p20, 1), { color: NAVY, dash: '4 3' }, 0);
+    },
+    explain: function () { return '1 - 0.95^20 = ' + pctf(p20, 1) + '. Each test is a fresh ticket in a lottery.'; }
+  });
+
+  // 7: sample size
+  var pSmall = tailBin(20, 11, 0.5), pBig = tailBin(200, 110, 0.5);
+  card = Lab.QuestionCard(Q, {
+    tag: 'Predict 6', score: score, type: 'choice',
+    q: 'Both coins land heads 55% of the time: 11 of 20, and 110 of 200. Which result gives the smaller p-value?',
+    options: [{ value: 'small', label: '11 of 20' }, { value: 'big', label: '110 of 200' }, { value: 'same', label: 'Same' }],
+    answer: function () { return pBig < pSmall ? 'big' : 'small'; },
+    onReveal: function () {
+      groupBars(addMini(card), [{ label: '11 of 20', v: [pSmall] }, { label: '110 of 200', v: [pBig] }], [{ name: 'p', color: ORANGE }], 0.5, function (v) { return v.toFixed(3); }, 'p-value');
+    },
+    explain: function () { return pfmt(pSmall) + ' vs ' + pfmt(pBig) + '. Same 55%, but more data means luck explains it less.'; }
+  });
+
+  /* =============== Figure: same data, different plan =============== */
+  var planMode = 'A', planPlot;
+  function drawPlan() {
+    var pm, x0 = 9, xl, p;
+    if (planMode === 'A') { pm = pmfArr(12, 0.5); xl = 'Heads in 12 flips (luck only)'; p = p912; }
+    else { pm = []; for (var h = 0; h <= 20; h++) pm.push(nbPmf(h)); xl = 'Heads before the 3rd tail (luck only)'; p = pNB; }
+    var n = pm.length - 1;
+    planPlot = Lab.Plot($('planPlot'), { w: PW, h: 260, xlim: [-0.5, n + 0.5], ylim: [0, 0.3], xlabel: xl, ylabel: 'Share of experiments', yfmt: function (v) { return Math.round(v * 100) + '%'; }, label: 'Histogram under the chosen plan, tail from 9 heads shaded' });
+    planPlot.bars('b', pm, -0.5, n + 0.5, { fill: TEAL, opacity: 0.4 }, 0);
+    planPlot.bars('t', pm.map(function (v, i) { return i >= x0 ? v : 0; }), -0.5, n + 0.5, { fill: ORANGE, opacity: 0.9 }, 0);
+    planPlot.vline('y', 9, '9 heads', { color: NAVY, dash: '4 3' }, 0);
+    $('planChips').innerHTML = chip('p-value', pfmt(p), true) + chip('Below 0.05?', p < 0.05 ? 'Yes' : 'No');
+    $('planA').classList.toggle('on', planMode === 'A'); $('planB').classList.toggle('on', planMode === 'B');
+  }
+  $('planA').addEventListener('click', function () { planMode = 'A'; drawPlan(); });
+  $('planB').addEventListener('click', function () { planMode = 'B'; drawPlan(); });
+
+  /* =============== Figure: peeking =============== */
+  var peekStep = 1, peekPlot;
+  [['Once, at the end', 100], ['Every 10 flips', 10], ['Every flip', 1]].forEach(function (o) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'btn' + (o[1] === 1 ? ' on' : ''); b.textContent = o[0];
+    b.addEventListener('click', function () {
+      peekStep = o[1];
+      document.querySelectorAll('#peekBtns .btn').forEach(function (x) { x.classList.toggle('on', x === b); });
+      newStudy();
+    });
+    $('peekBtns').appendChild(b);
+  });
+  function newStudy() {
+    var st = study(peekStep), xs = [], ys = [], i;
+    for (i = 0; i <= 100; i++) { xs.push(i); ys.push(Math.max(-4.2, Math.min(4.2, st.z[i]))); }
+    peekPlot = Lab.Plot($('peekPlot'), { w: PW, h: 280, xlim: [0, 100], ylim: [-4, 4], xlabel: 'Flips so far (computer coin, fair)', ylabel: 'Distance from fair', label: 'One pretend study: distance from fair, with the cutoff lines' });
+    peekPlot.line('hi', [0, 100], [1.96, 1.96], { stroke: ORANGE_D, width: 1.5, dash: '6 4' }, 0);
+    peekPlot.line('lo', [0, 100], [-1.96, -1.96], { stroke: ORANGE_D, width: 1.5, dash: '6 4' }, 0);
+    peekPlot.line('z', xs, ys, { stroke: TEAL, width: 2 }, 0);
+    if (st.stop) peekPlot.vline('stop', st.stop, 'stop: false alarm at flip ' + st.stop, { color: ORANGE_D }, 0);
+    $('peekChips').innerHTML = chip('This study', st.stop ? 'cried "unfair" at flip ' + st.stop : 'no false alarm', !!st.stop);
+    $('peekNote').textContent = 'A computer coin, known to be fair, so every alarm is false.';
+  }
+  $('peekOne').addEventListener('click', newStudy);
+  $('peekMany').addEventListener('click', function () {
+    var r = rate(peekStep, 2000);
+    $('peekChips').innerHTML = $('peekChips').innerHTML.replace(/<span class="chip warm">2,000 studies.*?<\/span>/,'') + chip('2,000 studies', pctf(r, 1) + ' false alarms', true);
+  });
+
+  /* =============== Figure: fishing =============== */
+  var fishRuns = 0, fishAny = 0;
+  function drawDots(ps) {
+    var svg = $('dots'), n = ps.length, cols = Math.min(PW < 500 ? 5 : 10, n), rows = Math.ceil(n / cols), W = PW, cw = W / cols, H = rows * 64 + 10, h = '';
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    ps.forEach(function (p, i) {
+      var cx = (i % cols) * cw + cw / 2, cy = Math.floor(i / cols) * 64 + 28, hit = p < 0.05;
+      h += '<circle cx="' + cx + '" cy="' + cy + '" r="20" fill="' + (hit ? ORANGE : '#E8F4F4') + '" stroke="' + (hit ? ORANGE_D : '#1F6B6B') + '" stroke-width="2"/>';
+      h += '<text x="' + cx + '" y="' + (cy + 4) + '" text-anchor="middle" font-size="11" style="font-weight:600;fill:' + (hit ? '#0A1628' : '#1F6B6B') + '">' + p.toFixed(2) + '</text>';
+      h += '<text x="' + cx + '" y="' + (cy + 36) + '" text-anchor="middle" font-size="10" style="fill:#5a6472">p</text>';
+    });
+    svg.innerHTML = h;
+  }
+  function runFish() {
+    var k = +$('sT').value, ps = [], hits = 0, i;
+    for (i = 0; i < k; i++) { var p = rng(); ps.push(p); if (p < 0.05) hits++; }
+    fishRuns++; if (hits) fishAny++;
+    drawDots(ps);
+    $('fishChips').innerHTML = chip('False alarms this run', hits + ' of ' + k, hits > 0) + chip('Runs with a false alarm', fishAny + ' of ' + fishRuns) + chip('Expected by math', pctf(1 - Math.pow(0.95, k), 1));
+  }
+  $('sT').addEventListener('input', function () { $('oT').textContent = $('sT').value; fishRuns = 0; fishAny = 0; runFish(); });
+  $('fishBtn').addEventListener('click', runFish);
+
+  /* =============== Figure: Berger bounds =============== */
+  (function () {
+    var ts = [1.645, 1.96, 2.576, 3.291], groups = ts.map(function (t) {
+      var p = 2 * (1 - Lab.normalCdf(t)), b = 1 / (1 + Math.exp(t * t / 2));
+      return { label: 'p = ' + p.toFixed(3), v: [p, b] };
+    });
+    groupBars($('berger'), groups, [{ name: 'p-value', color: ORANGE }, { name: 'Lowest chance null is true', color: TEAL }], 0.3, function (v) { return v < 0.1 ? (v * 100).toFixed(1) + '%' : (v * 100).toFixed(0) + '%'; }, '');
+  })();
+
+  /* =============== Figure: EOLIA ruler =============== */
+  (function () {
+    var W = PW, H = 120, ml = 30, iw = W - 60, sx = function (v) { return ml + v / 0.2 * iw; }, h = '';
+    h += '<rect x="' + ml + '" y="50" width="' + (sx(0.05) - ml) + '" height="22" fill="' + TEAL + '" opacity=".6"/><rect x="' + sx(0.05) + '" y="50" width="' + (sx(0.2) - sx(0.05)) + '" height="22" fill="#E8F4F4"/>';
+    [0, 0.05, 0.1, 0.15, 0.2].forEach(function (v) { h += '<line class="axis" x1="' + sx(v) + '" x2="' + sx(v) + '" y1="72" y2="80"/><text x="' + sx(v) + '" y="96" text-anchor="middle">' + v.toFixed(2) + '</text>'; });
+    h += '<text x="' + (ml + (sx(0.05) - ml) / 2) + '" y="66" text-anchor="middle" style="fill:#fff;font-weight:600">"significant"</text>';
+    h += '<line x1="' + sx(0.09) + '" x2="' + sx(0.09) + '" y1="30" y2="72" stroke="' + ORANGE_D + '" stroke-width="3"/><text x="' + sx(0.09) + '" y="22" text-anchor="middle" style="fill:' + ORANGE_D + ';font-weight:600">EOLIA p = 0.09</text>';
+    $('eolia').setAttribute('viewBox', '0 0 ' + W + ' ' + H); $('eolia').innerHTML = h;
+  })();
+
+  /* =============== Code =============== */
+  Lab.CodeBox($('code'), {
+    py: 'from scipy import stats\n' +
+      'import numpy as np\n' +
+      'print(stats.binom.sf(8, 12, 0.5))     # P(9+ heads of 12): 0.073\n' +
+      'print(stats.nbinom.sf(8, 3, 0.5))     # stop at 3rd tail:  0.0327\n' +
+      'rng = np.random.default_rng(1)\n' +
+      'sims = rng.binomial(12, 0.5, 100_000)  # 100,000 luck-only experiments\n' +
+      'print((sims >= 9).mean())             # same p-value, by counting\n' +
+      'print(1 - 0.95**20)                   # 20 tests, at least one false alarm: 0.642',
+    r: 'print(1 - pbinom(8, 12, 0.5))          # P(9+ heads of 12): 0.073\n' +
+      'print(1 - pnbinom(8, 3, 0.5))          # stop at 3rd tail:  0.0327\n' +
+      'set.seed(1)\n' +
+      'sims <- rbinom(100000, 12, 0.5)        # 100,000 luck-only experiments\n' +
+      'print(mean(sims >= 9))                 # same p-value, by counting\n' +
+      'print(1 - 0.95^20)                     # 20 tests, at least one false alarm: 0.642'
+  });
+
+  /* =============== Start =============== */
+  setParams(12, 9, 0.5, false);
+  $('story').textContent = EXAMPLES[0].story;
+  document.querySelector('#examples .btn').classList.add('on');
+  drawPlan(); newStudy(); $('oT').textContent = $('sT').value; runFish();
+})();
+</script>
+</body>
+</html>

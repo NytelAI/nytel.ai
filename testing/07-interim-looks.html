@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Peeking at the data: looks during a trial | Nytel Testing</title>
+<meta name="description" content="Interactive lesson: why checking trial results again and again creates false alarms, and how regulators fix it.">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../chrome.css">
+<link rel="stylesheet" href="lab.css">
+<script>window.MathJax = { tex: { inlineMath: [['\\(', '\\)']] } };</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
+<style>
+.tip { border-bottom: 1.5px dotted var(--teal-dark); cursor: help; position: relative; }
+.tip:hover::after, .tip:focus::after { content: attr(data-tip); position: absolute; left: 0; top: 125%; width: 15rem; background: var(--navy); color: #fff; padding: .4rem .6rem; border-radius: 6px; font-size: .8rem; font-style: normal; font-weight: 400; z-index: 30; white-space: normal; line-height: 1.35; }
+.fig { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: .75rem; margin: 1rem 0; }
+.fig svg { width: 100%; height: auto; display: block; }
+.fig svg text { font-family: var(--sans); font-size: 12px; fill: var(--text-secondary); }
+.fig .cap { font-size: .85rem; color: var(--text-tertiary); margin: .4rem 0 0; }
+.fig h3 { font-size: 1rem; margin-bottom: .4rem; }
+.sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; }
+.keys { font-size: .85rem; margin: .4rem 0 0; display: flex; flex-wrap: wrap; gap: .3rem 1rem; }
+.seg { display: flex; flex-wrap: wrap; gap: .4rem; }
+.icons { display: grid; grid-template-columns: repeat(20, 1fr); gap: 4px; max-width: 520px; margin: .5rem 0; }
+.icons i { display: block; aspect-ratio: 1; border-radius: 50%; background: #DCE3EA; }
+.icons i.win { background: var(--orange-fill); }
+.pp { width: 12px; height: 15px; display: block; }
+.pp.yes { fill: #2D8B8B; stroke: none; }
+.pp.no { fill: none; stroke: #9AA3AE; stroke-width: 1.3; }
+.pp.unseen { fill: none; stroke: #9AA3AE; stroke-width: 1.3; opacity: .25; }
+.legend .pp, .legend svg.pp { display: inline-block; vertical-align: middle; width: 14px; height: 17px; max-width: none; }
+.trow { display: grid; grid-template-columns: repeat(20, 12px); gap: 3px; align-items: center; margin: .3rem 0 .5rem; }
+.tbar { display: flex; align-items: center; gap: .5rem; margin: .25rem 0; font-size: .85rem; }
+.tbar .b { height: 18px; border-radius: 4px; }
+.tvt { width: 100%; border-collapse: collapse; font-size: .85rem; margin-top: .5rem; }
+.tvt th, .tvt td { text-align: left; padding: .25rem .4rem; border-bottom: 1px solid var(--border); }
+.tvt tr.stop td { background: #FDF0E8; font-weight: 600; }
+.tvt tr.late td { color: var(--text-tertiary); }
+.mini { margin-top: .75rem; }
+.mini svg { width: 100%; height: auto; display: block; background: #FBFCFD; border-radius: 8px; border: 1px solid var(--border); }
+.mini text { font-family: var(--sans); font-size: 11px; fill: var(--text-secondary); }
+.twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 800px) { .twocol { grid-template-columns: 1fr; } .icons { grid-template-columns: repeat(10, 1fr); } }
+@media (max-width: 800px) { .tip:hover::after, .tip:focus::after { width: 12rem; } }
+</style>
+</head>
+<body class="lab">
+<a class="skip" href="#lab">Skip to the lab</a>
+<div class="topbar"><div class="wrap">
+  <a href="/"><img src="../logo.svg" alt="Nytel"></a>
+  <span class="crumb"><a href="./">Testing</a></span>
+  <span class="title">7. Peeking at the data: looks during a trial</span>
+  <span class="pn"><a href="06-fair-comparisons.html">&larr; Previous</a><a href="08-e-values.html">Next &rarr;</a></span>
+</div></div>
+
+<main class="wrap">
+<section class="hero">
+  <div class="kicker">Module 7</div>
+  <h1>Peeking at the data: looks during a trial</h1>
+  <p class="hook">A drug does nothing. If you check the results again and again, will you fool yourself?</p>
+  <div class="presets" id="examples"><span class="lbl">Try an example:</span></div>
+</section>
+
+<section class="fig" id="tvs" aria-label="True effect versus what the trial sees">
+  <h3>The truth, and what the trial sees</h3>
+  <p class="note">Nobody can see the true cure rates. A trial sees only patients, a few more at each look.</p>
+  <div class="seg"><button class="btn on" type="button" id="tvW" data-v="1">The drug really works</button><button class="btn" type="button" id="tvN" data-v="0">The drug does nothing</button><button class="btn primary" type="button" id="tvDeal">Deal a new trial</button></div>
+  <div class="twocol" style="margin-top:.6rem">
+    <div><h3>True (hidden)</h3><div id="tvTrue"></div></div>
+    <div><h3>Seen so far: 100 patients per group</h3><div class="note" style="margin:0">Placebo (a dummy pill)</div><div class="trow" id="tvP" role="img"></div><div class="note" style="margin:0">Drug</div><div class="trow" id="tvD" role="img"></div>
+      <p class="legend"><svg class="pp yes" viewBox="0 0 16 20" aria-hidden="true"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> filled = got better &nbsp; <svg class="pp no" viewBox="0 0 16 20" aria-hidden="true"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> outline = did not &nbsp; <svg class="pp unseen" viewBox="0 0 16 20" aria-hidden="true"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> faded = not yet enrolled</p></div>
+  </div>
+  <table class="tvt" id="tvTab" aria-live="polite"><thead><tr><th>Look</th><th>Patients per group</th><th>Placebo better</th><th>Drug better</th><th>Gap</th><th><span class="tip" tabindex="0" data-tip="p: how often luck alone gives a gap this big or bigger (module 2). Two-sided: a gap in either direction counts.">p, two-sided</span></th></tr></thead><tbody></tbody></table>
+  <p class="note" id="tvVerdict" style="margin-top:.5rem"></p>
+  <p class="cap" id="tvCap"></p>
+</section>
+
+<section class="fig" aria-label="Timeline of a trial with four looks">
+  <h3>A trial with planned looks</h3>
+  <svg id="fig1" viewBox="0 0 760 250" role="img" aria-label="Timeline: patients join, four planned looks at 40, 60, 80 and 100 percent, each with the p-value needed to stop"></svg>
+  <p class="cap">At each look, an independent group called a <span class="tip" tabindex="0" data-tip="Data safety monitoring board: independent experts who see the unblinded data and may recommend to stop.">DSMB</span> checks the data. Each p is <span class="tip" tabindex="0" data-tip="Two-sided: a gap in either direction counts, drug better or drug worse.">two-sided</span>. <i>Clinical Trials in Practice</i> works out this design.</p>
+  <p class="cap"><b>O&rsquo;Brien-Fleming</b>: a very strict bar early, near the usual bar at the end. <b>Pocock</b>: about the same raised bar at every look.</p>
+</section>
+
+<section id="lab" class="labgrid" aria-label="Interim looks lab">
+  <div class="panel">
+    <h3>1. How many looks?</h3>
+    <div class="seg" id="kBtns"></div>
+    <h3>2. Which rule?</h3>
+    <div class="seg" id="ruleBtns"></div>
+    <p class="note" id="ruleNote" style="margin-top:.5rem"></p>
+    <h3>3. Does the drug work?</h3>
+    <div class="seg" id="effBtns"></div>
+    <h3>Run</h3>
+    <div class="row">
+      <button class="btn primary" id="run1" type="button">Run 1 trial</button>
+      <button class="btn primary" id="run100" type="button">Run 100 trials</button>
+    </div>
+    <p class="note">Each trial has 100 pretend patients, with new random data each time.</p>
+  </div>
+  <div>
+    <div class="plotbox"><svg id="plot"></svg>
+      <div class="keys" id="keys"></div>
+      <p class="note" style="margin:.4rem 0 0"><b>z</b> is how far the gap between drug and placebo is from zero, in noise units. About 2 is unusual (<a href="02-p-values.html">module 2</a>).</p>
+      <div class="chips" aria-live="polite" id="chips"></div>
+      <p class="note" id="plotNote" style="margin:.5rem 0 0"></p>
+    </div>
+    <div class="fig" style="margin-bottom:0">
+      <h3 id="iconTitle">100 pretend trials, one dot each</h3>
+      <div class="icons" id="icons" aria-label="Icon array of 100 pretend trials"></div>
+      <div class="keys"><span><span class="sw" style="background:#E07A3F"></span><span id="winKey">Stopped on a significant gap</span></span><span><span class="sw" style="background:#DCE3EA"></span>Never stopped</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="fig" aria-label="False alarm chance by number of looks">
+  <h3>Chance that a useless drug gives a false alarm</h3>
+  <svg id="fig2" viewBox="0 0 640 260" role="img" aria-label="Bars: false alarm chance grows with the number of looks if every look uses p below 0.05, and stays at 5 percent with Pocock or O'Brien-Fleming"></svg>
+  <div class="keys"><span><span class="sw" style="background:#E07A3F"></span>Every look at p &lt; 0.05 (usual bar)</span><span><span class="sw" style="background:#2D8B8B"></span>Raised bars (Pocock or O'Brien-Fleming)</span></div>
+  <p class="cap">A false alarm is a significant gap in either direction. Computed exactly on this page for equally spaced looks. <i>Clinical Trials in Practice</i> says one extra look already gives roughly 8%.</p>
+</section>
+
+<section class="section">
+  <h2>Predict, then check</h2>
+  <div class="scorebar" id="score"></div>
+  <div class="qcards" id="qcards"></div>
+</section>
+
+<section class="example">
+  <h2>Real trials that stopped early</h2>
+  <div class="fig" style="margin-top:.5rem">
+    <svg id="fig3" viewBox="0 0 640 150" role="img" aria-label="Bars: CALGB 49907 stopped at 633 of 1800 patients, ASTIN at 966 of 1300"></svg>
+    <p class="cap">Bars show patients enrolled when each trial stopped, out of the planned maximum.</p>
+  </div>
+  <ul>
+    <li><b>CALGB 49907</b>: a cancer trial, stopped at 633 of 1,800 planned patients.</li>
+    <li><b>ASTIN</b> (stroke drug, 15 doses and placebo): stopped for <span class="tip" tabindex="0" data-tip="Futility: very little chance the trial will end with a win, so continuing is not worth it.">futility</span> at 966 of 1,300.</li>
+    <li><b>DAWN</b> (clot removal 6 to 24 hours after stroke): stopped at 206 patients, when the chance the drug was better, given the data so far (<a href="01-prior-posterior.html">module 1</a>), passed 0.999.</li>
+  </ul>
+  <p class="note">Sources: Sokolova and Sokolov (2026), <i>Clinical Trials in Practice</i>, which cites Krams et al. (2003, ASTIN) and <a href="https://doi.org/10.1056/NEJMoa1706442">Nogueira et al. (2018), NEJM, DAWN</a>. The book also works out the 40/60/80/100% design above (fixed trial about 467 patients).</p>
+</section>
+
+<div id="code"></div>
+
+<aside class="reg">
+  <h3>Regulator's corner</h3>
+  <p>ICH E9 says what counts as a look, and that every look should be planned in advance and written in the protocol (the trial's written plan). ICH is the International Council for Harmonisation, the group of regulators and industry that writes shared trial rules. ICH E9 is its statistics guideline.</p>
+  <blockquote>"any analysis intended to compare treatment arms with respect to efficacy or safety at any time prior to formal completion of a trial"</blockquote>
+  <p class="note">ICH E9, section 4.5. <a href="https://database.ich.org/sites/default/files/E9_Guideline.pdf">Official PDF</a>.</p>
+</aside>
+
+<section class="takeaway">
+  <h2>Takeaway</h2>
+  <ul>
+    <li>Every extra look is another chance for a false alarm.</li>
+    <li>Plan the looks first, and raise the bar so the total stays at 5%.</li>
+    <li>Stopping early saves patients, but the early estimate tends to be too big.</li>
+  </ul>
+</section>
+</main>
+
+<footer class="labfoot"><div class="wrap">
+  <strong>Sources</strong>
+  <ul>
+    <li>Polson, N. and Sokolov, V. (2026). <a href="https://vsokolov.org/books/bayes_ai_deep_learning/">Bayes, AI and Deep Learning: Foundations of Data Science</a>. doi:10.5281/zenodo.23992805</li>
+    <li>Sokolova, A. and Sokolov, V. (2026). <a href="https://vsokolov.org/books/clinical_trials_in_practice/">Clinical Trials in Practice: From Foundations to AI Agents</a>. doi:10.5281/zenodo.23933570</li>
+    <li>ICH E9 (1998), Statistical Principles for Clinical Trials. Rare-disease example: Polson and Sokolov (2026), <a href="https://vsokolov.org/html/_book/06-hyp.html">chapter on Bayesian hypothesis testing</a>.</li>
+  </ul>
+  <strong>Further reading</strong>
+  <ul>
+    <li>Polson, N. and Sokolov, V. (2026). <a href="https://vsokolov.org/books/bayes_ai_deep_learning/">Bayes, AI and Deep Learning</a> (chapters <a href="https://vsokolov.org/html/_book/03-bl.html">3</a> and <a href="https://vsokolov.org/html/_book/06-hyp.html">6</a>). doi:10.5281/zenodo.23992805</li>
+    <li>Sokolova, A. and Sokolov, V. (2026). <a href="https://vsokolov.org/books/clinical_trials_in_practice/">Clinical Trials in Practice</a> (<a href="https://vsokolov.org/clinos-book/">chapters online</a>). doi:10.5281/zenodo.23933570</li>
+    <li>Sokolova, A., Sokolov, V. and Polson, N. (2026). Some Bayesian Perspectives on Clinical Trials. <a href="https://arxiv.org/abs/2602.09208">arXiv:2602.09208</a></li>
+    <li>Sokolova, A. and Sokolov, V. (2026). E-values for adaptive clinical trials. <a href="https://arxiv.org/abs/2602.06379">arXiv:2602.06379</a></li>
+  </ul>
+  <div class="nyt">&copy; 2026 Nytel. Nightingale + Intelligence. <a href="mailto:contact@nytel.ai">contact@nytel.ai</a></div>
+</div></footer>
+
+<script src="lab.js"></script>
+<script>
+(function () {
+  var TEAL = '#2D8B8B', TDARK = '#1F6B6B', ORANGE = '#E07A3F', ODARK = '#B8531A', NAVY = '#0A1628', GRAY = '#8795A8';
+  var NS = 'http://www.w3.org/2000/svg', NARROW = window.innerWidth < 800;
+  var $ = function (id) { return document.getElementById(id); };
+  var rng = Lab.rng(2026), rng2 = Lab.rng(77);
+  var BOOK = [0.4, 0.6, 0.8, 1], NPAT = 100, MU = 0.25;
+  function eq(K) { var o = []; for (var i = 1; i <= K; i++) o.push(i / K); return o; }
+  function fp(p) { return p >= 0.01 ? p.toFixed(3) : p.toFixed(4); }
+  function pc(x, d) { return (100 * x).toFixed(d == null ? 1 : d) + '%'; }
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+
+  /* ---------- group-sequential boundaries (exact numerical integration) ---------- */
+  var cnd=function(x){var xa=Math.abs(x),c,b;if(xa>37)c=0;else{var e=Math.exp(-xa*xa/2);if(xa<7.07106781186547){b=3.52624965998911E-02*xa+0.700383064443688;b=b*xa+6.37396220353165;b=b*xa+33.912866078383;b=b*xa+112.079291497871;b=b*xa+221.213596169931;b=b*xa+220.206867912376;c=e*b;b=8.83883476483184E-02*xa+1.75566716318264;b=b*xa+16.064177579207;b=b*xa+86.7807322029461;b=b*xa+296.564248779674;b=b*xa+637.333633378831;b=b*xa+793.826512519948;b=b*xa+440.413735824752;c=c/b;}else{b=xa+0.65;b=xa+4/b;b=xa+3/b;b=xa+2/b;b=xa+1/b;c=e/b/2.506628274631;}}return x>0?1-c:c;};
+var H=0.01,GM=4,M=Math.round(2*GM/H)+1,G=new Float64Array(M),cache={},Z2=2.241402727604947;
+for(var gi=0;gi<M;gi++)G[gi]=-GM+gi*H;
+function crossP(f,B,sd){if(!f)return 2*(1-cnd(B/sd));var s=0;for(var i=0;i<M;i++){var fi=f[i];if(fi>0)s+=fi*(1-(cnd((B-G[i])/sd)-cnd((-B-G[i])/sd)));}return s*H;}
+function wt(x,B){var w=(B-Math.abs(x))/H+0.5;return w<=0?0:w>=1?1:w;}
+function stepF(f,B,sd){var out=new Float64Array(M),c=1/(sd*Math.sqrt(2*Math.PI)),j,i;
+  if(!f){for(j=0;j<M;j++){var w0=wt(G[j],B);if(w0>0)out[j]=w0*c*Math.exp(-G[j]*G[j]/(2*sd*sd));}return out;}
+  var ilo=M,ihi=-1;for(i=0;i<M;i++)if(f[i]>0){if(i<ilo)ilo=i;ihi=i;}
+  var kern=new Float64Array(2*M-1);for(i=0;i<2*M-1;i++){var o=(i-(M-1))*H;kern[i]=c*Math.exp(-o*o/(2*sd*sd));}
+  for(j=0;j<M;j++){var w1=wt(G[j],B);if(w1<=0)continue;var s=0;for(i=ilo;i<=ihi;i++)s+=f[i]*kern[j-i+M-1];out[j]=s*H*w1;}
+  return out;}
+function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cache[key];
+  var K=fr.length,f=null,prev=0,spent=0,zs=[],ps=[];
+  for(var k=0;k<K;k++){var t=fr[k],d=t-prev,sd=Math.sqrt(d),st=Math.sqrt(t),b;
+    if(rule==='naive')b=1.96;else{var target=rule==='obf'?2*(2-2*cnd(Z2/st)):0.05*Math.log(1+(Math.E-1)*t),lo=0.5,hi=14;
+      for(var it=0;it<45;it++){var m=(lo+hi)/2;if(spent+crossP(f,m*st,sd)>target)lo=m;else hi=m;}b=(lo+hi)/2;}
+    var p=crossP(f,b*st,sd);spent+=p;zs.push(b);ps.push(p);f=stepF(f,b*st,sd);prev=t;}
+  return cache[key]={fr:fr,z:zs,total:spent,p2:zs.map(function(z){return 2*(1-cnd(z));}),p1:zs.map(function(z){return 1-cnd(z);})};}
+
+
+  /* ---------- small SVG helpers ---------- */
+  function svgEl(tag, attrs, parent) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+  var MW = 360, MH = 190, ML = 46, MR = 10, MT = 14, MB = 34;
+  function Mini(xlim, ylim) {
+    return {
+      sx: function (x) { return ML + (x - xlim[0]) / (xlim[1] - xlim[0]) * (MW - ML - MR); },
+      sy: function (y) { return MH - MB - (y - ylim[0]) / (ylim[1] - ylim[0]) * (MH - MT - MB); }
+    };
+  }
+  function frame(m, xt, yt, xl, yl) {
+    var s = '';
+    yt.forEach(function (t) { var y = m.sy(t[0]).toFixed(1); s += '<line x1="' + ML + '" x2="' + (MW - MR) + '" y1="' + y + '" y2="' + y + '" stroke="#E3E8EE"/><text x="' + (ML - 6) + '" y="' + (+y + 4) + '" text-anchor="end">' + t[1] + '</text>'; });
+    xt.forEach(function (t) { var x = m.sx(t[0]).toFixed(1); s += '<text x="' + x + '" y="' + (MH - MB + 15) + '" text-anchor="middle">' + t[1] + '</text>'; });
+    s += '<line x1="' + ML + '" x2="' + (MW - MR) + '" y1="' + (MH - MB) + '" y2="' + (MH - MB) + '" stroke="#9AA6B2"/>';
+    s += '<text x="' + (ML + (MW - ML - MR) / 2) + '" y="' + (MH - 4) + '" text-anchor="middle">' + xl + '</text>';
+    s += '<text transform="rotate(-90)" x="' + (-(MT + (MH - MT - MB) / 2)) + '" y="11" text-anchor="middle">' + yl + '</text>';
+    return s;
+  }
+  // Grouped bars. groups [{label, vals}], colors per series, ymax, fmt, opts {ref:{v,label}, yl, hl}
+  function miniBars(groups, colors, ymax, fmt, o) {
+    o = o || {};
+    var m = Mini([0, groups.length], [0, ymax]), yt = [], i, s;
+    Lab.ticks(0, ymax, 4).forEach(function (v) { yt.push([v, fmt(v)]); });
+    s = frame(m, [], yt, '', o.yl || '');
+    var gw = (MW - ML - MR) / groups.length, ns = groups[0].vals.length, bw = Math.min(30, gw * 0.8 / ns);
+    groups.forEach(function (g, gi) {
+      var cx = ML + gw * (gi + 0.5);
+      s += '<text x="' + cx.toFixed(1) + '" y="' + (MH - MB + 15) + '" text-anchor="middle">' + g.label + '</text>';
+      g.vals.forEach(function (v, si) {
+        var x = cx - bw * ns / 2 + si * bw, y = m.sy(v), hl = o.hl === gi;
+        s += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + (bw - 2) + '" height="' + (m.sy(0) - y).toFixed(1) + '" fill="' + colors[si] + '"' + (hl ? ' stroke="#0A1628" stroke-width="2"' : '') + '/>';
+        s += '<text x="' + (x + bw / 2 - 1).toFixed(1) + '" y="' + (y - 4).toFixed(1) + '" text-anchor="middle" style="font-weight:600">' + fmt(v) + '</text>';
+      });
+    });
+    if (o.ref) { var yr = m.sy(o.ref.v); s += '<line x1="' + ML + '" x2="' + (MW - MR) + '" y1="' + yr + '" y2="' + yr + '" stroke="#0A1628" stroke-dasharray="5 4"/><text x="' + (MW - MR - 2) + '" y="' + (yr - 4) + '" text-anchor="end" style="font-weight:600;fill:#0A1628">' + o.ref.label + '</text>'; }
+    return '<svg viewBox="0 0 ' + MW + ' ' + MH + '" role="img" aria-label="' + esc(o.aria || 'Bar chart') + '">' + s + '</svg>';
+  }
+  // Step lines of z boundaries. series [{d, color, dash, label}]
+  function miniBounds(series, aria) {
+    var m = Mini([0, 1], [1.5, 4.5]), s = frame(m, [[0, '0%'], [0.25, '25%'], [0.5, '50%'], [0.75, '75%'], [1, '100%']], [[2, '2'], [3, '3'], [4, '4']], 'Share of patients so far', 'z needed to win');
+    series.forEach(function (se, si) {
+      var d = se.d, path = '', prev = 0;
+      d.fr.forEach(function (f, k) { var y = m.sy(Math.min(4.5, d.z[k])).toFixed(1); path += (k ? 'L' : 'M') + m.sx(prev).toFixed(1) + ',' + y + 'L' + m.sx(f).toFixed(1) + ',' + y; prev = f; });
+      s += '<path d="' + path + '" fill="none" stroke="' + se.color + '" stroke-width="2.5"' + (se.dash ? ' stroke-dasharray="5 4"' : '') + '/>';
+      s += '<text x="' + (ML + 8) + '" y="' + (MT + 8 + si * 14) + '" style="fill:' + se.color + ';font-weight:600">' + se.label + '</text>';
+    });
+    return '<svg viewBox="0 0 ' + MW + ' ' + MH + '" role="img" aria-label="' + esc(aria) + '">' + s + '</svg>';
+  }
+
+  /* ---------- Figure 1: timeline ---------- */
+  (function () {
+    var o = design(BOOK, 'obf'), p = design(BOOK, 'poc'), s = '', X = function (f) { return 60 + 640 * f; };
+    if (NARROW) {
+      $('fig1').setAttribute('viewBox', '0 0 360 380');
+      s += '<text x="10" y="18" style="font-weight:600;fill:#0A1628">Look: share of patients, then p needed to stop</text>';
+      BOOK.forEach(function (f, k) {
+        var y = 50 + k * 82;
+        s += '<circle cx="24" cy="' + (y + 10) + '" r="12" fill="#fff" stroke="#0A1628" stroke-width="2"/><text x="24" y="' + (y + 14) + '" text-anchor="middle" style="font-weight:700;fill:#0A1628">' + (k + 1) + '</text>';
+        s += '<text x="46" y="' + (y + 14) + '" style="font-weight:600;fill:#0A1628">' + Math.round(f * 100) + '% of patients</text>';
+        [[o, 150, '#2D8B8B', 'Strict early'], [p, 255, '#1F6B6B', 'Same-ish']].forEach(function (r) {
+          s += '<rect x="' + (r[1] - 104) + '" y="' + (y + 24) + '" width="100" height="34" rx="8" fill="#fff" stroke="' + r[2] + '" stroke-width="2"/><text x="' + (r[1] - 54) + '" y="' + (y + 38) + '" text-anchor="middle" style="font-size:10px">' + r[3] + '</text><text x="' + (r[1] - 54) + '" y="' + (y + 52) + '" text-anchor="middle" style="font-family:IBM Plex Mono,monospace;font-weight:600;fill:#0A1628">' + fp(r[0].p2[k]) + '</text>';
+        });
+      });
+      s += '<text x="46" y="' + 372 + '" style="font-size:10px">Strict early = O’Brien-Fleming. Same-ish = Pocock.</text>';
+      $('fig1').innerHTML = s; return;
+    }
+    s += '<text x="60" y="22" style="font-weight:600;fill:#0A1628">Patients join the trial</text>';
+    s += '<rect x="' + X(0) + '" y="62" width="640" height="16" rx="8" fill="#E8F4F4" stroke="#1F6B6B"/>';
+    s += '<rect x="' + X(0) + '" y="62" width="' + (640 * 0.4) + '" height="16" rx="8" fill="#2D8B8B" opacity=".55"/>';
+    s += '<text x="60" y="100" text-anchor="middle">start</text>';
+    BOOK.forEach(function (f, k) {
+      var x = X(f);
+      s += '<line x1="' + x + '" x2="' + x + '" y1="46" y2="86" stroke="#0A1628" stroke-width="2"/>';
+      s += '<circle cx="' + x + '" cy="38" r="12" fill="#fff" stroke="#0A1628" stroke-width="2"/><text x="' + x + '" y="42" text-anchor="middle" style="font-weight:700;fill:#0A1628">' + (k + 1) + '</text>';
+      s += '<text x="' + x + '" y="100" text-anchor="middle">' + Math.round(f * 100) + '% of patients</text>';
+    });
+    [['Strict early bar (O’Brien-Fleming): stop only if p is below', o, 150, '#2D8B8B'], ['About the same raised bar (Pocock): stop only if p is below', p, 215, '#1F6B6B']].forEach(function (r) {
+      s += '<text x="10" y="' + (r[2] - 20) + '" style="font-weight:600;fill:#0A1628">' + r[0] + '</text>';
+      BOOK.forEach(function (f, k) {
+        var x = X(f);
+        s += '<rect x="' + (x - 52) + '" y="' + (r[2] - 10) + '" width="104" height="30" rx="8" fill="#fff" stroke="' + r[3] + '" stroke-width="2"/>';
+        s += '<text x="' + x + '" y="' + (r[2] + 10) + '" text-anchor="middle" style="font-family:IBM Plex Mono,monospace;font-weight:600;fill:#0A1628">' + fp(r[1].p2[k]) + '</text>';
+      });
+    });
+    $('fig1').innerHTML = s;
+  })();
+
+  /* ---------- Figure 2: false alarms by number of looks ---------- */
+  (function () {
+    var Ks = [1, 2, 3, 5, 10, 20], W = 640, x0 = 56, x1 = 626, y0 = 214, y1 = 20, ymax = 0.3, s = '', bw = 30, dg = 1;
+    if (NARROW) { W = 360; x0 = 40; x1 = 352; y0 = 214; bw = 20; dg = 0; $('fig2').setAttribute('viewBox', '0 0 360 260'); }
+    var sy = function (v) { return y0 - (v / ymax) * (y0 - y1); };
+    [0, 0.1, 0.2, 0.3].forEach(function (v) { s += '<line x1="' + x0 + '" x2="' + x1 + '" y1="' + sy(v) + '" y2="' + sy(v) + '" stroke="#E3E8EE"/><text x="' + (x0 - 8) + '" y="' + (sy(v) + 4) + '" text-anchor="end">' + Math.round(v * 100) + '%</text>'; });
+    var gw = (x1 - x0) / Ks.length;
+    Ks.forEach(function (K, i) {
+      var cx = x0 + gw * (i + 0.5), a = design(eq(K), 'naive').total, b = design(eq(K), 'obf').total;
+      [[a, ORANGE, -bw - 2], [b, TEAL, 2]].forEach(function (r) {
+        s += '<rect x="' + (cx + r[2]) + '" y="' + sy(r[0]) + '" width="' + bw + '" height="' + (y0 - sy(r[0])) + '" fill="' + r[1] + '"/><text x="' + (cx + r[2] + bw / 2) + '" y="' + (sy(r[0]) - 4) + '" text-anchor="middle" style="font-weight:600">' + pc(r[0], dg) + '</text>';
+      });
+      s += '<text x="' + cx + '" y="' + (y0 + 18) + '" text-anchor="middle">' + K + (NARROW ? '' : (K === 1 ? ' look' : ' looks')) + '</text>';
+    });
+    s += '<text transform="rotate(-90)" x="-117" y="14" text-anchor="middle">Chance of a false alarm' + (NARROW ? ' (looks below)' : '') + '</text>';
+    $('fig2').innerHTML = s;
+  })();
+
+  /* ---------- Figure 3: real trials ---------- */
+  (function () {
+    var rows = [['CALGB 49907', 633, 1800], ['ASTIN', 966, 1300]], s = '', X0 = NARROW ? 0 : 130, WB = NARROW ? 220 : 440;
+    if (NARROW) $('fig3').setAttribute('viewBox', '0 0 360 190');
+    rows.forEach(function (r, i) {
+      var y = (NARROW ? 24 : 20) + i * (NARROW ? 80 : 62), w = WB, sh = r[1] / r[2];
+      if (NARROW) y += 14; s += '<text x="0" y="' + (NARROW ? y - 6 : y + 16) + '" style="font-weight:600;fill:#0A1628">' + r[0] + '</text>';
+      s += '<rect x="' + X0 + '" y="' + y + '" width="' + w + '" height="26" rx="6" fill="#E3E8EE"/><rect x="' + X0 + '" y="' + y + '" width="' + (w * sh) + '" height="26" rx="6" fill="#E07A3F"/>';
+      s += '<text x="' + (X0 + w * sh - 8) + '" y="' + (y + 17) + '" text-anchor="end" style="fill:#fff;font-weight:700">' + r[1].toLocaleString('en-US') + '</text>';
+      s += '<text x="' + (X0 + w + 6) + '" y="' + (y + 17) + '">of ' + r[2].toLocaleString('en-US') + '</text>';
+      s += '<text x="' + X0 + '" y="' + (y + 42) + '">stopped at ' + Math.round(sh * 100) + '% of the plan</text>';
+    });
+    $('fig3').innerHTML = s;
+  })();
+
+  /* ---------- Truth vs what the trial sees ---------- */
+  (function () {
+    var N = 100, LK = [40, 60, 80, 100], RP = 0.40, RD = { 1: 0.60, 0: 0.40 }, mode = 1, timers = [], r3 = Lab.rng(515);
+    function pval(a, b, n) { var pp = (a + b) / (2 * n), se = Math.sqrt(pp * (1 - pp) * 2 / n); if (!se) return 1; return 2 * (1 - cnd(Math.abs(a - b) / n / se)); }
+    function draw(eff, rg) { var a = [], b = [], i; for (i = 0; i < N; i++) { a.push(rg() < RP ? 1 : 0); b.push(rg() < RD[eff] ? 1 : 0); } return { a: a, b: b }; }
+    function sumTo(x, n) { var s = 0, i; for (i = 0; i < n; i++) s += x[i]; return s; }
+    function looks(t) { return LK.map(function (n) { var a = sumTo(t.a, n), b = sumTo(t.b, n); return { n: n, a: a, b: b, p: pval(a, b, n) }; }); }
+    function firstStop(ls) { for (var k = 0; k < ls.length; k++) if (ls[k].p < 0.05) return k; return -1; }
+    var rate = {}; [0, 1].forEach(function (e) { var w = 0, i; for (i = 0; i < 1000; i++) if (firstStop(looks(draw(e, r3))) >= 0) w++; rate[e] = w / 1000; });
+    function rows(box, arr, n) { box.innerHTML = arr.map(function (v, i) { return '<svg class="pp ' + (i < n ? (v ? 'yes' : 'no') : 'unseen') + '" viewBox="0 0 16 20" aria-hidden="true"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg>'; }).join(''); }
+    function el0(tag, cls) { var e = document.createElement(tag); e.className = cls; return e; }
+    function bar(lbl, r, col) { return '<div class="tbar"><span style="width:5.5rem">' + lbl + '</span><span class="b" style="width:' + Math.round(r * 200) + 'px;background:' + col + '"></span><b>' + Math.round(r * 100) + '%</b></div>'; }
+    function deal() {
+      timers.forEach(clearTimeout); timers = [];
+      var t = draw(mode, rng2), ls = looks(t), st = firstStop(ls), tb = document.querySelector('#tvTab tbody');
+      $('tvTrue').innerHTML = bar('Placebo', RP, '#8795A8') + bar('Drug', RD[mode], TEAL) + '<p class="note" style="margin:.3rem 0 0">True share who get better. The true gap is ' + Math.round((RD[mode] - RP) * 100) + ' points.</p>';
+      tb.innerHTML = ''; $('tvVerdict').textContent = ''; rows($('tvP'), t.a, 0); rows($('tvD'), t.b, 0);
+      $('tvP').setAttribute('aria-label', 'Placebo group: ' + sumTo(t.a, N) + ' of ' + N + ' got better'); $('tvD').setAttribute('aria-label', 'Drug group: ' + sumTo(t.b, N) + ' of ' + N + ' got better');
+      ls.forEach(function (l, k) {
+        timers.push(setTimeout(function () {
+          rows($('tvP'), t.a, l.n); rows($('tvD'), t.b, l.n);
+          var tr = document.createElement('tr'), gap = l.b - l.a, late = st >= 0 && k > st;
+          tr.className = k === st ? 'stop' : late ? 'late' : '';
+          tr.innerHTML = '<td>' + (k + 1) + '</td><td>' + l.n + '</td><td>' + l.a + '%</td><td>' + l.b + '%</td><td>' + (gap > 0 ? '+' : '') + gap + ' points</td><td>' + fp(l.p) + (k === st ? ' stop' : late ? ' (already stopped)' : '') + '</td>';
+          tb.appendChild(tr);
+          if (k === ls.length - 1) {
+            var v = st < 0 ? 'The naive rule (stop if p is below 0.05) never stops here.' : 'The naive rule stops at look ' + (st + 1) + ' with a gap of ' + (ls[st].b - ls[st].a) + ' points.';
+            v += mode ? (st < 0 ? ' The drug works, but this trial missed it.' : ' A correct stop.') : (st < 0 ? ' Correct: nothing is there.' : ' But the drug does nothing, so this is a false stop.');
+            $('tvVerdict').textContent = v;
+            $('tvCap').textContent = 'Out of 1,000 pretend trials like this one (' + (mode ? 'a real effect' : 'no effect') + '), the naive rule stops in ' + pc(rate[mode], 0) + (mode ? ' (power by looking four times).' : ' (a false alarm; 5% is the goal).');
+          }
+        }, 500 * (k + 1)));
+      });
+    }
+    $('tvW').addEventListener('click', function () { mode = 1; $('tvW').classList.add('on'); $('tvN').classList.remove('on'); deal(); });
+    $('tvN').addEventListener('click', function () { mode = 0; $('tvN').classList.add('on'); $('tvW').classList.remove('on'); deal(); });
+    $('tvDeal').addEventListener('click', deal);
+    deal();
+  })();
+
+  /* ---------- Main lab ---------- */
+  var PRESETS = [
+    { id: 'coin', label: 'Coin, 10 peeks', K: 10, rule: 'naive', eff: 0, x: 'Share of flips so far', y: 'Evidence the coin is unfair (z)', what: 'flips', note: 'A fair coin. Any "unfair" verdict is a false alarm.' },
+    { id: 'ft', label: 'Free throws, 5 peeks', K: 5, rule: 'naive', eff: 0, x: 'Share of shots so far', y: 'Evidence one player is better (z)', what: 'shots', note: 'Two players with equal skill. Any "better" verdict is a false alarm.' },
+    { id: 'obf', label: 'Trial: strict early bar', K: 'book', rule: 'obf', eff: 0, x: 'Share of patients so far', y: 'Evidence the drug works (z)', what: 'patients', note: 'A useless drug, 4 looks, a very strict bar early on (O’Brien-Fleming).' },
+    { id: 'poc', label: 'Trial: same bar each look', K: 'book', rule: 'poc', eff: 0, x: 'Share of patients so far', y: 'Evidence the drug works (z)', what: 'patients', note: 'A useless drug, 4 looks, about the same raised bar at every look (Pocock).' },
+    { id: 'work', label: 'Drug that works', K: 'book', rule: 'obf', eff: 1, x: 'Share of patients so far', y: 'Evidence the drug works (z)', what: 'patients', note: 'A real effect: how often, and how early, does the trial stop?' }
+  ];
+  var KS = [[1, '1 (no peeking)'], [2, '2'], [5, '5'], [10, '10'], ['book', '4 (book design)']];
+  var RULES = [['naive', 'Usual bar (p < 0.05) each look'], ['poc', 'Same raised bar (Pocock)'], ['obf', 'Strict early bar (O’Brien-Fleming)']];
+  var RNOTE = { naive: 'No fix: the usual 0.05 bar at every look.', poc: 'Pocock-type: about the same raised bar at every look.', obf: 'O’Brien-Fleming: a very high bar early, near normal at the end.' };
+  var S = { K: 10, rule: 'naive', eff: 0, pre: PRESETS[0], runs: 0, wins: 0, pat: 0 };
+  var plot = Lab.Plot($('plot'), { xlim: [0, 1], ylim: [-5, 5], xlabel: 'Share of patients so far', ylabel: 'Evidence (z)', label: 'Random-walk paths of the z statistic with the stopping boundary', xfmt: function (v) { return Math.round(v * 100) + '%'; } });
+  var svg = $('plot'), defs = svgEl('defs', {}, svg), ov = svgEl('g', {}, svg), pg = svgEl('g', {}, svg), clipN = 0;
+  function frs() { return S.K === 'book' ? BOOK : eq(S.K); }
+  function dsg() { return design(frs(), S.rule); }
+  function cy(z) { return Math.max(-5, Math.min(5, z)); }
+
+  function drawBounds() {
+    var d = dsg(), up = '', lo = '', prev = 0, P = plot, zoneU = '', zoneL = '';
+    d.fr.forEach(function (f, k) {
+      var b = Math.min(5, d.z[k]), x0 = P.sx(prev).toFixed(1), x1 = P.sx(f).toFixed(1);
+      up += (k ? 'L' : 'M') + x0 + ',' + P.sy(b).toFixed(1) + 'L' + x1 + ',' + P.sy(b).toFixed(1);
+      lo += (k ? 'L' : 'M') + x0 + ',' + P.sy(-b).toFixed(1) + 'L' + x1 + ',' + P.sy(-b).toFixed(1);
+      prev = f;
+    });
+    var xr = P.sx(1).toFixed(1), xl = P.sx(0).toFixed(1);
+    ov.innerHTML = '';
+    svgEl('path', { d: up + 'L' + xr + ',' + P.sy(5) + 'L' + xl + ',' + P.sy(5) + 'Z', fill: '#FDF0E8' }, ov);
+    svgEl('path', { d: lo + 'L' + xr + ',' + P.sy(-5) + 'L' + xl + ',' + P.sy(-5) + 'Z', fill: '#FDF0E8' }, ov);
+    svgEl('line', { x1: xl, x2: xr, y1: P.sy(0), y2: P.sy(0), stroke: '#9AA6B2', 'stroke-dasharray': '3 3' }, ov);
+    svgEl('path', { d: up, fill: 'none', stroke: ORANGE, 'stroke-width': 3 }, ov);
+    svgEl('path', { d: lo, fill: 'none', stroke: ORANGE, 'stroke-width': 3 }, ov);
+    svgEl('text', { x: P.sx(0) + 6, y: P.sy(5) + 14, style: 'fill:#B8531A;font-weight:600' }, ov).textContent = 'Stop: drug looks helpful';
+    svgEl('text', { x: P.sx(1) - 6, y: P.sy(0) - 6, 'text-anchor': 'end', style: 'fill:#5A6B7B' }, ov).textContent = 'No difference';
+    svgEl('text', { x: P.sx(0) + 6, y: P.sy(-5) - 6, style: 'fill:#B8531A;font-weight:600' }, ov).textContent = 'Stop: drug looks harmful';
+  }
+
+  function trial() {
+    var d = dsg(), nk = d.fr.map(function (f) { return Math.round(f * NPAT); }), s = 0, zs = [], stopAt = -1, k = 0, n;
+    for (n = 1; n <= NPAT; n++) {
+      s += Lab.normal(rng) + (S.eff ? MU : 0); zs.push(s / Math.sqrt(n));
+      if (k < nk.length && n === nk[k]) { if (stopAt < 0 && Math.abs(zs[n - 1]) > d.z[k]) stopAt = k; k++; }
+    }
+    return { zs: zs, stopAt: stopAt, nk: nk, n: stopAt < 0 ? NPAT : nk[stopAt], win: stopAt >= 0 };
+  }
+
+  function drawTrial(tr) {
+    var P = plot, kids = pg.childNodes, i;
+    for (i = 0; i < kids.length; i++) kids[i].setAttribute('opacity', '0.28');
+    while (kids.length > 6) pg.removeChild(kids[0]);
+    var g = svgEl('g', {}, pg), id = 'clip' + (++clipN), cp = svgEl('clipPath', { id: id }, defs), rect = svgEl('rect', { x: P.sx(0), y: 0, width: 0, height: 360 }, cp);
+    g.setAttribute('clip-path', 'url(#' + id + ')');
+    var pt = function (n) { return P.sx(n / NPAT).toFixed(1) + ',' + P.sy(cy(tr.zs[n - 1])).toFixed(1); };
+    var a = '', b = '';
+    for (i = 2; i <= tr.n; i++) a += (i === 2 ? 'M' : 'L') + pt(i);
+    if (tr.n < NPAT) for (i = tr.n; i <= NPAT; i++) b += (i === tr.n ? 'M' : 'L') + pt(i);
+    if (b) svgEl('path', { d: b, fill: 'none', stroke: GRAY, 'stroke-width': 1.5, 'stroke-dasharray': '4 3' }, g);
+    svgEl('path', { d: a, fill: 'none', stroke: TDARK, 'stroke-width': 2.2 }, g);
+    tr.nk.forEach(function (nn, k) {
+      if (nn > tr.n) return;
+      svgEl('circle', { cx: P.sx(nn / NPAT), cy: P.sy(cy(tr.zs[nn - 1])), r: tr.win && nn === tr.n ? 8 : 4.5, fill: tr.win && nn === tr.n ? ORANGE : '#fff', stroke: tr.win && nn === tr.n ? '#fff' : TDARK, 'stroke-width': 2 }, g);
+    });
+    var w = P.sx(1) - P.sx(0) + 4;
+    Lab.tween(900, function (t) { rect.setAttribute('width', (w * t).toFixed(1)); });
+  }
+
+  function chip(txt, val, warm) { return '<span class="chip' + (warm ? ' warm' : '') + '">' + txt + ' <b>' + val + '</b></span>'; }
+  function renderChips() {
+    var d = dsg(), h = chip('Looks', d.fr.length) + chip('Bar at look 1', '|z| &gt; ' + d.z[0].toFixed(2) + ' (two-sided p &lt; ' + fp(d.p2[0]) + ')') +
+      chip(S.eff ? 'Chance to stop with a significant gap (exact)' : 'False alarm chance (exact)', pc(d.total), S.rule === 'naive' && d.fr.length > 1);
+    if (S.runs) h += chip('Stopped on a significant gap, your trials', S.wins + ' of ' + S.runs, true) + chip('Average ' + S.pre.what, (S.pat / S.runs).toFixed(0) + ' of ' + NPAT);
+    $('chips').innerHTML = h;
+    $('winKey').textContent = S.eff ? 'Stopped on a significant gap (correct)' : 'Stopped on a significant gap (false alarm)';
+  }
+  function setIcons(res) {
+    var ic = $('icons').childNodes, i;
+    for (i = 0; i < 100; i++) ic[i].className = res && res[i] ? 'win' : '';
+  }
+  function record(tr) { S.runs++; if (tr.win) S.wins++; S.pat += tr.n; }
+  function reset() {
+    S.runs = 0; S.wins = 0; S.pat = 0; pg.innerHTML = ''; setIcons(null); drawBounds(); renderChips();
+    $('ruleNote').textContent = RNOTE[S.rule];
+    $('plotNote').innerHTML = esc(S.pre.note) + ' Computer paths: 100 ' + S.pre.what + ' per trial.';
+    plot.setLabels(S.pre.x, S.pre.y);
+    $('iconTitle').textContent = '100 pretend trials, one dot each' + (S.eff ? ' (a real effect)' : ' (no real effect)');
+    mark();
+  }
+  function mark() {
+    document.querySelectorAll('#kBtns .btn').forEach(function (b) { b.classList.toggle('on', String(S.K) === b.dataset.v); });
+    document.querySelectorAll('#ruleBtns .btn').forEach(function (b) { b.classList.toggle('on', S.rule === b.dataset.v); });
+    document.querySelectorAll('#effBtns .btn').forEach(function (b) { b.classList.toggle('on', String(S.eff) === b.dataset.v); });
+  }
+  function mkBtn(parent, label, v, cls, fn) { var b = document.createElement('button'); b.type = 'button'; b.className = 'btn' + (cls ? ' ' + cls : ''); b.textContent = label; b.dataset.v = String(v); b.addEventListener('click', fn); parent.appendChild(b); return b; }
+  KS.forEach(function (k) { mkBtn($('kBtns'), k[1], k[0], '', function () { S.K = k[0]; reset(); }); });
+  RULES.forEach(function (r) { mkBtn($('ruleBtns'), r[1], r[0], '', function () { S.rule = r[0]; reset(); }); });
+  [[0, 'Does nothing'], [1, 'Works']].forEach(function (e) { mkBtn($('effBtns'), e[1], e[0], '', function () { S.eff = e[0]; reset(); }); });
+  PRESETS.forEach(function (p) {
+    var b = mkBtn($('examples'), p.label, p.id, '', function () {
+      S.K = p.K; S.rule = p.rule; S.eff = p.eff; S.pre = p; reset();
+      document.querySelectorAll('#examples .btn').forEach(function (x) { x.classList.toggle('on', x === b); });
+      var tr = trial(); record(tr); drawTrial(tr); renderChips();
+    });
+  });
+  for (var ii = 0; ii < 100; ii++) $('icons').appendChild(document.createElement('i'));
+  $('run1').addEventListener('click', function () { var tr = trial(); record(tr); drawTrial(tr); renderChips(); });
+  $('run100').addEventListener('click', function () {
+    var res = [], i, tr; for (i = 0; i < 100; i++) { tr = trial(); record(tr); res.push(tr.win); }
+    setIcons(res); renderChips();
+  });
+  $('keys').innerHTML = '<span><span class="sw" style="background:#E07A3F"></span>Bar to stop and win</span><span><span class="sw" style="background:#1F6B6B"></span>One trial: <span class="tip" tabindex="0" data-tip="z: how many noise units the gap between drug and placebo is from zero. Bigger means stronger evidence.">z</span> so far (dots are looks)</span><span><span class="sw" style="background:#8795A8"></span>What would have happened if it kept going</span>';
+
+  /* ---------- Question cards ---------- */
+  var score = Lab.Score($('score')), Q = $('qcards');
+  function host(c) { var h = document.createElement('div'); h.className = 'mini'; c.el.appendChild(h); return h; }
+  function nearest(vals, x) { var best = 0; vals.forEach(function (v, i) { if (Math.abs(v - x) < Math.abs(vals[best] - x)) best = i; }); return best; }
+  var h1, h2, h3, h4, h5, h6, h7, c;
+
+  // 1: five peeks
+  var r5 = design(eq(5), 'naive').total, opts1 = [0.05, 0.09, 0.14, 0.25];
+  c = Lab.QuestionCard(Q, {
+    tag: 'Predict 1', score: score, type: 'choice',
+    q: 'A useless drug. You check 5 times, each time asking "is p below 0.05?". How often will you wrongly see a significant gap, drug better or worse?',
+    options: [{ value: 0, label: '5%' }, { value: 1, label: 'About 9%' }, { value: 2, label: 'About 14%' }, { value: 3, label: 'About 25%' }],
+    answer: function () { return nearest(opts1, r5); },
+    onReveal: function () {
+      var g = [1, 2, 3, 5, 10, 20].map(function (K) { return { label: K + '', vals: [design(eq(K), 'naive').total] }; });
+      h1.innerHTML = miniBars(g, [ORANGE], 0.3, function (v) { return v < 1 && v > 0 ? (v * 100).toFixed(v < 0.2 ? 1 : 0) + '%' : '0'; }, { ref: { v: 0.05, label: '5%' }, hl: 3, yl: 'False alarm chance', aria: 'False alarm chance by number of looks' });
+    },
+    explain: function () { return 'Five looks give ' + pc(r5) + ', nearly three times the 5% you wanted (bars: 1, 2, 3, 5, 10, 20 looks).'; }
+  }); h1 = host(c);
+
+  // 2: OBF first look
+  var o2 = design(eq(2), 'obf'), opts2 = [0.05, 0.01, 0.003];
+  c = Lab.QuestionCard(Q, {
+    tag: 'Predict 2', score: score, type: 'choice',
+    q: 'Two looks: halfway and at the end, with O’Brien-Fleming. About what p (two-sided) must you see at the halfway look to stop?',
+    options: [{ value: 0, label: 'p below 0.05' }, { value: 1, label: 'p below 0.01' }, { value: 2, label: 'p below 0.003' }],
+    answer: function () { return nearest(opts2, o2.p2[0]); },
+    onReveal: function () { h2.innerHTML = miniBounds([{ d: design(eq(2), 'naive'), color: GRAY, dash: 1, label: 'p < 0.05 each look' }, { d: o2, color: TEAL, label: 'O’Brien-Fleming' }], 'Boundaries for two looks'); },
+    explain: function () { return 'Halfway needs p below ' + fp(o2.p2[0]) + ' (z above ' + o2.z[0].toFixed(2) + '). The final look keeps z above ' + o2.z[1].toFixed(2) + ', almost the usual 1.96.'; }
+  }); h2 = host(c);
+
+  // 3: last look
+  var o3 = design(eq(4), 'obf'), p3 = design(eq(4), 'poc');
+  c = Lab.QuestionCard(Q, {
+    tag: 'Predict 3', score: score, type: 'choice',
+    q: 'Four equal looks. Which design asks for MORE evidence at the very last look?',
+    options: [{ value: 'obf', label: 'O’Brien-Fleming' }, { value: 'poc', label: 'Pocock' }, { value: 'same', label: 'The same' }],
+    answer: function () { return p3.z[3] > o3.z[3] ? 'poc' : 'obf'; },
+    onReveal: function () { h3.innerHTML = miniBounds([{ d: p3, color: TDARK, label: 'Pocock' }, { d: o3, color: TEAL, label: 'O’Brien-Fleming' }], 'Boundaries for four looks'); },
+    explain: function () { return 'Last look: Pocock z above ' + p3.z[3].toFixed(2) + ', O’Brien-Fleming ' + o3.z[3].toFixed(2) + '. Pocock stops easily early and pays at the end.'; }
+  }); h3 = host(c);
+
+  // 4: p = 0.01 at look 1
+  var ob = design(BOOK, 'obf'), pk = design(BOOK, 'poc');
+  c = Lab.QuestionCard(Q, {
+    tag: 'Predict 4', score: score, type: 'choice',
+    q: 'Book design, first look (40% of patients). You see two-sided p = 0.01. Which design stops?',
+    options: [{ value: 'both', label: 'Both' }, { value: 'poc', label: 'Only Pocock' }, { value: 'obf', label: 'Only O’Brien-Fleming' }, { value: 'none', label: 'Neither' }],
+    answer: function () { var a = ob.p2[0] > 0.01, b = pk.p2[0] > 0.01; return a && b ? 'both' : b ? 'poc' : a ? 'obf' : 'none'; },
+    onReveal: function () {
+      var g = BOOK.map(function (f, k) { return { label: 'Look ' + (k + 1), vals: [ob.p2[k], pk.p2[k]] }; });
+      h4.innerHTML = miniBars(g, [TEAL, TDARK], 0.05, function (v) { return v === 0 ? '0' : v.toFixed(4).replace(/0+$/, '').replace(/\.$/, ''); }, { ref: { v: 0.01, label: 'your p = 0.01' }, yl: 'p needed to stop (two-sided)', aria: 'p thresholds for O’Brien-Fleming and Pocock at four looks' });
+    },
+    explain: function () { return 'A look stops if your p is below its bar. At look 1 the bars are ' + fp(ob.p2[0]) + ' (O’Brien-Fleming, light teal) and ' + fp(pk.p2[0]) + ' (Pocock, dark teal).'; }
+  }); h4 = host(c);
+
+  // 5: early stop overestimates
+  var sim5 = (function () {
+    var n = 40, zc = ob.z[0], all = [], st = [], i, S40, est;
+    for (i = 0; i < 40000; i++) { S40 = MU * n + Math.sqrt(n) * Lab.normal(rng2); est = S40 / n; all.push(est); if (Math.abs(S40 / Math.sqrt(n)) > zc) st.push(est); }
+    return { all: all, st: st, meanSt: Lab.mean(st), meanAll: Lab.mean(all), share: st.length / all.length };
+  })();
+  c = Lab.QuestionCard(Q, {
+    tag: 'Predict 5', score: score, type: 'choice',
+    q: 'The drug truly helps a little (0.25 on this scale). A trial stops at look 1 because it crossed the bar. Is its estimate of the effect (the size of the gap) too big, too small, or right?',
+    options: [{ value: 'big', label: 'Too big' }, { value: 'small', label: 'Too small' }, { value: 'right', label: 'About right' }],
+    answer: function () { return sim5.meanSt > MU * 1.1 ? 'big' : sim5.meanSt < MU * 0.9 ? 'small' : 'right'; },
+    onReveal: function () {
+      var lo = -0.4, hi = 1.4, nb = 36, ha = Lab.histogram(sim5.all, lo, hi, nb).density, hs = Lab.histogram(sim5.st, lo, hi, nb).density;
+      var ymax = Math.ceil(Math.max.apply(null, ha.concat(hs)) * 1.1 * 2) / 2, m = Mini([lo, hi], [0, ymax]), s = frame(m, [[0, '0'], [0.5, '0.5'], [1, '1']], [], 'Estimated effect', 'Share of trials');
+      var bw = (m.sx(hi) - m.sx(lo)) / nb;
+      ha.forEach(function (v, i) { s += '<rect x="' + (m.sx(lo) + i * bw + 0.5).toFixed(1) + '" y="' + m.sy(v).toFixed(1) + '" width="' + (bw - 1).toFixed(1) + '" height="' + (m.sy(0) - m.sy(v)).toFixed(1) + '" fill="#2D8B8B" opacity=".55"/>'; });
+      hs.forEach(function (v, i) { s += '<rect x="' + (m.sx(lo) + i * bw + 0.5).toFixed(1) + '" y="' + m.sy(v).toFixed(1) + '" width="' + (bw - 1).toFixed(1) + '" height="' + (m.sy(0) - m.sy(v)).toFixed(1) + '" fill="#E07A3F" opacity=".8"/>'; });
+      s += '<line x1="' + m.sx(MU) + '" x2="' + m.sx(MU) + '" y1="' + MT + '" y2="' + (MH - MB) + '" stroke="#0A1628" stroke-width="2" stroke-dasharray="4 3"/><text x="' + (m.sx(MU) + 4) + '" y="' + (MT + 10) + '" style="font-weight:600;fill:#0A1628">true 0.25</text>';
+      s += '<text x="' + (ML + 6) + '" y="' + (MT + 28) + '" style="fill:#2D8B8B;font-weight:600">all trials</text><text x="' + (ML + 6) + '" y="' + (MT + 42) + '" style="fill:#B8531A;font-weight:600">stopped at look 1</text>';
+      h5.innerHTML = '<svg viewBox="0 0 ' + MW + ' ' + MH + '" role="img" aria-label="Histograms of estimated effect, all trials and trials stopped at look 1">' + s + '</svg>';
+    },
+    explain: function () { return 'Only ' + pc(sim5.share) + ' of 40,000 pretend trials stop at look 1. Their average estimate is ' + sim5.meanSt.toFixed(2) + ', against a true 0.25: lucky data cross the bar.'; }
+  }); h5 = host(c);
+
+  // 6: Bayesian rare-disease trial (book table)
+  var BT = [['No effect', 0.095], ['Small', 0.281], ['Moderate', 0.543], ['Large', 0.807]];
+  c = Lab.QuestionCard(Q, {
+    tag: 'Predict 6', score: score, type: 'choice',
+    q: 'A small trial stops early if the chance the drug is better, given the data so far (the posterior idea from module 1), exceeds 95%. It checks at 3 looks. The drug does nothing. How often does it stop and win, counted over 1,000 pretend trials?',
+    options: [{ value: 0, label: 'Under 1%' }, { value: 1, label: 'About 5%' }, { value: 2, label: 'About 10%' }, { value: 3, label: 'About 25%' }],
+    answer: function () { return nearest([0.005, 0.05, 0.1, 0.25], BT[0][1]); },
+    onReveal: function () { h6.innerHTML = miniBars(BT.map(function (r) { return { label: r[0], vals: [r[1]] }; }), [TEAL], 1, function (v) { return (v * 100).toFixed(v < 0.1 ? 1 : 0) + '%'; }, { hl: 0, ref: { v: 0.05, label: '5%' }, yl: 'Stopped for efficacy', aria: 'Book table: probability of stopping for efficacy by true effect' }); },
+    explain: function () { return 'Book table (1,000 pretend trials each): 9.5% with no effect, nearly double 5%. Same problem, even when the rule is the chance the drug is better.'; }
+  }); h6 = host(c);
+
+  // 7: sample size
+  var FIX = 467, OBFN = 478, POCN = Math.round(FIX * 1.18);
+  c = Lab.QuestionCard(Q, {
+    tag: 'Predict 7', score: score, type: 'choice',
+    q: 'One final look needs 467 patients. A Pocock design with 4 looks can use up to about 18% more. Planning to look early costs extra patients, to keep the total false-alarm chance at 5% and the same power (the chance a trial finds a real effect, module 3). How many extra patients is that?',
+    options: [{ value: 0, label: 'About 11' }, { value: 1, label: 'About 40' }, { value: 2, label: 'About 84' }, { value: 3, label: 'About 150' }],
+    answer: function () { return nearest([11, 40, 84, 150], POCN - FIX); },
+    onReveal: function () { h7.innerHTML = miniBars([{ label: 'One look', vals: [FIX] }, { label: 'O’B-F', vals: [OBFN] }, { label: 'Pocock', vals: [POCN] }], [TEAL], 600, function (v) { return String(Math.round(v)); }, { yl: 'Largest sample (patients)', hl: 2, aria: 'Maximum sample size by design' }); },
+    explain: function () { return 'Pocock: about ' + POCN + ' patients, ' + (POCN - FIX) + ' more. O’Brien-Fleming: 478, only 11 more (book design, about 2% and 18%).'; }
+  }); h7 = host(c);
+
+  Lab.CodeBox($('code'), {
+    py: 'import numpy as np\n' +
+      'rng = np.random.default_rng(1)\n' +
+      'n, looks, sims = 100, 5, 20000\n' +
+      'x = rng.standard_normal((sims, n))      # useless drug: no effect\n' +
+      'k = np.arange(1, looks + 1) * n // looks  # patients at each look\n' +
+      'z = np.cumsum(x, axis=1)[:, k - 1] / np.sqrt(k)\n' +
+      'wins = (np.abs(z) > 1.96).any(axis=1)   # any look "significant"\n' +
+      'print(wins.mean())                      # about 0.14, not 0.05',
+    r: 'set.seed(1)\n' +
+      'n <- 100; looks <- 5; sims <- 20000\n' +
+      'k <- (1:looks) * n / looks            # patients at each look\n' +
+      'win <- replicate(sims, {\n' +
+      '  z <- cumsum(rnorm(n))[k] / sqrt(k)  # useless drug: no effect\n' +
+      '  any(abs(z) > 1.96)                  # any look "significant"\n' +
+      '})\n' +
+      'mean(win)                             # about 0.14, not 0.05'
+  });
+
+  S.pre = PRESETS[0]; reset();
+  document.querySelector('#examples .btn').classList.add('on');
+  var t0 = trial(); record(t0); drawTrial(t0); renderChips();
+})();
+
+</script>
+</body>
+</html>

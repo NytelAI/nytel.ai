@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case: the ulcer surgery trial | Nytel Testing</title>
+<meta name="description" content="Interactive case: four ulcer operations, 100 patients each. Which one is best? A chi-square test and a Bayesian answer, and why picking the comparison after seeing the data is risky.">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../chrome.css">
+<link rel="stylesheet" href="lab.css">
+<script>window.MathJax = { tex: { inlineMath: [['\\(', '\\)']] } };</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
+<style>
+.tip { border-bottom: 1.5px dotted var(--teal-dark); cursor: help; position: relative; text-decoration: none; }
+.tip:hover::after, .tip:focus::after { content: attr(data-tip); position: absolute; left: 0; top: 1.6em; z-index: 30; width: 16rem; background: var(--navy); color: #fff; padding: .45rem .6rem; border-radius: 6px; font-size: .82rem; font-weight: 400; line-height: 1.35; }
+.tbl { border-collapse: collapse; width: 100%; font-size: .9rem; }
+.tbl th { font-weight: 600; font-size: .78rem; color: var(--text-tertiary); text-align: center; padding: 0 .1rem .2rem; }
+.tbl td { padding: .12rem; text-align: center; }
+.tbl td.arm { font-weight: 600; text-align: left; }
+.tbl input { width: 3.4rem; font: inherit; padding: .22rem .2rem; border: 1px solid var(--border-strong); border-radius: 6px; text-align: center; }
+.tbl td.tot { font-family: var(--mono); color: var(--text-tertiary); font-size: .85rem; }
+.sel { font: inherit; padding: .3rem .4rem; border: 1px solid var(--border-strong); border-radius: 6px; background: #fff; }
+.figs { display: grid; grid-template-columns: 1.25fr 1fr; gap: 1rem; margin: 0 0 2rem; }
+.figs .plotbox h3 { font-size: .95rem; }
+.legrow { display: flex; flex-wrap: wrap; gap: .8rem; font-size: .82rem; color: var(--text-secondary); margin-top: .3rem; }
+.legrow i { display: inline-block; width: .8rem; height: .8rem; border-radius: 3px; margin-right: .3rem; vertical-align: -1px; }
+svg.fig { width: 100%; height: auto; display: block; }
+svg.fig text { font-family: var(--sans); font-size: 12px; fill: var(--navy); }
+svg.fig text.dim { fill: rgba(10,22,40,.62); }
+.mini { margin-top: .8rem; border-top: 1px dashed var(--border-strong); padding-top: .6rem; }
+.mini svg { width: 100%; height: auto; display: block; }
+.mini .mnote { font-size: .85rem; margin: .3rem 0 0; }
+.flow { margin: 0 0 2rem; }
+.srcline { font-size: .9rem; }
+@media (max-width: 800px) { .figs { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body class="lab">
+<a class="skip" href="#lab">Skip to the lab</a>
+<div class="topbar"><div class="wrap">
+  <a href="/"><img src="../logo.svg" alt="Nytel"></a>
+  <span class="crumb"><a href="./">Testing</a></span>
+  <span class="title">5. Case: the ulcer surgery trial</span>
+  <span class="pn"><a href="04-multiplicity.html">&larr; Previous</a><a href="06-fair-comparisons.html">Next &rarr;</a></span>
+</div></div>
+
+<main class="wrap">
+<section class="hero">
+  <div class="kicker">Module 5</div>
+  <h1>Case: the ulcer surgery trial</h1>
+  <p class="hook">Four operations for a duodenal ulcer, 100 patients each. Which one would you pick?</p>
+  <div class="presets" id="examples"><span class="lbl">Try an example:</span></div>
+</section>
+
+<section id="lab" class="labgrid" aria-label="Ulcer trial lab">
+  <div class="panel">
+    <h3>1. The results</h3>
+    <table class="tbl" id="tbl"></table>
+    <p class="note" style="margin:.4rem 0 0">Edit any count. Excellent = healed well. Fair = some trouble.</p>
+    <p class="note" style="margin:.3rem 0 0">The chi-square test turns the whole table into one number, the test statistic, that says how far the counts sit from "no difference".</p>
+    <h3>2. Compare two</h3>
+    <div class="field"><label for="selX">Treatment</label><select class="sel" id="selX"></select><label for="selY">vs</label><select class="sel" id="selY"></select></div>
+    <h3>3. Starting belief (<abbr class="tip" tabindex="0" data-tip="Prior: what you believe about the death rate before you see the data.">prior</abbr>)</h3>
+    <div class="row" id="priors"></div>
+    <p class="note" id="priorName" style="margin-top:.4rem"></p>
+    <p class="note" style="margin:.3rem 0 0">Flat: a standard "know little" start. Mild or firm: you expect about 9% deaths, and firm is worth many more patients. More in <a href="01-prior-posterior.html">module 1</a>.</p>
+  </div>
+  <div>
+    <div class="plotbox"><svg id="plot"></svg>
+      <div class="chips" aria-live="polite" id="chips"></div>
+      <p class="note" id="plotNote" style="margin:.5rem 0 0"></p>
+    </div>
+  </div>
+</section>
+
+<section class="figs" aria-label="Pictures of the data">
+  <div class="plotbox"><h3>What happened to each 100 patients</h3><svg class="fig" id="figBars" role="img" aria-label="Stacked bars of outcomes per treatment"></svg>
+    <div class="legrow"><span><i style="background:#2D8B8B"></i>Excellent</span><span><i style="background:#9CC9C9"></i>Fair</span><span><i style="background:#A8341F"></i>Death</span></div></div>
+  <div class="plotbox"><h3>The two you compare, as people</h3><svg class="fig" id="figIcons" role="img" aria-label="Person-icon arrays of 100 patients for each compared treatment"></svg>
+    <p class="note" id="iconNote" style="margin:.3rem 0 0"></p></div>
+</section>
+
+<section class="section">
+  <h2>Predict, then check</h2>
+  <div class="scorebar" id="score"></div>
+  <div class="qcards" id="qcards"></div>
+</section>
+
+<section class="flow plotbox" aria-label="How a picked comparison goes wrong">
+  <h2 style="font-size:1.3rem">The trap in one picture</h2>
+  <svg class="fig" id="figFlow" viewBox="0 0 900 150" role="img" aria-label="Flow: four equal treatments, look at the data, pick best and worst, test that pair, get a false alarm too often"></svg>
+</section>
+
+<section class="example">
+  <h2>A real trial</h2>
+  <p class="srcline">Four operations for duodenal ulcers, outcomes Excellent, Fair or Death. Novick, M.R. and Grizzle, J.E. (1965), <em>Journal of the American Statistical Association</em> 60(309):81-96, <a href="https://doi.org/10.1080/01621459.1965.10480777">doi:10.1080/01621459.1965.10480777</a>: "A Bayesian approach to the analysis of data from clinical trials".</p>
+  <p class="note">The numbers in the first table are the 1965 data as used in Polson and Sokolov (2026). The treatments are not named there. Everything else on this page is computed here.</p>
+</section>
+
+<div id="code"></div>
+
+<section class="reg">
+  <h3>Regulator's corner</h3>
+  <p>Why decide the comparison before looking? ICH (International Council for Harmonisation, the group of regulators and industry that writes shared trial rules) E9, section 5.1:</p>
+  <blockquote>"When designing a clinical trial the principal features of the eventual statistical analysis of the data should be described in the statistical section of the protocol."</blockquote>
+  <p><a href="https://database.ich.org/sites/default/files/E9_Guideline.pdf">ICH E9 Statistical Principles for Clinical Trials (PDF)</a></p>
+</section>
+
+<section class="takeaway">
+  <h2>Takeaway</h2>
+  <ul>
+    <li>A p-value just above 0.05 does not mean the treatments are equal.</li>
+    <li>Each test answers one question. Ask which one, before you look.</li>
+    <li>Pick best vs worst after the fact, and chance fools you about 1 time in 8, not 1 in 20.</li>
+  </ul>
+</section>
+</main>
+
+<footer class="labfoot"><div class="wrap">
+  <strong>Sources</strong>
+  <ul>
+    <li>Novick, M.R. and Grizzle, J.E. (1965). A Bayesian approach to the analysis of data from clinical trials. Journal of the American Statistical Association 60(309):81-96. <a href="https://doi.org/10.1080/01621459.1965.10480777">doi:10.1080/01621459.1965.10480777</a></li>
+    <li>ICH E9 (1998), Statistical Principles for Clinical Trials, section 5.1.</li>
+  </ul>
+  <strong>Further reading</strong>
+  <ul>
+    <li>Polson, N. and Sokolov, V. (2026). <a href="https://vsokolov.org/books/bayes_ai_deep_learning/">Bayes, AI and Deep Learning: Foundations of Data Science</a>. doi:10.5281/zenodo.23992805. This page draws on chapters <a href="https://vsokolov.org/html/_book/03-bl.html">3</a> and <a href="https://vsokolov.org/html/_book/06-hyp.html">6</a>.</li>
+    <li>Sokolova, A. and Sokolov, V. (2026). <a href="https://vsokolov.org/books/clinical_trials_in_practice/">Clinical Trials in Practice: From Foundations to AI Agents</a>. doi:10.5281/zenodo.23933570. Chapters at <a href="https://vsokolov.org/clinos-book/">vsokolov.org/clinos-book</a>.</li>
+    <li>Sokolova, A., Sokolov, V. and Polson, N. (2026). <a href="https://arxiv.org/abs/2602.09208">Some Bayesian Perspectives on Clinical Trials</a>. arXiv:2602.09208</li>
+  </ul>
+  <div class="nyt">&copy; 2026 Nytel. Nightingale + Intelligence. <a href="mailto:contact@nytel.ai">contact@nytel.ai</a></div>
+</div></footer>
+
+<script src="lab.js"></script>
+<script>
+(function () {
+  var TEAL = '#2D8B8B', ORANGE = '#E07A3F', NAVY = '#0A1628', RED = '#A8341F', LT = '#9CC9C9';
+  var NAMES = ['A', 'B', 'C', 'D'];
+  var BOOK = [[76, 17, 7], [89, 10, 1], [86, 13, 1], [88, 9, 3]];
+  var rng = Lab.rng(1965), NBIN = 100, NDRAW = 10000, XMAX = 0.25;
+  var $ = function (id) { return document.getElementById(id); };
+  var NS = 'http://www.w3.org/2000/svg';
+  var S = { T: BOOK.map(function (r) { return r.slice(); }), x: 0, y: 1, a: 1, b: 1, simNote: false };
+  var PRIORS = [
+    { id: 'flat', label: 'Flat', a: 1, b: 1, text: 'Flat: any death rate is equally likely at the start.' },
+    { id: 'skep', label: 'Mild 9%', a: 2, b: 20, text: 'Mild 9%: expects about 9% deaths, a belief worth about 22 patients.' },
+    { id: 'strong', label: 'Firm 9%', a: 5, b: 50, text: 'Firm 9%: expects about 9% deaths, a belief worth 55 patients.' }
+  ];
+
+  /* ---------- math ---------- */
+  function lfact(n) { return Lab.lgamma(n + 1); }
+  function lchoose(n, k) { return lfact(n) - lfact(k) - lfact(n - k); }
+  // Fisher exact for deaths dx of nx vs dy of ny: one-sided P(K >= dx) and two-sided; also the pmf over K.
+  function fisher(dx, nx, dy, ny) {
+    var D = dx + dy, lo = Math.max(0, D - ny), hi = Math.min(nx, D), pm = [], k, one = 0, two = 0, po;
+    for (k = lo; k <= hi; k++) pm.push(Math.exp(lchoose(nx, k) + lchoose(ny, D - k) - lchoose(nx + ny, D)));
+    po = pm[dx - lo];
+    for (k = lo; k <= hi; k++) { if (k >= dx) one += pm[k - lo]; if (pm[k - lo] <= po * (1 + 1e-7)) two += pm[k - lo]; }
+    return { one: Math.min(1, one), two: Math.min(1, two), pmf: pm, lo: lo, hi: hi };
+  }
+  // Chi-square test of homogeneity on the whole table (empty rows and columns dropped).
+  function chisq(T) {
+    var rows = T.filter(function (r) { return r[0] + r[1] + r[2] > 0; });
+    var cols = [0, 1, 2].filter(function (j) { return rows.reduce(function (s, r) { return s + r[j]; }, 0) > 0; });
+    if (rows.length < 2 || cols.length < 2) return null;
+    var rt = rows.map(function (r) { return cols.reduce(function (s, j) { return s + r[j]; }, 0); });
+    var ct = cols.map(function (j) { return rows.reduce(function (s, r) { return s + r[j]; }, 0); });
+    var N = rt.reduce(function (s, v) { return s + v; }, 0), st = 0;
+    rows.forEach(function (r, i) { cols.forEach(function (j, jj) { var e = rt[i] * ct[jj] / N; st += (r[j] - e) * (r[j] - e) / e; }); });
+    var df = (rows.length - 1) * (cols.length - 1);
+    return { stat: st, df: df, p: 1 - Lab.gammaP(df / 2, st / 2) };
+  }
+  function chiPdf(x, k) { return x <= 0 ? 0 : Math.exp((k / 2 - 1) * Math.log(x) - x / 2 - (k / 2) * Math.log(2) - Lab.lgamma(k / 2)); }
+  // Exact P(pX > pY) for Beta(a+dx, b+nx-dx) vs Beta(a+dy, b+ny-dy), midpoint rule on [0, 1].
+  function probGreater(a, b, dx, nx, dy, ny) {
+    var ax = a + dx, bx = b + nx - dx, ay = a + dy, by = b + ny - dy, N = 4000, s = 0, i, y;
+    for (i = 0; i < N; i++) { y = (i + 0.5) / N; s += Lab.betaPdf(y, ay, by) * (1 - Lab.betaCdf(y, ax, bx)); }
+    return s / N;
+  }
+  function rowN(r) { return r[0] + r[1] + r[2]; }
+  function fp(p) { return p < 0.001 ? p.toExponential(1) : p.toFixed(3); }
+  function chip(txt, val, warm) { return '<span class="chip' + (warm ? ' warm' : '') + '">' + txt + ' <b>' + val + '</b></span>'; }
+  function mk(tag, attrs, parent) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+  var PPST = { yes: { fill: '#2D8B8B', stroke: 'none' }, no: { fill: 'none', stroke: '#9AA3AE' }, dead: { fill: '#C8682B', stroke: 'none' } };
+  function ppSym(svg, id) { var sy = mk('symbol', { id: id, viewBox: '0 0 16 20' }, svg); mk('circle', { cx: 8, cy: 5, r: 4 }, sy); mk('path', { d: 'M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z' }, sy); }
+  function ppUse(svg, id, x, y, w, h, kind, faded) { var st = PPST[kind]; return mk('use', { href: '#' + id, x: x, y: y, width: w, height: h, fill: st.fill, stroke: st.stroke, 'stroke-width': 1.3, opacity: faded ? 0.25 : 1 }, svg); }
+  function txt(parent, x, y, s, attrs) { var t = mk('text', Object.assign({ x: x, y: y }, attrs || {}), parent); t.textContent = s; return t; }
+
+  /* ---------- main plot ---------- */
+  var plot = Lab.Plot($('plot'), { xlim: [0, XMAX], ylim: [0, 50], xlabel: 'Death rate', ylabel: 'How often', label: 'Histograms of computer guesses of the death rate for the two compared treatments', xfmt: function (v) { return (v * 100).toFixed(0) + '%'; }, yfmt: function (v) { return v.toFixed(0); } });
+  function histOf(a, b) { return Lab.histogram(Lab.draws(NDRAW, rng, function (r) { return Lab.beta(r, a, b); }), 0, XMAX, NBIN).density; }
+  function armPost(i) { var r = S.T[i], n = rowN(r); return { a: S.a + r[2], b: S.b + n - r[2], n: n, d: r[2] }; }
+
+  function renderPlot(ms) {
+    var X = armPost(S.x), Y = armPost(S.y), hx, hy, top;
+    hx = X.n > 0 ? histOf(X.a, X.b) : new Array(NBIN).fill(0);
+    hy = Y.n > 0 ? histOf(Y.a, Y.b) : new Array(NBIN).fill(0);
+    top = Math.max(Math.max.apply(null, hx), Math.max.apply(null, hy), 10);
+    plot.setYlim(0, Math.ceil(top * 1.15 / 5) * 5);
+    plot.bars('x', hx, 0, XMAX, { fill: ORANGE, opacity: 0.55 }, ms);
+    plot.bars('y', hy, 0, XMAX, { fill: TEAL, opacity: 0.55 }, ms);
+    plot.legend([{ label: 'Treatment ' + NAMES[S.x] + ': ' + X.d + (X.d === 1 ? ' death of ' : ' deaths of ') + X.n, color: ORANGE, kind: 'box' }, { label: 'Treatment ' + NAMES[S.y] + ': ' + Y.d + (Y.d === 1 ? ' death of ' : ' deaths of ') + Y.n, color: TEAL, kind: 'box' }]);
+    var c = chisq(S.T), html = '';
+    html += chip('Chi-square p (all four equal? see the note under the table)', c ? fp(c.p) : 'n/a', true);
+    if (X.n > 0 && Y.n > 0 && S.x !== S.y) {
+      var f = fisher(X.d, X.n, Y.d, Y.n), pg = probGreater(S.a, S.b, X.d, X.n, Y.d, Y.n);
+      html += chip('Fisher\'s exact test (an exact count of chance splits) ' + NAMES[S.x] + ' vs ' + NAMES[S.y] + ', one-sided p', fp(f.one), true) + chip('two-sided p', fp(f.two), true);
+      html += chip('P(death rate ' + NAMES[S.x] + ' &gt; ' + NAMES[S.y] + ')', pg.toFixed(3));
+    } else html += chip('Pick two different treatments with patients', '');
+    html += chip('Best guess of true rate ' + NAMES[S.x], X.n ? Lab.pct(Lab.betaMean(X.a, X.b), 1) : 'n/a') + chip(NAMES[S.y], Y.n ? Lab.pct(Lab.betaMean(Y.a, Y.b), 1) : 'n/a');
+    $('chips').innerHTML = html;
+    $('plotNote').innerHTML = 'Each bar counts computer guesses of the true death rate (10,000 per histogram). Chips come from formulas; one-sided asks if one is worse, two-sided if they differ either way (<a href="02-p-values.html">module 2</a>, <a href="03-errors-power.html">module 3</a>).' + (S.simNote ? ' The table came from a computer: four identical operations.' : '');
+  }
+
+  /* ---------- figures: stacked bars and icon arrays ---------- */
+  function renderBars() {
+    var svg = $('figBars'); svg.innerHTML = ''; svg.setAttribute('viewBox', '0 0 620 196');
+    S.T.forEach(function (r, i) {
+      var y = 10 + i * 44, n = rowN(r) || 1, x0 = 36, W = 440, xx = x0, on = (i === S.x || i === S.y);
+      txt(svg, 6, y + 24, NAMES[i], { 'font-weight': on ? 700 : 400, 'font-size': 15 });
+      [[0, TEAL], [1, LT], [2, RED]].forEach(function (c) {
+        var w = r[c[0]] / n * W; if (w <= 0) return;
+        mk('rect', { x: xx, y: y, width: w, height: 32, fill: c[1], rx: 2 }, svg);
+        if (w > 28) txt(svg, xx + w / 2, y + 21, String(r[c[0]]), { 'text-anchor': 'middle', fill: c[0] === 1 ? NAVY : '#fff', style: c[0] === 1 ? '' : 'fill:#fff' });
+        xx += w;
+      });
+      mk('rect', { x: x0, y: y, width: W, height: 32, fill: 'none', stroke: on ? NAVY : 'rgba(10,22,40,.15)', 'stroke-width': on ? 1.5 : 1, rx: 2 }, svg);
+      txt(svg, x0 + W + 10, y + 21, r[2] + ' of ' + rowN(r) + ' died', { 'class': 'dim', 'font-size': 13 });
+    });
+  }
+  function renderIcons() {
+    var svg = $('figIcons'); svg.innerHTML = ''; svg.setAttribute('viewBox', '0 0 400 214'); ppSym(svg, 'ppI');
+    [S.x, S.y].forEach(function (i, g) {
+      var r = S.T[i], n = rowN(r), x0 = 16 + g * 196, dead = 0, fair = 0, k, per = n / 100;
+      if (n > 0) { dead = Math.round(r[2] / n * 100); if (r[2] > 0 && dead === 0) dead = 1; fair = Math.round(r[1] / n * 100); if (dead + fair > 100) fair = 100 - dead; }
+      txt(svg, x0, 14, 'Treatment ' + NAMES[i], { 'font-weight': 700, 'font-size': 13 });
+      for (k = 0; k < 100; k++) {
+        var kind = k < dead ? 'dead' : (k < dead + fair ? 'no' : 'yes');
+        if (n === 0) kind = 'no';
+        ppUse(svg, 'ppI', x0 + 2 + (k % 10) * 17, 30 + 1 + Math.floor(k / 10) * 17, 12, 15, kind, n === 0);
+      }
+      txt(svg, x0, 208, n ? (dead + ' of 100 died') : 'no patients', { 'class': 'dim', 'font-size': 12 });
+      if (g === 0) S._per = per;
+    });
+    var n1 = rowN(S.T[S.x]), n2 = rowN(S.T[S.y]);
+    $('iconNote').textContent = (n1 === 100 && n2 === 100) ? '1 icon = 1 patient. Orange = died, teal = excellent, outline = fair.' : '1 icon = ' + (n1 / 100) + ' patients (' + NAMES[S.x] + ') and ' + (n2 / 100) + ' (' + NAMES[S.y] + '). Orange = died, teal = excellent, outline = fair.';
+  }
+
+  /* ---------- controls ---------- */
+  function buildTable() {
+    var t = $('tbl'), h = '<tr><th></th><th>Excellent</th><th>Fair</th><th>Death</th><th>Total</th></tr>';
+    NAMES.forEach(function (nm, i) {
+      h += '<tr><td class="arm">' + nm + '</td>';
+      for (var j = 0; j < 3; j++) h += '<td><input type="number" min="0" max="100000" aria-label="Treatment ' + nm + ' ' + ['excellent', 'fair', 'death'][j] + '" data-i="' + i + '" data-j="' + j + '"></td>';
+      h += '<td class="tot" id="tot' + i + '"></td></tr>';
+    });
+    t.innerHTML = h;
+    t.querySelectorAll('input').forEach(function (inp) {
+      inp.addEventListener('input', function () { S.T[+inp.dataset.i][+inp.dataset.j] = Math.max(0, Math.floor(+inp.value || 0)); S.simNote = false; refresh(300, true); });
+    });
+  }
+  function syncTable(skipFocus) {
+    $('tbl').querySelectorAll('input').forEach(function (inp) { if (!(skipFocus && document.activeElement === inp)) inp.value = S.T[+inp.dataset.i][+inp.dataset.j]; });
+    NAMES.forEach(function (nm, i) { $('tot' + i).textContent = rowN(S.T[i]); });
+  }
+  function refresh(ms, fromTable) {
+    syncTable(fromTable); $('selX').value = S.x; $('selY').value = S.y;
+    document.querySelectorAll('#priors .btn').forEach(function (b) { var p = PRIORS.filter(function (q) { return q.id === b.dataset.id; })[0]; b.classList.toggle('on', p.a === S.a && p.b === S.b); });
+    var cur = PRIORS.filter(function (q) { return q.a === S.a && q.b === S.b; })[0];
+    $('priorName').textContent = cur ? cur.text : 'Custom starting belief.';
+    renderPlot(ms); renderBars(); renderIcons();
+  }
+  function setS(T, x, y, a, b, sim) {
+    S.T = T.map(function (r) { return r.slice(); }); S.x = x; S.y = y; if (a != null) { S.a = a; S.b = b; } S.simNote = !!sim;
+  }
+  [ $('selX'), $('selY') ].forEach(function (sel) {
+    NAMES.forEach(function (nm, i) { var o = document.createElement('option'); o.value = i; o.textContent = nm; sel.appendChild(o); });
+    sel.addEventListener('change', function () { S.x = +$('selX').value; S.y = +$('selY').value; refresh(500); });
+  });
+  PRIORS.forEach(function (p) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'btn prior'; b.textContent = p.label; b.dataset.id = p.id;
+    b.addEventListener('click', function () { S.a = p.a; S.b = p.b; refresh(600); });
+    $('priors').appendChild(b);
+  });
+
+  // Computer-made table: four identical treatments (3% death, 12% fair among survivors), 100 patients each.
+  var SIMRNG = Lab.rng(77), COMMON_DEATH = 0.03, COMMON_FAIR = 0.12;
+  function simTable(r) {
+    return NAMES.map(function () { var d = Lab.binomial(r, 100, COMMON_DEATH), f = Lab.binomial(r, 100 - d, COMMON_FAIR); return [100 - d - f, f, d]; });
+  }
+  function bestWorst(T) {
+    var hi = 0, lo = 0; T.forEach(function (r, i) { if (r[2] > T[hi][2]) hi = i; if (r[2] < T[lo][2]) lo = i; });
+    if (hi === lo) lo = (hi + 1) % 4;
+    return [hi, lo];
+  }
+  var EX = [
+    { label: 'The 1965 table', f: function () { setS(BOOK, 0, 1, 1, 1); } },
+    { label: '400 patients each', f: function () { setS(BOOK.map(function (r) { return r.map(function (v) { return v * 4; }); }), 0, 1, 1, 1); } },
+    { label: 'B has 2 deaths', f: function () { setS([BOOK[0], [89, 9, 2], BOOK[2], BOOK[3]], 0, 1, 1, 1); } },
+    { label: 'Firm 9% belief', f: function () { setS(BOOK, 0, 1, 5, 50); } },
+    { label: 'Four equal operations', f: function () { var T = simTable(SIMRNG), bw = bestWorst(T); setS(T, bw[0], bw[1], 1, 1, true); } }
+  ];
+  EX.forEach(function (ex) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = ex.label;
+    b.addEventListener('click', function () {
+      ex.f(); refresh(700);
+      document.querySelectorAll('#examples .btn').forEach(function (x) { x.classList.toggle('on', x === b); });
+    });
+    $('examples').appendChild(b);
+  });
+
+  /* ---------- mini plots in cards ---------- */
+  function miniBox(card, note) {
+    var old = card.querySelector('.mini'); if (old) old.remove();
+    var d = document.createElement('div'); d.className = 'mini';
+    d.innerHTML = '<svg></svg><p class="mnote"></p>'; d.querySelector('.mnote').innerHTML = note || '';
+    card.appendChild(d); return d.querySelector('svg');
+  }
+  // Labeled bar chart. items: [{label, value, color}]
+  function barChart(svg, items, max, fmt, ylab) {
+    svg.setAttribute('viewBox', '0 0 460 210'); svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', ylab || 'Bar chart');
+    var n = items.length, bw = 360 / n, base = 170, h = 140;
+    mk('line', { x1: 50, x2: 450, y1: base, y2: base, stroke: 'rgba(10,22,40,.25)' }, svg);
+    items.forEach(function (it, i) {
+      var x = 70 + i * bw, hh = it.value / max * h;
+      var r = mk('rect', { x: x, y: base, width: bw * 0.6, height: 0, fill: it.color, rx: 2 }, svg);
+      Lab.tween(900, function (t) { r.setAttribute('height', hh * t); r.setAttribute('y', base - hh * t); });
+      txt(svg, x + bw * 0.3, base - hh - 6, fmt(it.value), { 'text-anchor': 'middle', 'font-weight': 600, 'font-size': 12 });
+      txt(svg, x + bw * 0.3, base + 18, it.label, { 'text-anchor': 'middle', 'font-size': 12 });
+    });
+    txt(svg, 225, 204, ylab || '', { 'text-anchor': 'middle', 'class': 'dim', 'font-size': 12 });
+    svg.querySelectorAll('text').forEach(function (t) { t.style.fill = NAVY; t.style.fontFamily = 'var(--sans)'; });
+  }
+  function miniPlot(card, note, opts) {
+    var svg = miniBox(card, note);
+    return Lab.Plot(svg, Object.assign({ w: 460, h: 250 }, opts));
+  }
+
+  /* ---------- question cards ---------- */
+  var score = Lab.Score($('score')), _add = score.add; score.add = function (ok) { _add(ok); try { localStorage.setItem('nytel-testing-5', '1'); } catch (e) {} };
+  var Q = $('qcards');
+  var DA = 7, NA = 100, DB = 1, NB = 100;
+  var P_AB = probGreater(1, 1, DA, NA, DB, NB), CH = chisq(BOOK), FI = fisher(DA, NA, DB, NB);
+  var CRIT = 12.5916; // chi-square 5% cutoff, 6 df (checked in python)
+  function goBook() { setS(BOOK, 0, 1, 1, 1); refresh(700); }
+
+  // 1. most excellent
+  var c1 = Lab.QuestionCard(Q, {
+    tag: 'Predict 1', score: score, type: 'choice',
+    q: 'Look at the table. Which treatment has the most "Excellent" results?',
+    options: NAMES.map(function (n) { return { value: n, label: 'Treatment ' + n }; }),
+    answer: function () { var m = 0; BOOK.forEach(function (r, i) { if (r[0] > BOOK[m][0]) m = i; }); return NAMES[m]; },
+    onReveal: function () {
+      goBook();
+      barChart(miniBox(c1.el, 'Is a lead of a few patients real?'), BOOK.map(function (r, i) { return { label: NAMES[i], value: r[0], color: r[0] === 89 ? TEAL : LT }; }), 100, String, 'Excellent results out of 100');
+    },
+    explain: function () { return 'B has ' + BOOK[1][0] + ', then D ' + BOOK[3][0] + ' and C ' + BOOK[2][0] + '. Tiny gaps. Could luck explain them?'; }
+  });
+  // 2. P(pA > pB)
+  var c2 = Lab.QuestionCard(Q, {
+    tag: 'Predict 2', score: score, type: 'slider', min: 0, max: 1, step: 0.01, start: 0.5, tol: 0.05, fmt: function (v) { return Math.round(v * 100) + '%'; },
+    q: 'A had 7 deaths in 100, B had 1 in 100. How likely is it that A\'s true death rate is higher than B\'s?',
+    answer: function () { return P_AB; },
+    onReveal: function () {
+      goBook();
+      var pl = miniPlot(c2.el, 'Each computer draw is one possible pair of true death rates. Orange share: A is worse.', { xlim: [-0.1, 0.2], ylim: [0, 20], xlabel: 'Death rate of A minus death rate of B', ylabel: 'How often', label: 'Histogram of computer-drawn differences between death rates of A and B', xfmt: function (v) { return (v * 100).toFixed(0) + '%'; }, yfmt: function (v) { return v.toFixed(0); } });
+      var r = Lab.rng(5), dr = Lab.draws(20000, r, function (g) { return Lab.beta(g, 1 + DA, 1 + NA - DA) - Lab.beta(g, 1 + DB, 1 + NB - DB); });
+      var h = Lab.histogram(dr, -0.1, 0.2, 60).density, neg = [], pos = [], top = 0;
+      h.forEach(function (v, i) { var mid = -0.1 + (i + 0.5) * 0.005; neg.push(mid < 0 ? v : 0); pos.push(mid >= 0 ? v : 0); top = Math.max(top, v); });
+      pl.setYlim(0, Math.ceil(top * 1.15 / 5) * 5);
+      pl.bars('n', neg, -0.1, 0.2, { fill: TEAL, opacity: 0.7 }, 0); pl.bars('p', pos, -0.1, 0.2, { fill: ORANGE, opacity: 0.8 }, 900);
+      pl.vline('z', 0, 'no difference', { color: NAVY, dash: '4 3' }, 0);
+      pl.legend([{ label: 'A worse: ' + Lab.pct(Lab.prob(dr, function (v) { return v > 0; }), 1) + ' of 20,000 computer draws', color: ORANGE, kind: 'box' }]);
+    },
+    explain: function () { return 'About ' + Lab.pct(P_AB, 0) + ' (flat prior). It is a statement about true rates, not about one patient.'; }
+  });
+  // 3. chi-square
+  var c3 = Lab.QuestionCard(Q, {
+    tag: 'Predict 3', score: score, type: 'choice',
+    q: 'The chi-square test asks one question: could all four operations share the same outcome rates? It turns the table into one mismatch score. Here p is just above 0.05. Does that show the operations are equal?',
+    options: [{ value: 'yes', label: 'Yes, they are equal' }, { value: 'no', label: 'No, just not enough proof of a difference' }, { value: 'sig', label: 'No, it is significant' }],
+    answer: 'no',
+    onReveal: function () {
+      goBook();
+      var pl = miniPlot(c3.el, 'If all four are equal, the mismatch score usually lands under the cutoff. Ours is close to it.', { xlim: [0, 25], ylim: [0, 0.16], xlabel: 'Mismatch score (chi-square)', ylabel: 'How often', label: 'Chi-square curve with the observed value just left of the 5 percent cutoff', yfmt: function (v) { return v.toFixed(2); } });
+      var xs = Lab.linspace(0.05, 25, 200); pl.line('c', xs, xs.map(function (x) { return chiPdf(x, 6); }), { stroke: NAVY, width: 1.5, fill: 'rgba(45,139,139,.25)' }, 700);
+      pl.vline('cut', CRIT, '', { color: NAVY, dash: '4 3' }, 0);
+      pl.vline('obs', CH.stat, 'ours ' + CH.stat.toFixed(1) + ' vs cutoff ' + CRIT.toFixed(1), { color: RED, dash: '' }, 700);
+    },
+    explain: function () { return 'p = ' + fp(CH.p) + '. Failing to prove a difference is not proof of none. This test asks about all four at once, not A vs B. With only 3 expected deaths per row the p-value is a rough guide.'; }
+  });
+  // 4. Fisher
+  var c4 = Lab.QuestionCard(Q, {
+    tag: 'Predict 4', score: score, type: 'choice',
+    q: 'Now test only A vs B (7 vs 1 deaths) with Fisher\'s exact test. One-sided asks: is A worse? Two-sided asks: is A different, either way? Is p below 0.05?',
+    options: [{ value: 'both', label: 'Below 0.05, one-sided and two-sided' }, { value: 'mixed', label: 'Below one-sided, above two-sided' }, { value: 'none', label: 'Above 0.05 both ways' }],
+    answer: function () { return FI.one < 0.05 && FI.two < 0.05 ? 'both' : (FI.one < 0.05 ? 'mixed' : 'none'); },
+    onReveal: function () {
+      goBook();
+      var svg = miniBox(c4.el, 'Of 8 deaths in all, how many land in A by chance alone? Orange: 7 or more.');
+      var pm = FI.pmf, k, max = Math.max.apply(null, pm);
+      svg.setAttribute('viewBox', '0 0 460 210'); svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', 'Chance of each number of deaths in A when treatments are equal');
+      mk('line', { x1: 40, x2: 450, y1: 170, y2: 170, stroke: 'rgba(10,22,40,.25)' }, svg);
+      pm.forEach(function (v, i) {
+        k = FI.lo + i; var x = 46 + i * 44, hh = v / max * 130;
+        var r = mk('rect', { x: x, y: 170, width: 36, height: 0, fill: k >= DA ? ORANGE : LT, rx: 2 }, svg);
+        Lab.tween(800, function (t) { r.setAttribute('height', hh * t); r.setAttribute('y', 170 - hh * t); });
+        txt(svg, x + 18, 188, String(k), { 'text-anchor': 'middle' });
+        if (v / max > 0.08 || k >= DA) txt(svg, x + 18, 170 - hh - 5, v.toFixed(3), { 'text-anchor': 'middle', 'font-size': 10 });
+      });
+      txt(svg, 245, 206, 'Deaths that land in A if treatments are equal (exact count)', { 'text-anchor': 'middle', 'class': 'dim', 'font-size': 11 });
+      svg.querySelectorAll('text').forEach(function (t) { t.style.fill = NAVY; t.style.fontFamily = 'var(--sans)'; });
+    },
+    explain: function () { return 'One-sided p = ' + fp(FI.one) + ', two-sided p = ' + fp(FI.two) + '. Same data, a different question, a different verdict.'; }
+  });
+  // 5. prior
+  var PVALS = [[1, 1], [2, 20], [5, 50]].map(function (p) { return probGreater(p[0], p[1], DA, NA, DB, NB); });
+  var c5 = Lab.QuestionCard(Q, {
+    tag: 'Predict 5', score: score, type: 'choice',
+    q: 'Switch to the Firm 9% belief. Does the 98% for "A is worse than B" fall to about 50%?',
+    options: [{ value: 'half', label: 'Yes, to about 50%' }, { value: 'mid', label: 'It drops to 60 to 85%' }, { value: 'high', label: 'It stays above 90%' }],
+    answer: function () { var p = PVALS[2]; return p > 0.9 ? 'high' : (p > 0.6 ? 'mid' : 'half'); },
+    onReveal: function () {
+      setS(BOOK, 0, 1, 5, 50); refresh(700);
+      barChart(miniBox(c5.el, 'Starting beliefs, left to right: Flat, Mild 9%, Firm 9%.'), PVALS.map(function (v, i) { return { label: ['Flat', 'Mild 9%', 'Firm 9%'][i], value: v, color: i === 2 ? ORANGE : TEAL }; }), 1, function (v) { return v.toFixed(3); }, 'P(death rate of A is higher than B)');
+    },
+    explain: function () { return 'Firm 9%: ' + PVALS[2].toFixed(3) + '. 100 patients per operation outweigh a belief worth 55 patients per operation.'; }
+  });
+  // 6. four equal treatments
+  var NULLSIM = null;
+  function runNull() {
+    if (NULLSIM) return NULLSIM;
+    var r = Lab.rng(2026), N = 4000, hitsBW = 0, hitsFix = 0, flags = [], i;
+    for (i = 0; i < N; i++) {
+      var T = simTable(r), bw = bestWorst(T), a = T[bw[0]][2], b = T[bw[1]][2];
+      var hit = fisher(a, 100, b, 100).one < 0.05; if (hit) hitsBW++; if (i < 200) flags.push(hit);
+      if (fisher(T[0][2], 100, T[1][2], 100).one < 0.05) hitsFix++;
+    }
+    NULLSIM = { bw: hitsBW / N, fix: hitsFix / N, flags: flags, N: N }; return NULLSIM;
+  }
+  // Truth vs what the trial sees: true rates next to observed icon rows, re-run on demand.
+  function truthView(card) {
+    var d = document.createElement('div'); d.className = 'mini';
+    d.innerHTML = '<h3 style="font-size:.95rem;margin:0 0 .3rem">Truth vs what one trial sees</h3><svg id="tvSvg"></svg><p class="mnote" id="tvNote"></p><button type="button" class="btn" id="tvBtn">Run the trial again</button>';
+    card.appendChild(d);
+    var svg = d.querySelector('svg'), rr = Lab.rng(314);
+    svg.setAttribute('viewBox', '0 0 460 210'); svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', 'True death rate of 3 percent for each operation next to person icons for the deaths one pretend trial observed');
+    function draw() {
+      svg.innerHTML = ''; ppSym(svg, 'ppT'); var T = simTable(rr), lo = 99, hi = 0;
+      txt(svg, 6, 12, 'True rate', { 'font-weight': 700, 'font-size': 11 }); txt(svg, 100, 12, 'Observed: 100 patients each, orange = died', { 'font-weight': 700, 'font-size': 11 });
+      T.forEach(function (r, i) {
+        var y = 24 + i * 46; lo = Math.min(lo, r[2]); hi = Math.max(hi, r[2]);
+        txt(svg, 6, y + 20, NAMES[i], { 'font-size': 13 });
+        mk('rect', { x: 22, y: y + 6, width: COMMON_DEATH * 100 * 6, height: 12, fill: LT, rx: 2 }, svg);
+        txt(svg, 22 + COMMON_DEATH * 600 + 4, y + 16, '3%', { 'font-size': 11 });
+        for (var k = 0; k < 100; k++) ppUse(svg, 'ppT', 106 + (k % 50) * 7, y + Math.floor(k / 50) * 11, 5.6, 7, k < r[2] ? 'dead' : 'yes');
+        txt(svg, 106 + 50 * 7 + 4, y + 14, r[2] + ' died', { 'font-size': 11 });
+      });
+      svg.querySelectorAll('text').forEach(function (t) { t.style.fill = NAVY; t.style.fontFamily = 'var(--sans)'; });
+      d.querySelector('#tvNote').textContent = 'All four operations are truly the same, yet this trial saw ' + lo + ' to ' + hi + ' deaths. Press the button to deal a new trial and compare the gap with this one.';
+    }
+    d.querySelector('#tvBtn').addEventListener('click', draw); draw();
+  }
+  var c6 = Lab.QuestionCard(Q, {
+    tag: 'Predict 6', score: score, type: 'choice',
+    q: 'Four identical operations (3% deaths each). You pick the best and worst after looking, then run a one-sided Fisher test at 0.05. How often is it "significant"?',
+    options: [{ value: 'five', label: 'About 1 time in 20' }, { value: 'eighth', label: 'About 1 time in 8' }, { value: 'half', label: 'About half the time' }],
+    answer: function () { var r = runNull().bw; return r < 0.08 ? 'five' : (r < 0.3 ? 'eighth' : 'half'); },
+    onReveal: function () {
+      var R = runNull(), svg = miniBox(c6.el, 'Each square is one pretend trial of four equal operations. Orange: false alarm.');
+      svg.setAttribute('viewBox', '0 0 460 150'); svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', '200 pretend trials, false alarms in orange');
+      R.flags.forEach(function (f, i) {
+        var rc = mk('rect', { x: 20 + (i % 25) * 17, y: 8 + Math.floor(i / 25) * 17, width: 14, height: 14, rx: 3, fill: f ? ORANGE : '#E5E7EB', opacity: 0 }, svg);
+        setTimeout(function () { rc.setAttribute('opacity', 1); }, i * 6);
+      });
+      txt(svg, 20, 148, '4,000 pretend trials: best vs worst picked after looking ' + Lab.pct(R.bw, 1) + ', fixed pair A vs B ' + Lab.pct(R.fix, 1), { 'font-size': 11 });
+      svg.querySelectorAll('text').forEach(function (t) { t.style.fill = NAVY; t.style.fontFamily = 'var(--sans)'; });
+      truthView(c6.el);
+      EX[4].f(); refresh(700);
+    },
+    explain: function () { var R = runNull(); return 'Picked after looking: ' + Lab.pct(R.bw, 1) + ' false alarms. A pair fixed in advance: ' + Lab.pct(R.fix, 1) + '. The best vs worst gap is built to be big.'; }
+  });
+  // 7. 400 each
+  var P400 = probGreater(1, 1, 28, 400, 4, 400), BIG = BOOK.map(function (r) { return r.map(function (v) { return v * 4; }); }), CH4 = chisq(BIG);
+  var c7 = Lab.QuestionCard(Q, {
+    tag: 'Predict 7', score: score, type: 'choice',
+    q: 'Same rates, but 400 patients per treatment (four times the counts). What happens to the chi-square p-value?',
+    options: [{ value: 'same', label: 'About the same, near 0.05' }, { value: 'small', label: 'Far below 0.05' }, { value: 'big', label: 'It goes up' }],
+    answer: function () { return CH4.p < 0.01 ? 'small' : (CH4.p > CH.p ? 'big' : 'same'); },
+    onReveal: function () {
+      setS(BIG, 0, 1, 1, 1); refresh(800);
+      var pl = miniPlot(c7.el, 'Dashed: 100 each. Solid: 400 each. The curves shrink and pull apart.', { xlim: [0, 0.2], ylim: [0, 60], xlabel: 'Death rate of A (orange) and B (teal)', ylabel: 'How often', label: 'Posterior curves for A and B with 100 and with 400 patients each', xfmt: function (v) { return (v * 100).toFixed(0) + '%'; }, yfmt: function (v) { return v.toFixed(0); } });
+      var xs = Lab.linspace(0.001, 0.199, 200);
+      pl.line('a1', xs, xs.map(function (x) { return Lab.betaPdf(x, 1 + 7, 1 + 93); }), { stroke: ORANGE, width: 1.5, dash: '5 4' }, 0);
+      pl.line('b1', xs, xs.map(function (x) { return Lab.betaPdf(x, 1 + 1, 1 + 99); }), { stroke: TEAL, width: 1.5, dash: '5 4' }, 0);
+      pl.line('a4', xs, xs.map(function (x) { return Lab.betaPdf(x, 1 + 28, 1 + 372); }), { stroke: ORANGE, width: 2.5, fill: 'rgba(224,122,63,.2)' }, 900);
+      pl.line('b4', xs, xs.map(function (x) { return Lab.betaPdf(x, 1 + 4, 1 + 396); }), { stroke: TEAL, width: 2.5, fill: 'rgba(45,139,139,.2)' }, 900);
+    },
+    explain: function () { return 'p = ' + fp(CH4.p) + ' (was ' + fp(CH.p) + '). Four times the data, and P(A worse) = ' + P400.toFixed(6) + '. More patients settle what 100 could not.'; }
+  });
+
+  /* ---------- flow figure ---------- */
+  (function () {
+    var svg = $('figFlow'), steps = [['4 equal', 'treatments'], ['Look at', 'the data'], ['Pick best', 'and worst'], ['Test that', 'pair at 0.05'], ['"Significant!"', 'too often']], i;
+    svg.innerHTML = '<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#0A1628"/></marker></defs>';
+    steps.forEach(function (s, k) {
+      var x = 10 + k * 178, last = k === 4;
+      mk('rect', { x: x, y: 30, width: 140, height: 64, rx: 12, fill: last ? '#FDF0E8' : '#E8F4F4', stroke: last ? '#B8531A' : '#1F6B6B', 'stroke-width': 1.5 }, svg);
+      txt(svg, x + 70, 58, s[0], { 'text-anchor': 'middle', 'font-weight': 600, 'font-size': 14 });
+      txt(svg, x + 70, 78, s[1], { 'text-anchor': 'middle', 'font-size': 14 });
+      if (k < 4) mk('line', { x1: x + 144, x2: x + 174, y1: 62, y2: 62, stroke: NAVY, 'stroke-width': 1.8, 'marker-end': 'url(#arr)' }, svg);
+    });
+    txt(svg, 450, 128, 'The test does not know the pair was chosen because it looked different.', { 'text-anchor': 'middle', 'class': 'dim', 'font-size': 14 });
+  })();
+
+  Lab.CodeBox($('code'), {
+    py: 'from scipy import stats\n' +
+      'T = [[76, 17, 7], [89, 10, 1], [86, 13, 1], [88, 9, 3]]\n' +
+      'print(stats.chi2_contingency(T)[1])      # p, about 0.053\n' +
+      'print(stats.fisher_exact([[7, 93], [1, 99]],\n' +
+      '      alternative="greater")[1])         # A vs B, about 0.032\n' +
+      'pA = stats.beta(1 + 7, 1 + 93).rvs(100_000)\n' +
+      'pB = stats.beta(1 + 1, 1 + 99).rvs(100_000)\n' +
+      'print((pA > pB).mean())                  # about 0.98',
+    r: 'T <- matrix(c(76,17,7, 89,10,1, 86,13,1, 88,9,3), 4, byrow = TRUE)\n' +
+      'suppressWarnings(chisq.test(T)$p.value)  # about 0.053\n' +
+      'fisher.test(matrix(c(7, 1, 93, 99), 2),\n' +
+      '            alternative = "greater")$p.value  # about 0.032\n' +
+      'pA <- rbeta(1e5, 1 + 7, 1 + 93)\n' +
+      'pB <- rbeta(1e5, 1 + 1, 1 + 99)\n' +
+      'mean(pA > pB)                            # about 0.98'
+  });
+
+  buildTable(); setS(BOOK, 0, 1, 1, 1); refresh(0);
+  document.querySelector('#examples .btn').classList.add('on');
+})();
+</script>
+</body>
+</html>

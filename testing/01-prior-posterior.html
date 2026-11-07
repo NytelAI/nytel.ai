@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>From prior to posterior | Nytel Testing</title>
+<meta name="description" content="Interactive lesson: multiply a prior histogram by the data to get a posterior, then learn the Beta shortcut.">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../chrome.css">
+<link rel="stylesheet" href="lab.css">
+<script>window.MathJax = { tex: { inlineMath: [['\\(', '\\)']] } };</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
+<style>.setup{margin:.5rem 0 1rem;font-size:1.02rem}details.more summary{cursor:pointer;list-style:revert}details.more[open] summary{margin-bottom:.5rem}</style>
+<style>
+  .sub { margin: 1.1rem 0 .3rem; font-size: 1.05rem; color: var(--navy); }
+  .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; margin: .5rem 0 1rem; }
+  .gcell { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: .5rem; min-width: 0; }
+  .gcell h4 { margin: 0 0 .2rem; font-size: .95rem; color: var(--navy); }
+  .gcell p { margin: .2rem 0 0; font-size: .85rem; color: var(--text-secondary); }
+  @media (max-width: 640px) { .gallery { grid-template-columns: repeat(2, 1fr); } }
+  .tip { border-bottom: 1px dotted var(--navy); cursor: help; }
+</style>
+</head>
+<body class="lab">
+<a class="skip" href="#lab">Skip to the lab</a>
+<div class="topbar"><div class="wrap">
+  <a href="/"><img src="../logo.svg" alt="Nytel"></a>
+  <span class="crumb"><a href="./">Testing</a></span>
+  <span class="title">1. From prior to posterior</span>
+  <span class="pn"><a href="./">Index</a><a href="02-p-values.html">Next &rarr;</a></span>
+</div></div>
+
+<main class="wrap">
+<section class="hero">
+  <div class="kicker">Module 1</div>
+  <h1>From prior to posterior</h1>
+  <p class="hook">What do you believe about a coin before you toss it, and after?</p>
+  <div class="presets" id="examples"><span class="lbl">Try an example:</span></div>
+  <p class="note" id="exStory" aria-live="polite">You know nothing about this coin, so every bias starts equally likely. So far it landed 7 heads in 10 tosses.</p>
+</section>
+
+<p class="setup">A coin's bias is its chance of heads: 0.5 is fair, 0.9 lands heads 9 times in 10. Your prior is what you believe before any tosses; the posterior is what you believe after them. Pick a prior, add tosses, and watch it update.</p>
+<section id="lab" aria-label="Prior times likelihood equals posterior">
+  <div class="panel controls">
+    <div class="grp">
+      <h3>1. Prior: what you believe</h3>
+      <div class="row" id="priors"></div>
+      <p class="note" style="margin:.4rem 0 0">Flat: every bias starts equally believable. Or drag the orange bars.</p>
+    </div>
+    <div class="grp">
+      <h3>2. Data: add tosses</h3>
+      <div class="row">
+        <button class="btn primary" id="addA" type="button">+ Heads</button>
+        <button class="btn primary" id="addB" type="button">+ Tails</button>
+        <button class="btn primary" data-n="10" type="button">Toss 10</button>
+        <button class="btn primary" data-n="40" type="button">Toss 40</button>
+      </div>
+      <div class="tosses" id="tosses" aria-label="Last tosses"></div>
+      <p class="note" id="tossNote"></p>
+    </div>
+    <div class="grp">
+      <h3>3. Combine</h3>
+      <div class="row">
+        <button class="btn" id="multBtn" type="button">Multiply</button>
+        <button class="btn" id="rescBtn" type="button" disabled>Rescale to add to 1</button>
+      </div>
+      <div class="row" style="margin-top:.4rem"><button class="btn" id="tomorrow" type="button">Use as new prior</button></div>
+    </div>
+    <details class="grp more"><summary><h3 style="display:inline">More controls</h3></summary>
+      <div class="row" id="kbtns"></div>
+      <div class="field"><label for="inH" id="lblH">Heads</label><input id="inH" type="number" min="0" max="100000" value="7">
+        <label for="inT" id="lblT">Tails</label><input id="inT" type="number" min="0" max="100000" value="3"></div>
+      <div class="row"><button class="btn" id="setCounts" type="button">Use these counts</button><button class="btn" id="resetBtn" type="button">Clear data</button></div>
+      <label class="field"><input type="checkbox" id="showTrue"> Reveal the hidden coin</label>
+    </details>
+  </div>
+
+  <div class="tri">
+    <div class="pn"><div class="phead warm">What you believed (prior)</div><div class="plotbox"><svg id="pPrior"></svg></div></div>
+    <div class="op" aria-hidden="true">&times;</div>
+    <div class="pn"><div class="phead">How well each bias fits the data (the likelihood)</div><div class="plotbox"><svg id="pLike"></svg></div></div>
+    <div class="op" aria-hidden="true">=</div>
+    <div class="pn"><div class="phead cool" id="postTitle">What you believe now (posterior)</div><div class="plotbox"><svg id="pPost"></svg></div></div>
+  </div>
+  <p class="hover" id="hover" aria-live="polite">Hover or tap a bar to see the arithmetic.</p>
+  <div class="chips" aria-live="polite" id="chips"></div>
+  <p class="note" id="plotNote" style="margin:.5rem 0 0"></p>
+</section>
+
+<figure class="figure" id="bookfig">
+  <h4 style="margin:.2rem 0 .5rem">Textbook example: 100 flips instead of 10. Same bell-shaped start, narrower belief.</h4>
+  <div class="fig3">
+    <div><h4>Prior</h4><svg id="f1"></svg></div>
+    <div><h4>Posterior for 10 flips</h4><svg id="f2"></svg></div>
+    <div><h4>Posterior for 100 flips</h4><svg id="f3"></svg></div>
+  </div>
+  <figcaption id="figcap"></figcaption>
+</figure>
+
+<section class="section">
+  <h2>Predict, then check</h2>
+  <div class="scorebar" id="score"></div>
+  <div class="qcards" id="qcards"></div>
+</section>
+
+<section class="section" id="models">
+  <h2>A shortcut: models</h2>
+  <p>Bars work, but they are clumsy: one multiplication per bar. A smooth curve does the same job with two numbers.</p>
+  <h3 class="sub">Where the curve comes from</h3>
+  <p>The fit bars for \(h\) heads and \(t\) tails follow one formula: \(\theta^{h}(1-\theta)^{t}\), where \(\theta\) is the bias.</p>
+  <figure class="figure narrow" style="margin-top:.5rem"><svg id="m0"></svg><figcaption id="m0cap"></figcaption></figure>
+  <h3 class="sub">Its name</h3>
+  <p>Start from no idea (flat bars): after \(h\) heads and \(t\) tails the posterior has exactly this shape, called a <b>Beta curve</b>, Beta(\(h+1\), \(t+1\)). So Beta(<i>a</i>, <i>b</i>) reads "as if you had seen <i>a</i> &minus; 1 heads and <i>b</i> &minus; 1 tails, starting from no idea"; Beta(1, 1) is the flat start.</p>
+  <p class="note">Each curve's <span class="tip" tabindex="0" title="Height is how believable a bias is. The area under the curve over a range is the chance the bias lands in that range.">height</span> shows how believable each bias is. The orange tick marks the best guess <i>a</i>/(<i>a</i> + <i>b</i>).</p>
+  <div class="gallery" id="gallery"></div>
+  <h3 class="sub">The shortcut</h3>
+  <p>Beta(<i>a</i>, <i>b</i>), then \(h\) heads and \(t\) tails, gives \[\mathrm{Beta}(a+h,\; b+t)\]</p>
+  <div class="chips"><span class="chip warm">Example: Beta(2, 2), then 7 heads and 3 tails, gives <b>Beta(9, 5)</b>, best guess 9/14 = <b>0.64</b></span></div>
+  <p class="note"><a href="https://vsokolov.org/html/_book/03-bl.html#sec-betabinomial">Book chapter 3</a>. Try it: set the prior, then add tosses.</p>
+  <div class="panel controls">
+    <div class="grp">
+      <h3>Prior Beta(a, b)</h3>
+      <div class="field"><label for="ma">a</label><input id="ma" type="range" min="1" max="40" value="1"><output id="maO">1</output></div>
+      <div class="field"><label for="mb">b</label><input id="mb" type="range" min="1" max="40" value="1"><output id="mbO">1</output></div>
+    </div>
+    <div class="grp">
+      <h3>Data</h3>
+      <div class="row">
+        <button class="btn primary" id="mH" type="button">+ Heads</button>
+        <button class="btn primary" id="mT" type="button">+ Tails</button>
+        <button class="btn primary" data-mn="10" type="button">Toss 10</button>
+        <button class="btn primary" data-mn="40" type="button">Toss 40</button>
+        <button class="btn" id="mReset" type="button">Back to 7 and 3</button>
+      </div>
+      <p class="note">Tosses come from a hidden computer coin.</p>
+    </div>
+  </div>
+  <div class="tri">
+    <div class="pn"><div class="phead">1. How well each bias fits the data</div><div class="plotbox"><svg id="m1"></svg></div></div>
+    <div class="op" aria-hidden="true">&times;</div>
+    <div class="pn"><div class="phead warm" id="m2t">2. Prior as a smooth curve</div><div class="plotbox"><svg id="m2"></svg></div></div>
+    <div class="op" aria-hidden="true">=</div>
+    <div class="pn"><div class="phead cool" id="m3t">3. Posterior</div><div class="plotbox"><svg id="m3"></svg></div></div>
+  </div>
+  <p class="note">The navy line on the first plot is the same formula, scaled so the best bias scores 1.</p>
+  <div class="chips" id="mchips" aria-live="polite"></div>
+  <figure class="figure" style="margin-bottom:0">
+    <table class="cmp" id="cmpTable"></table>
+    <figcaption>Same answer, much less work. The same answer from 101 multiplications, or from one line of addition.</figcaption>
+  </figure>
+  <h2 style="margin-top:1.5rem">Predict, then check</h2>
+  <div class="qcards" id="mcards"></div>
+</section>
+
+<section class="example">
+  <h2>A real small trial: ECMO</h2>
+  <p>ECMO is a machine that oxygenates a sick newborn's blood. Press "Newborn trial (real)" above: 11 of 11 newborns on ECMO survived. With a flat prior, almost all belief moves to survival chances near 1.</p>
+  <p class="note">Source: Bartlett et al. (1985), <i>Pediatrics</i> 76:479-487, as discussed in Sokolova, Sokolov and Polson (2026), manuscript submitted (earlier version <a href="https://arxiv.org/abs/2602.09208">arXiv:2602.09208</a>). The trial used a play-the-winner design (a coin flip decides who gets which treatment, and the coin is tilted toward whatever has worked so far) of Wei and Durham (1978), <i>JASA</i> 73:840-843.</p>
+</section>
+
+<section class="reg">
+  <h3>Regulator's corner</h3>
+  <p>Bayesian means prior plus data, as on this page. The FDA's draft guidance (its proposed advice, open for comment) on Bayesian methods (January 2026) says:</p>
+  <blockquote>"It is always critical for Bayesian analyses to have a prespecified prior&hellip;"</blockquote>
+  <p class="note">Section IV.B. <a href="https://www.fda.gov/media/190505/download">FDA draft guidance, Use of Bayesian Methodology in Clinical Trials of Drug and Biological Products</a>. In our lab: choose the prior before you toss.</p>
+</section>
+
+<div id="code"></div>
+
+<section class="takeaway">
+  <h2>Takeaway</h2>
+  <ul>
+    <li>Posterior = prior &times; likelihood, rescaled to add to 1.</li>
+    <li>More data: narrower peak, and the prior matters less.</li>
+    <li>A Beta curve is a shortcut for the bars: Beta(a, b) plus h heads and t tails is Beta(a + h, b + t).</li>
+  </ul>
+</section>
+</main>
+
+<footer class="labfoot"><div class="wrap">
+  <strong>Sources</strong>
+  <ul>
+    <li>Bartlett, R. H. et al. (1985). Extracorporeal circulation in neonatal respiratory failure. <i>Pediatrics</i> 76:479-487. Wei, L. J. and Durham, S. (1978). The randomized play-the-winner rule in medical trials. <i>JASA</i> 73:840-843.</li>
+    <li>FDA (2026). <a href="https://www.fda.gov/media/190505/download">Use of Bayesian Methodology in Clinical Trials of Drug and Biological Products</a>, draft guidance.</li>
+  </ul>
+  <strong>Further reading</strong>
+  <ul>
+    <li>Polson, N. and Sokolov, V. (2026). <a href="https://vsokolov.org/books/bayes_ai_deep_learning/">Bayes, AI and Deep Learning: Foundations of Data Science</a>. doi:10.5281/zenodo.23992805. Chapters <a href="https://vsokolov.org/html/_book/03-bl.html">3</a> and <a href="https://vsokolov.org/html/_book/06-hyp.html">6</a>.</li>
+    <li>Sokolova, A. and Sokolov, V. (2026). <a href="https://vsokolov.org/books/clinical_trials_in_practice/">Clinical Trials in Practice: From Foundations to AI Agents</a>. doi:10.5281/zenodo.23933570. <a href="https://vsokolov.org/clinos-book/">Chapters online</a>.</li>
+    <li>Sokolova, A., Sokolov, V. and Polson, N. (2026). Some Bayesian Perspectives on Clinical Trials. <a href="https://arxiv.org/abs/2602.09208">arXiv:2602.09208</a>.</li>
+  </ul>
+  <div class="nyt">&copy; 2026 Nytel. Nightingale + Intelligence. <a href="mailto:contact@nytel.ai">contact@nytel.ai</a></div>
+</div></footer>
+
+<script src="lab.js"></script>
+<script>
+(function () {
+  var TEAL = '#2D8B8B', ORANGE = '#E07A3F', NAVY = '#0A1628', SLATE = '#5B6B8C';
+  var rng = Lab.rng(2026);
+  var $ = function (id) { return document.getElementById(id); };
+  var BOOK = [0, 0.024, 0.077, 0.132, 0.173, 0.188, 0.173, 0.132, 0.077, 0.024, 0]; // prior from the book's code chunk
+
+  /* ---------- grid helpers ---------- */
+  function norm(v) { var s = 0; v.forEach(function (x) { s += x; }); return s ? v.map(function (x) { return x / s; }) : v.slice(); }
+  function grid(K) { return Lab.linspace(0, 1, K); }
+  // Likelihood theta^h (1-theta)^t scaled so the best bias scores 1.
+  function likeScaled(th, h, t) {
+    var ll = th.map(function (x) { return (h ? h * Math.log(x) : 0) + (t ? t * Math.log(1 - x) : 0); });
+    var m = Math.max.apply(null, ll.filter(isFinite));
+    return ll.map(function (l) { return Math.exp(l - m); });
+  }
+  function gridPost(prior, th, h, t) { var L = likeScaled(th, h, t); return norm(prior.map(function (x, i) { return x * L[i]; })); }
+  function gmean(th, p) { var s = 0; th.forEach(function (x, i) { s += x * p[i]; }); return s; }
+  function gsd(th, p) { var m = gmean(th, p), s = 0; th.forEach(function (x, i) { s += (x - m) * (x - m) * p[i]; }); return Math.sqrt(s); }
+  function argmax(v) { var k = 0; v.forEach(function (x, i) { if (x > v[k]) k = i; }); return k; }
+  function resample(vec, K) { return grid(K).map(function (x) { var u = x * (vec.length - 1), i = Math.min(vec.length - 2, Math.floor(u)); return vec[i] + (vec[i + 1] - vec[i]) * (u - i); }); }
+  var SHAPES = {
+    book: function (th) { return resample(BOOK, th.length); },
+    flat: function (th) { return th.map(function () { return 1; }); },
+    fair: function (th) { return th.map(function (x) { return Lab.normalPdf(x, 0.5, 0.12); }); },
+    biased: function (th) { return th.map(function (x) { return Lab.normalPdf(x, 0.2, 0.1) + Lab.normalPdf(x, 0.8, 0.1); }); },
+    ft: function (th) { return th.map(function (x) { return Lab.normalPdf(x, 0.7, 0.12); }); }
+  };
+  var PRIORS = [
+    { id: 'flat', label: 'Flat' }, { id: 'fair', label: 'Probably fair' }, { id: 'biased', label: 'Probably biased' }, { id: 'book', label: 'Bell-shaped' }
+  ];
+  var EXAMPLES = [
+    { id: 'coin', label: 'Coin: no idea yet', story: 'You know nothing about this coin, so every bias starts equally likely. Toss it and watch the bars move.', shape: 'flat', h: 0, t: 0, theta: 0.62, s: 'heads', f: 'tails', what: 'Possible chance of heads', Ls: 'Heads', Lf: 'Tails' },
+    { id: 'ft', label: 'Free throws: you have a hunch', story: 'You think this player makes about 70% of free throws, so your starting bars pile up near 0.7. Watch some shots.', shape: 'ft', h: 0, t: 0, theta: 0.78, s: 'made', f: 'missed', what: 'Possible chance of a made shot', Ls: 'Made', Lf: 'Missed' },
+    { id: 'ecmo', label: 'Newborn trial (real)', story: 'Real data: all 11 very sick newborns treated with ECMO survived. Starting from no idea, what survival chance is believable now?', shape: 'flat', real: true, h: 11, t: 0, theta: 0.5, s: 'survived', f: 'died', what: 'Possible survival chance on ECMO', Ls: 'Survived', Lf: 'Died' }
+  ];
+  var COIN = EXAMPLES[0];
+  var S = { K: 11, raw: [], shape: 'flat', h: 7, t: 3, stage: 'final', cmp: null, ex: EXAMPLES[0], theta: 0.62, seq: [], dragTop: null, C: null };
+
+  /* ---------- main plots ---------- */
+  function mk(id, label, ylab) { return Lab.Plot($(id), { w: 340, h: 250, small: true, xlim: [-0.05, 1.05], ylim: [0, 1], xlabel: 'bias of the coin', ylabel: ylab, label: label }); }
+  var pp = mk('pPrior', 'Bars showing prior belief for each possible bias', 'belief'),
+      lp = mk('pLike', 'Bars showing how well each bias explains the data', 'fit (best = 1)'),
+      qp = mk('pPost', 'Bars showing posterior belief for each possible bias', 'belief');
+  function nice(v) { return Math.max(0.05, Math.ceil(v * 20) / 20); }
+  function f3(v) { return v < 0.01 ? v.toFixed(4) : v.toFixed(3); }
+  function chip(txt, val, warm) { return '<span class="chip' + (warm ? ' warm' : '') + '">' + txt + ' <b>' + val + '</b></span>'; }
+
+  function render(ms) {
+    var K = S.K, th = grid(K), p = norm(S.raw), L = likeScaled(th, S.h, S.t);
+    var prod = p.map(function (x, i) { return x * L[i]; }), post = norm(prod);
+    S.C = { th: th, p: p, L: L, prod: prod, post: post };
+    var lo = -0.5 / (K - 1), hi = 1 + 0.5 / (K - 1), pTop = S.dragTop || nice(Math.max.apply(null, p) * 1.2), prodStage = S.stage === 'product';
+    [pp, lp, qp].forEach(function (P) { P.setXlim(lo, hi); P.setLabels(S.ex.what, P === pp ? 'belief' : P === lp ? 'fit (best = 1)' : 'belief'); });
+    pp.setYlim(0, pTop); pp.bars('b', p, lo, hi, { fill: ORANGE, opacity: 0.85 }, ms);
+    lp.setYlim(0, 1.1); lp.bars('b', L, lo, hi, { fill: SLATE, opacity: 0.85 }, ms);
+    qp.setYlim(0, prodStage ? pTop : nice(Math.max.apply(null, post) * 1.15));
+    qp.bars('prior', prodStage ? p.map(function () { return 0; }) : p, lo, hi, { fill: ORANGE, opacity: 0.25 }, ms);
+    qp.bars('b', prodStage ? prod : post, lo, hi, { fill: TEAL, opacity: 0.8 }, ms);
+    if (S.cmp) qp.line('cmp', th, gridPost(SHAPES[S.cmp](th), th, S.h, S.t), { stroke: NAVY, width: 2.5, dash: '6 4' }, ms); else qp.remove('cmp');
+    if ($('showTrue').checked && !S.ex.real) qp.vline('true', S.theta, 'hidden ' + S.theta.toFixed(2), { color: NAVY, dash: '3 3' }, 0); else qp.remove('true');
+    var leg = prodStage ? [{ label: 'prior x fit', color: TEAL, kind: 'box' }] : [{ label: 'posterior', color: TEAL, kind: 'box' }, { label: 'prior (faint)', color: ORANGE, kind: 'box' }];
+    if (S.cmp) leg.push({ label: 'other prior, same data', color: NAVY, kind: 'dash' });
+    qp.legend(leg);
+    $('postTitle').textContent = prodStage ? 'Prior × fit, before rescaling' : 'What you believe now (posterior)';
+    $('rescBtn').disabled = !prodStage;
+    // chips in plain words
+    var cum = 0, lo5 = 0, hi95 = 1, a = false;
+    post.forEach(function (x, i) { cum += x; if (!a && cum >= 0.05 - 1e-9) { lo5 = th[i]; a = true; } if (cum - x < 0.95 - 1e-9) hi95 = th[i]; });
+    var above = 0; th.forEach(function (x, i) { if (x > 0.5 + 1e-9) above += post[i]; });
+    $('chips').innerHTML = chip('Data', S.h + ' ' + S.ex.s + ', ' + S.t + ' ' + S.ex.f, true) + chip('Best guess for the bias', gmean(th, post).toFixed(2)) +
+      chip('90% sure it is between', lo5.toFixed(2) + ' to ' + hi95.toFixed(2)) + chip('Chance the bias is above 0.5', above.toFixed(2));
+    $('plotNote').innerHTML = (S.ex.real ? '<b>Real data.</b> ' : '') + K + ' possible biases. Every number is computed on this page.';
+    $('lblH').textContent = S.ex.Ls; $('lblT').textContent = S.ex.Lf;
+    $('addA').textContent = '+ ' + S.ex.Ls; $('addB').textContent = '+ ' + S.ex.Lf;
+    var tb = $('tosses'); tb.innerHTML = '';
+    S.seq.slice(-40).forEach(function (x) { var e = document.createElement('span'); e.className = x ? 'h' : 't'; e.textContent = x ? S.ex.Ls[0] : S.ex.Lf[0]; tb.appendChild(e); });
+    document.querySelectorAll('#priors .btn').forEach(function (b) { b.classList.toggle('on', b.dataset.id === S.shape); });
+    document.querySelectorAll('#kbtns .btn').forEach(function (b) { b.classList.toggle('on', +b.dataset.k === K); });
+    document.querySelectorAll('[data-n],#addA,#addB').forEach(function (b) { b.disabled = !!S.ex.real; });
+    $('showTrue').disabled = !!S.ex.real;
+    $('tossNote').innerHTML = S.ex.real ? '<b>Real data.</b> Tossing is off. Enter counts instead.' : 'A hidden computer coin makes the tosses.';
+    if (S.ex.real) $('showTrue').checked = false;
+    modelRefresh(0);
+  }
+  // Set the scene: o {K, shape or raw, h, t, cmp, ex}; stage resets to final.
+  function setScene(o, ms) {
+    if (o.ex) S.ex = o.ex;
+    S.K = o.K || 11; S.shape = o.shape || null; S.raw = o.raw || SHAPES[o.shape](grid(S.K));
+    S.h = o.h || 0; S.t = o.t || 0; S.cmp = o.cmp || null; S.stage = 'final'; S.seq = []; S.dragTop = null;
+    if (o.theta != null) S.theta = o.theta;
+    render(ms);
+  }
+  function setK(K) {
+    if (S.shape) S.raw = SHAPES[S.shape](grid(K)); else S.raw = resample(S.raw, K);
+    S.K = K; S.stage = 'final'; S.cmp = null; render(500);
+  }
+  function addData(k, n) {
+    S.h += k; S.t += n - k; S.stage = 'final'; S.cmp = null;
+    for (var i = 0; i < k; i++) S.seq.push(1);
+    for (i = 0; i < n - k; i++) S.seq.push(0);
+    render(600);
+  }
+
+  /* ---------- controls ---------- */
+  PRIORS.forEach(function (p) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'btn prior'; b.textContent = p.label; b.dataset.id = p.id;
+    b.addEventListener('click', function () { S.shape = p.id; S.raw = SHAPES[p.id](grid(S.K)); S.stage = 'final'; S.cmp = null; render(600); });
+    $('priors').appendChild(b);
+  });
+  [11, 21, 101].forEach(function (k) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = k + ' bars'; b.dataset.k = k;
+    b.addEventListener('click', function () { setK(k); }); $('kbtns').appendChild(b);
+  });
+  EXAMPLES.forEach(function (ex) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = ex.label; b.dataset.id = ex.id;
+    b.addEventListener('click', function () {
+      setScene({ K: 11, shape: ex.shape, h: ex.h, t: ex.t, ex: ex, theta: ex.theta }, 600);
+      document.querySelectorAll('#examples .btn').forEach(function (x) { x.classList.toggle('on', x === b); });
+      $('exStory').textContent = ex.story;
+    });
+    $('examples').appendChild(b);
+  });
+  $('addA').addEventListener('click', function () { addData(1, 1); });
+  $('addB').addEventListener('click', function () { addData(0, 1); });
+  document.querySelectorAll('[data-n]').forEach(function (b) { b.addEventListener('click', function () { var n = +b.dataset.n; addData(Lab.binomial(rng, n, S.theta), n); }); });
+  $('multBtn').addEventListener('click', function () { S.stage = 'product'; render(900); $('hover').textContent = 'Each prior bar times its fit bar. Now rescale.'; });
+  $('rescBtn').addEventListener('click', function () { S.stage = 'final'; render(1000); $('hover').textContent = 'Bars rescaled to add to 1: that is the posterior.'; });
+  $('tomorrow').addEventListener('click', function () { S.raw = S.C.post.slice(); S.shape = null; S.h = 0; S.t = 0; S.seq = []; S.stage = 'final'; S.cmp = null; render(800); $('hover').textContent = 'Yesterday\'s posterior is now the prior. Add new tosses.'; });
+  $('setCounts').addEventListener('click', function () { S.h = Math.max(0, Math.floor(+$('inH').value || 0)); S.t = Math.max(0, Math.floor(+$('inT').value || 0)); S.seq = []; S.stage = 'final'; S.cmp = null; render(800); });
+  $('resetBtn').addEventListener('click', function () { S.h = 0; S.t = 0; S.seq = []; S.stage = 'final'; S.cmp = null; render(600); });
+  $('showTrue').addEventListener('change', function () { render(0); });
+
+  // Hover arithmetic for the bar under the pointer, on all three panels.
+  function idxAt(P, e) { var i = Math.round(P.invX(e.clientX) * (S.K - 1)); return Math.max(0, Math.min(S.K - 1, i)); }
+  function hover(i) {
+    var C = S.C; if (!C) return;
+    [pp, lp, qp].forEach(function (P) { P.vline('hov', C.th[i], '', { color: 'rgba(10,22,40,0.35)' }, 0); });
+    $('hover').textContent = 'Bias ' + C.th[i].toFixed(S.K > 21 ? 2 : 1) + ': prior ' + f3(C.p[i]) + ' × fit ' + f3(C.L[i]) + ' = ' + f3(C.prod[i]) + ', rescaled: ' + f3(C.post[i]);
+  }
+  function unhover() { [pp, lp, qp].forEach(function (P) { P.remove('hov'); }); }
+  [pp, lp, qp].forEach(function (P) {
+    P.svg.addEventListener('pointermove', function (e) { if (!dragging) hover(idxAt(P, e)); });
+    P.svg.addEventListener('pointerleave', function () { if (!dragging) unhover(); });
+  });
+  // Drag the prior bars: pointer height becomes that bar's share, others are rescaled.
+  var dragging = false;
+  function setBar(e) {
+    var i = idxAt(pp, e), y = pp.invY(e.clientY), top = S.dragTop || pp.getYlim()[1];
+    y = Math.min(Math.max(y, 0), Math.min(0.9, top));
+    var others = 0; S.raw.forEach(function (x, j) { if (j !== i) others += x; });
+    if (others <= 0) return;
+    S.raw[i] = y * others / (1 - y); S.shape = null; S.stage = 'final'; S.cmp = null; render(0); hover(i);
+  }
+  pp.svg.addEventListener('pointerdown', function (e) { dragging = true; S.dragTop = pp.getYlim()[1]; pp.svg.setPointerCapture(e.pointerId); setBar(e); });
+  pp.svg.addEventListener('pointermove', function (e) { if (dragging) setBar(e); });
+  pp.svg.addEventListener('pointerup', function () { dragging = false; S.dragTop = null; render(300); });
+
+  /* ---------- the book's figure (static, same numbers as its code chunk) ---------- */
+  (function () {
+    var th = grid(11), prior = BOOK.slice(), p10 = gridPost(prior, th, 3, 7), p100 = gridPost(prior, th, 30, 70), lo = -0.05, hi = 1.05;
+    [[prior, 'f1', 'Prior'], [p10, 'f2', 'Posterior for 10 flips'], [p100, 'f3', 'Posterior for 100 flips']].forEach(function (x) {
+      var P = Lab.Plot($(x[1]), { w: 300, h: 210, small: true, xlim: [lo, hi], ylim: [0, nice(Math.max.apply(null, x[0]) * 1.15)], xlabel: 'bias (chance of tails)', ylabel: x[2].split(' ')[0].toLowerCase(), label: x[2] });
+      P.bars('b', x[0], lo, hi, { fill: x[1] === 'f1' ? ORANGE : TEAL, opacity: 0.85 }, 0);
+    });
+    $('figcap').innerHTML = '<b>Same numbers as the book\'s code.</b> Best guess for the chance of tails: ' + gmean(th, p10).toFixed(3) + ' after 10 flips (3 tails), ' + gmean(th, p100).toFixed(3) + ' after 100 flips (30 tails). Source: <a href="https://vsokolov.org/html/_book/03-bl.html">Posterior Distribution for Coin Toss</a>, Polson and Sokolov (2026).';
+  })();
+
+  /* ---------- question cards ---------- */
+  var score = Lab.Score($('score')), _add = score.add;
+  score.add = function (ok) { _add(ok); try { localStorage.setItem('nytel-testing-1', '1'); } catch (e) {} };
+  var Q = $('qcards');
+  function clearGuess() { qp.remove('guess'); }
+  function showGuess(v) { qp.vline('guess', v, 'you ' + v.toFixed(2), { color: '#B8531A', dash: '5 4' }, 0); }
+  // Mini plot: series [{ys,label,color}] on a grid of K biases; first series as bars, the rest as lines.
+  function miniGrid(box, K, series, o) {
+    o = o || {};
+    var lo = -0.5 / (K - 1), hi = 1 + 0.5 / (K - 1), th = grid(K);
+    var P = Lab.miniPlot(box, { xlim: [lo, hi], ylim: [0, 1], xlabel: 'bias', ylabel: 'belief', label: o.label || 'Bars' });
+    var top = Math.max.apply(null, series.map(function (s) { return Math.max.apply(null, s.ys); }));
+    P.setYlim(0, nice(top * 1.15));
+    series.forEach(function (s, i) {
+      if (i === 0) P.bars('s0', s.ys, lo, hi, { fill: s.color, opacity: 0.7 }, 700);
+      else P.line('s' + i, th, s.ys, { stroke: s.color, width: 2, dash: s.dash }, 700);
+    });
+    (o.vlines || []).forEach(function (v, i) { P.vline('v' + i, v.x, '', { color: '#B8531A', dash: '4 3' }, 0); });
+    P.legend(series.map(function (s, i) { return { label: s.label, color: s.color, kind: i === 0 ? 'box' : s.dash ? 'dash' : 'line' }; }).concat((o.vlines || []).map(function (v) { return { label: v.label, color: '#B8531A', kind: 'dash' }; })));
+  }
+  // Mini bars for a two-outcome prediction.
+  function miniPair(box, labels, probs) {
+    var P = Lab.miniPlot(box, { xlim: [0, 2], ylim: [0, 1], xlabel: 'next outcome', ylabel: 'chance', label: 'Predicted chances', xticks: [{ x: 0.5, label: labels[0] }, { x: 1.5, label: labels[1] }] });
+    P.bars('pred', probs, 0, 2, { fill: TEAL, opacity: 0.85 }, 800);
+  }
+  function post(shape, K, h, t) { var th = grid(K); return { th: th, p: gridPost(SHAPES[shape](th), th, h, t) }; }
+  function nearest(vals, target) { var k = 0; vals.forEach(function (v, i) { if (Math.abs(v - target) < Math.abs(vals[k] - target)) k = i; }); return k; }
+  function later(fn, ms) { setTimeout(fn, ms); }
+
+  Lab.QuestionCard(Q, {
+    tag: 'Predict 1', score: score, type: 'choice',
+    q: 'Flat prior. You saw 7 heads in 10 tosses. Then 40 more tosses with 20 heads. Will the posterior bars get wider or narrower?',
+    options: [{ value: 'wider', label: 'Wider' }, { value: 'narrower', label: 'Narrower' }, { value: 'same', label: 'Same width' }],
+    answer: function () { var a = post('flat', 11, 7, 3), b = post('flat', 11, 27, 23); return gsd(b.th, b.p) < gsd(a.th, a.p) ? 'narrower' : 'wider'; },
+    onGuess: clearGuess,
+    onReveal: function () { clearGuess(); setScene({ K: 11, shape: 'flat', h: 7, t: 3, ex: COIN }, 0); later(function () { S.h = 27; S.t = 23; render(1200); }, 600); },
+    revealPlot: function (b) { var a = post('flat', 11, 7, 3), c = post('flat', 11, 27, 23), f = SHAPES.flat(a.th); miniGrid(b, 11, [{ ys: a.p, label: 'After 10', color: TEAL }, { ys: c.p, label: 'After 50', color: NAVY }, { ys: norm(f), label: 'Prior', color: ORANGE, dash: '4 3' }]); },
+    explain: function () { var a = post('flat', 11, 7, 3), c = post('flat', 11, 27, 23); return 'The bars bunch up. More tosses, less doubt.'; }
+  });
+  Lab.QuestionCard(Q, {
+    tag: 'Predict 2', score: score, type: 'slider', min: 0, max: 1, step: 0.01, start: 0.5, tol: 0.1,
+    q: 'Same story: 7 heads of 10, then 20 heads of 40 more. Drag to where the tallest bar will be.',
+    answer: function () { var a = post('flat', 11, 27, 23); return a.th[argmax(a.p)]; },
+    onGuess: function (v) { setScene({ K: 11, shape: 'flat', h: 7, t: 3, ex: COIN }, 0); showGuess(v); },
+    onReveal: function () { later(function () { S.h = 27; S.t = 23; render(1200); }, 100); },
+    revealPlot: function (b, r) { var a = post('flat', 11, 7, 3), c = post('flat', 11, 27, 23); miniGrid(b, 11, [{ ys: c.p, label: 'After 50', color: TEAL }, { ys: a.p, label: 'After 10', color: NAVY, dash: '4 3' }], { vlines: [{ x: r.answer, label: 'tallest ' + r.answer.toFixed(1) }] }); },
+    explain: function () { return '27 heads of 50 tosses is 0.54, so the tallest of the 0.1-spaced bars is the nearest one.'; }
+  });
+  Lab.QuestionCard(Q, {
+    tag: 'Predict 3', score: score, type: 'choice',
+    q: 'Flat prior. You toss once and get one head. What happens to the bar at bias 0?',
+    options: [{ value: 'same', label: 'Stays the same' }, { value: 'small', label: 'Gets a bit smaller' }, { value: 'zero', label: 'Becomes 0' }],
+    answer: function () { var a = post('flat', 11, 1, 0); return a.p[0] === 0 ? 'zero' : 'small'; },
+    onGuess: clearGuess,
+    onReveal: function () { clearGuess(); setScene({ K: 11, shape: 'flat', h: 0, t: 0, ex: COIN }, 0); later(function () { S.h = 1; render(1000); }, 400); },
+    revealPlot: function (b) { var a = post('flat', 11, 1, 0); miniGrid(b, 11, [{ ys: a.p, label: 'After 1 head', color: TEAL }, { ys: norm(SHAPES.flat(a.th)), label: 'Prior', color: ORANGE, dash: '4 3' }]); },
+    explain: function () { return 'A coin with bias 0 never shows heads, so its likelihood is 0. Zero times anything is 0.'; }
+  });
+  Lab.QuestionCard(Q, {
+    tag: 'Predict 4', score: score, type: 'choice',
+    q: 'Ann starts flat, Ben with "probably fair". Both see 7 heads in 10. Whose best guess lands nearer 0.7?',
+    options: [{ value: 'ann', label: 'Ann (flat)' }, { value: 'ben', label: 'Ben (probably fair)' }, { value: 'tie', label: 'Same' }],
+    answer: function () { var a = post('flat', 11, 7, 3), b = post('fair', 11, 7, 3); return Math.abs(gmean(a.th, a.p) - 0.7) < Math.abs(gmean(b.th, b.p) - 0.7) ? 'ann' : 'ben'; },
+    onGuess: clearGuess,
+    onReveal: function () { clearGuess(); setScene({ K: 11, shape: 'flat', h: 7, t: 3, ex: COIN, cmp: 'fair' }, 900); },
+    revealPlot: function (b) { var a = post('flat', 11, 7, 3), c = post('fair', 11, 7, 3); miniGrid(b, 11, [{ ys: a.p, label: 'Ann', color: TEAL }, { ys: c.p, label: 'Ben', color: NAVY, dash: '5 3' }], { vlines: [{ x: 0.7, label: '0.7' }] }); },
+    explain: function () { var a = post('flat', 11, 7, 3), c = post('fair', 11, 7, 3); return 'Best guesses: Ann ' + gmean(a.th, a.p).toFixed(3) + ', Ben ' + gmean(c.th, c.p).toFixed(3) + '. A strong prior resists a small sample.'; }
+  });
+  Lab.QuestionCard(Q, {
+    tag: 'Predict 5', score: score, type: 'choice',
+    q: 'Now both see 700 heads in 1,000 tosses. Does the starting prior still matter?',
+    options: [{ value: 'lot', label: 'Yes, a lot' }, { value: 'little', label: 'A little' }, { value: 'barely', label: 'Barely' }],
+    answer: function () { var a = post('flat', 11, 700, 300), b = post('fair', 11, 700, 300); return Math.abs(gmean(a.th, a.p) - gmean(b.th, b.p)) < 0.02 ? 'barely' : 'little'; },
+    onGuess: clearGuess,
+    onReveal: function () { clearGuess(); setScene({ K: 11, shape: 'flat', h: 700, t: 300, ex: COIN, cmp: 'fair' }, 900); },
+    revealPlot: function (b) { var a = post('flat', 11, 700, 300), c = post('fair', 11, 700, 300); miniGrid(b, 11, [{ ys: a.p, label: 'Ann', color: TEAL }, { ys: c.p, label: 'Ben', color: NAVY, dash: '5 3' }]); },
+    explain: function () { var a = post('flat', 11, 700, 300), c = post('fair', 11, 700, 300); return 'Best guesses: ' + gmean(a.th, a.p).toFixed(3) + ' and ' + gmean(c.th, c.p).toFixed(3) + '. The data drown the prior.'; }
+  });
+  var SWAN = { id: 'swan', s: 'white', f: 'black', what: 'Possible chance a swan is white', Ls: 'White', Lf: 'Black' };
+  var SW_OPTS = [1, 0.99, 0.9, 0.5];
+  Lab.QuestionCard(Q, {
+    tag: 'Black swans', score: score, type: 'choice',
+    q: 'You have seen 100 white swans and 0 black ones. Flat prior. What is the chance the next swan is white?',
+    options: [{ value: 0, label: '100%, always' }, { value: 1, label: 'About 99%' }, { value: 2, label: 'About 90%' }, { value: 3, label: '50%' }],
+    answer: function () { var a = post('flat', 101, 100, 0), m = gmean(a.th, a.p); return m > 0.9999 ? 0 : nearest(SW_OPTS.slice(1), m) + 1; },
+    onGuess: clearGuess,
+    onReveal: function () { clearGuess(); setScene({ K: 101, shape: 'flat', h: 100, t: 0, ex: SWAN }, 900); },
+    revealPlot: function (b) { var a = post('flat', 101, 100, 0), m = gmean(a.th, a.p); miniPair(b, ['black', 'white'], [1 - m, m]); },
+    explain: function () { var a = post('flat', 101, 100, 0); return 'Laplace\'s rule: add one pretend white and one pretend black swan, so (100 + 1) / (100 + 2) = ' + Lab.pct(101 / 102, 1) + '. The 101 bars give ' + Lab.pct(gmean(a.th, a.p), 1) + '. Never exactly 100%.'; }
+  });
+  /* ---------- models section: binomial likelihood and Beta curves ---------- */
+  var M = { a: 1, b: 1, h: 7, t: 3, theta: 0.6 };
+  var th1 = grid(101), xs = Lab.linspace(0.002, 0.998, 200);
+  function mm(id, label, yl) { return Lab.Plot($(id), { w: 340, h: 250, small: true, xlim: [0, 1], ylim: [0, 1], xlabel: 'bias of the coin', ylabel: yl, label: label }); }
+  var m1 = mm('m1', 'Likelihood bars and binomial formula', 'fit (best = 1)'), m2 = mm('m2', 'Prior bars and Beta curve', 'belief (smooth)'), m3 = mm('m3', 'Posterior bars and Beta curve', 'belief (smooth)');
+  var B = { lo: -0.005, hi: 1.005 };
+  function modelRefresh(ms) {
+    var a = M.a, b = M.b, h = M.h, t = M.t, n = h + t;
+    var prior = norm(th1.map(function (x) { return Lab.betaPdf(x, a, b); })), L = likeScaled(th1, h, t), pst = gridPost(prior, th1, h, t);
+    var bin = th1.map(function (x) { return Lab.binomPmf(h, n, x); }), bm = Math.max.apply(null, bin), binS = bin.map(function (v) { return v / bm; });
+    var pd = prior.map(function (v) { return v * 100; }), qd = pst.map(function (v) { return v * 100; });
+    var pc = xs.map(function (x) { return Lab.betaPdf(x, a, b); }), qc = xs.map(function (x) { return Lab.betaPdf(x, a + h, b + t); });
+    m1.setYlim(0, 1.1);
+    m1.bars('b', L, B.lo, B.hi, { fill: SLATE, opacity: 0.8 }, ms); m1.line('f', th1, binS, { stroke: NAVY, width: 2 }, ms);
+    m1.legend([{ label: 'fit bars', color: SLATE, kind: 'box' }, { label: 'formula', color: NAVY, kind: 'line' }]);
+    m2.setYlim(0, nice(Math.max(Math.max.apply(null, pd), Math.max.apply(null, pc)) * 1.15));
+    m2.bars('b', pd, B.lo, B.hi, { fill: ORANGE, opacity: 0.7 }, ms); m2.line('c', xs, pc, { stroke: NAVY, width: 2 }, ms);
+    m2.legend([{ label: 'prior bars', color: ORANGE, kind: 'box' }, { label: 'Beta(' + a + ', ' + b + ') curve', color: NAVY, kind: 'line' }]);
+    m3.setYlim(0, nice(Math.max(Math.max.apply(null, qd), Math.max.apply(null, qc)) * 1.15));
+    m3.bars('b', qd, B.lo, B.hi, { fill: TEAL, opacity: 0.75 }, ms); m3.line('c', xs, qc, { stroke: NAVY, width: 2 }, ms);
+    m3.legend([{ label: 'prior x fit bars', color: TEAL, kind: 'box' }, { label: 'Beta(' + (a + h) + ', ' + (b + t) + ') curve', color: NAVY, kind: 'line' }]);
+    $('m2t').textContent = '2. Prior: a smooth Beta(' + a + ', ' + b + ') curve';
+    $('m3t').textContent = '3. Posterior: Beta(' + a + ' + ' + h + ', ' + b + ' + ' + t + ') = Beta(' + (a + h) + ', ' + (b + t) + ')';
+    $('mchips').innerHTML = chip('Data', h + ' heads, ' + t + ' tails', true) + chip('Best guess from 101 bars', gmean(th1, pst).toFixed(3)) + chip('Best guess from the curve', Lab.betaMean(a + h, b + t).toFixed(3));
+    // comparison card: histogram vs model, same data, plus a 1,000-toss case
+    var big = gridPost(prior, th1, h + 700, t + 300), bigMean = gmean(th1, big), bigModel = Lab.betaMean(a + h + 700, b + t + 300);
+    $('cmpTable').innerHTML = '<tr><th></th><th>Histogram</th><th>Model</th></tr>' +
+      '<tr><td>Work for ' + n + ' tosses</td><td>101 multiplications, 1 rescale</td><td class="win">2 additions</td></tr>' +
+      '<tr><td>Best guess</td><td>' + gmean(th1, pst).toFixed(3) + '</td><td>' + Lab.betaMean(a + h, b + t).toFixed(3) + '</td></tr>' +
+      '<tr><td>After 700 more heads and 300 more tails</td><td>' + bigMean.toFixed(3) + '</td><td class="win">' + bigModel.toFixed(3) + ' (add 700 and 300 again)</td></tr>';
+    $('maO').textContent = a; $('mbO').textContent = b;
+    fig0(ms);
+  }
+  $('ma').addEventListener('input', function () { M.a = +this.value; modelRefresh(0); });
+  $('mb').addEventListener('input', function () { M.b = +this.value; modelRefresh(0); });
+  $('mH').addEventListener('click', function () { M.h++; modelRefresh(500); });
+  $('mT').addEventListener('click', function () { M.t++; modelRefresh(500); });
+  $('mReset').addEventListener('click', function () { M.h = 7; M.t = 3; modelRefresh(600); });
+  document.querySelectorAll('[data-mn]').forEach(function (b) { b.addEventListener('click', function () { var n = +b.dataset.mn, k = Lab.binomial(rng, n, M.theta); M.h += k; M.t += n - k; modelRefresh(700); }); });
+  function setM(a, b, h, t) { M.a = a; M.b = b; M.h = h; M.t = t; $('ma').value = a; $('mb').value = b; modelRefresh(800); }
+  // Mini plot of Beta curves for the model cards.
+  function miniBeta(box, specs, vl) {
+    var P = Lab.miniPlot(box, { xlim: [0, 1], ylim: [0, 1], xlabel: 'bias', ylabel: 'belief (smooth)', label: 'Beta curves' });
+    var ys = specs.map(function (c) { return xs.map(function (x) { return Lab.betaPdf(x, c.a, c.b); }); });
+    P.setYlim(0, nice(Math.max.apply(null, ys.map(function (y) { return Math.max.apply(null, y); })) * 1.1));
+    specs.forEach(function (c, i) { P.line('c' + i, xs, ys[i], { stroke: c.color, fill: c.fill, dash: c.dash, width: 2 }, 700); });
+    if (vl) P.vline('v', vl.x, '', { color: '#B8531A', dash: '4 3' }, 0);
+    P.legend(specs.map(function (c) { return { label: c.label, color: c.color, kind: c.dash ? 'dash' : 'line' }; }));
+  }
+
+  // Figure 0: the fit bars and the formula, and the gallery of Beta curves.
+  var m0 = Lab.Plot($('m0'), { w: 520, h: 230, small: true, xlim: [0, 1], ylim: [0, 1.1], xlabel: 'bias of the coin', ylabel: 'fit (best = 1)', label: 'Fit bars and the formula curve' });
+  function fig0(ms) {
+    var h = M.h, t = M.t, L = likeScaled(th1, h, t);
+    var f = xs.map(function (x) { return Math.pow(x, h) * Math.pow(1 - x, t); }), fm = Math.max.apply(null, f);
+    m0.bars('b', L, B.lo, B.hi, { fill: SLATE, opacity: 0.8 }, ms);
+    m0.line('f', xs, f.map(function (v) { return v / fm; }), { stroke: NAVY, width: 2 }, ms);
+    m0.legend([{ label: 'fit bars', color: SLATE, kind: 'box' }, { label: 'curve of the formula', color: NAVY, kind: 'line' }]);
+    $('m0cap').textContent = 'Data: ' + h + ' heads, ' + t + ' tails. The bars and the curve match.';
+  }
+  var GAL = [[1, 1, 'no tosses yet: anything goes'], [2, 2, 'as if 1 head, 1 tail'], [8, 4, 'as if 7 heads, 3 tails'], [4, 8, 'as if 3 heads, 7 tails'], [30, 30, 'as if 29 of each: sure it is close to fair'], [71, 31, 'as if 70 heads, 30 tails']];
+  GAL.forEach(function (g) {
+    var c = document.createElement('div'); c.className = 'gcell';
+    c.innerHTML = '<h4>Beta(' + g[0] + ', ' + g[1] + ')</h4><div class="gplot"></div><p>' + g[2] + '</p>';
+    $('gallery').appendChild(c);
+    var P = Lab.miniPlot(c.querySelector('.gplot'), { xlim: [0, 1], ylim: [0, 1], xlabel: 'bias', ylabel: 'belief', label: 'Beta(' + g[0] + ', ' + g[1] + ') curve' });
+    var y = xs.map(function (x) { return Lab.betaPdf(x, g[0], g[1]); }), top = nice(Math.max.apply(null, y) * 1.1), mu = g[0] / (g[0] + g[1]);
+    P.setYlim(0, top);
+    P.line('c', xs, y, { stroke: NAVY, fill: TEAL, width: 2 }, 0);
+    P.line('t', [mu, mu], [0, top * 0.14], { stroke: ORANGE, width: 4 }, 0);
+  });
+  var MQ = $('mcards');
+  Lab.QuestionCard(MQ, {
+    tag: 'Model 1', score: score, type: 'choice',
+    q: 'Prior Beta(2, 2). You see 7 heads and 3 tails. What is the new curve?',
+    options: [{ value: '9,5', label: 'Beta(9, 5)' }, { value: '7,3', label: 'Beta(7, 3)' }, { value: '5,9', label: 'Beta(5, 9)' }],
+    answer: function () { return (2 + 7) + ',' + (2 + 3); },
+    onReveal: function () { setM(2, 2, 7, 3); },
+    revealPlot: function (b) { miniBeta(b, [{ a: 2, b: 2, label: 'Prior', color: ORANGE, fill: ORANGE }, { a: 9, b: 5, label: 'Posterior', color: TEAL }]); },
+    explain: function () { return 'Add the heads to a and the tails to b: Beta(2 + 7, 2 + 3) = Beta(9, 5).'; }
+  });
+  Lab.QuestionCard(MQ, {
+    tag: 'Model 2', score: score, type: 'choice',
+    q: 'A Beta(20, 20) prior acts like how many tosses already seen?',
+    options: [{ value: 19, label: '19' }, { value: 38, label: '38' }, { value: 400, label: '400' }],
+    answer: function () { return 19 + 19; },
+    onReveal: function () { setM(20, 20, 0, 0); },
+    revealPlot: function (b) { miniBeta(b, [{ a: 20, b: 20, label: 'Prior Beta(20, 20)', color: ORANGE, fill: ORANGE }, { a: 27, b: 23, label: 'After 7 and 3', color: TEAL }]); },
+    explain: function () { return 'Beta(20, 20) reads as 19 heads and 19 tails already seen, 38 tosses. Seven real heads barely move it.'; }
+  });
+
+  Lab.CodeBox($('code'), {
+    py: 'import numpy as np\n' +
+      'theta = np.linspace(0, 1, 11)\n' +
+      'prior = np.array([0, .024, .077, .132, .173, .188, .173, .132, .077, .024, 0])\n' +
+      'tails, heads = 3, 7\n' +
+      'like = theta**tails * (1 - theta)**heads\n' +
+      'post = prior * like\n' +
+      'post = post / post.sum()          # rescale to add to 1\n' +
+      'print((theta * post).sum())       # best guess for the bias\n' +
+      'print(post[theta > 0.5].sum())    # chance the bias is above 0.5',
+    r: 'theta <- seq(0, 1, by = 0.1)\n' +
+      'prior <- c(0, .024, .077, .132, .173, .188, .173, .132, .077, .024, 0)\n' +
+      'tails <- 3; heads <- 7\n' +
+      'like <- theta^tails * (1 - theta)^heads\n' +
+      'post <- prior * like\n' +
+      'post <- post / sum(post)          # rescale to add to 1\n' +
+      'sum(theta * post)                 # best guess for the bias\n' +
+      'sum(post[theta > 0.5])            # chance the bias is above 0.5'
+  });
+
+  setScene({ K: 11, shape: 'flat', h: 7, t: 3, ex: EXAMPLES[0], theta: 0.62 }, 0);
+  document.querySelector('#examples .btn').classList.add('on');
+})();
+</script>
+</body>
+</html>
