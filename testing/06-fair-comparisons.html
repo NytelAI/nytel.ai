@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fair comparisons | Nytel Testing</title>
+<meta name="description" content="Interactive lesson: why trials flip a coin, hide who gets the drug, and count everyone as assigned.">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../chrome.css">
+<link rel="stylesheet" href="lab.css">
+<script>window.MathJax = { tex: { inlineMath: [['\\(', '\\)']] } };</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
+<style>
+.tip { border-bottom: 1.5px dotted var(--teal-dark); cursor: help; position: relative; }
+.tip:hover::after, .tip:focus::after { content: attr(data-tip); position: absolute; left: 0; top: 1.6em; z-index: 30; width: 16rem; background: var(--navy); color: #fff; font-size: .85rem; font-weight: 400; line-height: 1.35; padding: .5rem .7rem; border-radius: 8px; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
+.fig { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: .9rem 1rem; margin: 1.5rem 0; }
+.fig h3 { font-size: 1.1rem; }
+.fig svg { width: 100%; height: auto; display: block; }
+.fig svg text { font-family: var(--sans); font-size: 12px; fill: var(--text-secondary); }
+.fig svg .big { font-size: 13px; font-weight: 600; fill: var(--navy); }
+.example svg { width: 100%; height: auto; display: block; }
+.example svg text { font-family: var(--sans); font-size: 11px; fill: var(--text-secondary); }
+.example svg .big { font-size: 12px; font-weight: 600; fill: var(--navy); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.mini { margin-top: .8rem; border-top: 1px dashed var(--border-strong); padding-top: .6rem; }
+.mini svg { width: 100%; height: auto; display: block; }
+.mini svg text { font-family: var(--sans); font-size: 11px; fill: var(--text-secondary); }
+.mini .cap { font-size: .8rem; color: var(--text-tertiary); margin: .2rem 0 0; }
+.legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: .85rem; color: var(--text-secondary); margin: .3rem 0; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; vertical-align: -1px; margin-right: .3rem; }
+.lvl { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .5rem; }
+.pp, .fig svg.pp { width: 18px; height: 22px; display: inline-block; vertical-align: middle; }
+.src { font-size: .85rem; color: var(--text-tertiary); }
+@media (max-width: 800px) { .two { grid-template-columns: 1fr; }
+  #blind text, #itt text { font-size: 17px; } #icons text { font-size: 12.5px; } #icons .big { font-size: 13.5px; }
+  #plot text { font-size: 19px; } .mini svg text { font-size: 15px; } .example svg text { font-size: 15px; } .example svg .big { font-size: 16px; } }
+</style>
+</head>
+<body class="lab">
+<a class="skip" href="#lab">Skip to the lab</a>
+<div class="topbar"><div class="wrap">
+  <a href="/"><img src="../logo.svg" alt="Nytel"></a>
+  <span class="crumb"><a href="./">Testing</a></span>
+  <span class="title">6. Fair comparisons: coin flips, blinding, counting everyone</span>
+  <span class="pn"><a href="05-ulcer-trial.html">&larr; Prev</a><a href="07-interim-looks.html">Next &rarr;</a></span>
+</div></div>
+
+<main class="wrap">
+<section class="hero">
+  <div class="kicker">Module 6</div>
+  <h1>Fair comparisons</h1>
+  <p class="hook">Why do trials flip a coin to decide who gets the drug?</p>
+  <p>Randomization is the coin flip that assigns treatment. You can try a version of it in <a href="00-are-they-different.html#shuffle">module 0, the randomization test</a>.</p>
+</section>
+
+<section class="fig" id="cf" aria-label="Two futures per patient">
+  <h2>Two futures per patient</h2>
+  <p>Every patient has two possible futures: one if they take the drug, one if they do not. A real trial sees only one of them, as in the faded cells of the <a href="00-are-they-different.html">module 0 game</a>.</p>
+  <p>Here you see both, so you can check the trial against the truth. Each column is one patient: top person is the outcome with the drug, bottom person is the outcome without it. The small mark under them shows hidden health.</p>
+  <div class="row" id="cfMode" role="group" aria-label="Who decides">
+    <button class="btn prior" type="button" data-m="choose">Patients choose</button>
+    <button class="btn" type="button" data-m="coin">Coin decides</button>
+  </div>
+  <div class="field"><label for="cfEff">The drug truly adds: <b id="cfEffv"></b></label></div>
+  <div class="field"><input id="cfEff" type="range" min="0" max="20" step="1" value="10"></div>
+  <div class="row"><button class="btn primary" id="cfAgain" type="button">New assignment, same patients</button><button class="btn" id="cfNew" type="button">New patients</button><button class="btn primary" id="cfRun" type="button">Run 500 times</button></div>
+  <div class="legend"><span><svg class="pp" viewBox="0 0 16 20" aria-hidden="true" style="fill:#2D8B8B"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> recovered</span><span><svg class="pp" viewBox="0 0 16 20" aria-hidden="true" style="fill:none;stroke:#9AA3AE;stroke-width:1.3"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> not recovered</span><span><svg class="pp" viewBox="0 0 16 20" aria-hidden="true" style="fill:#2D8B8B;opacity:.25"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> faded = counterfactual (the trial never sees it)</span><span><i style="background:#E07A3F;border-radius:2px"></i>sicker mark</span><span><i style="background:#2D8B8B;border-radius:2px"></i>healthier mark</span></div>
+  <svg id="cfIcons" style="max-width:600px;margin:0 auto" role="img" aria-label="Forty patients, each shown twice as a person icon: outcome on the drug and outcome off the drug"></svg>
+  <div class="chips" aria-live="polite" id="cfChips"></div>
+  <p class="note" id="cfNote"></p>
+  <div id="cfHist"></div>
+  <div class="qcards" id="cfCards"></div>
+</section>
+
+<section class="section" style="padding-bottom:0">
+  <h2>Bigger trials</h2>
+  <p>The same idea with more patients and more settings.</p>
+  <div class="presets" id="examples"><span class="lbl">Try an example:</span></div>
+</section>
+
+<section id="lab" class="labgrid" aria-label="Fair comparison lab">
+  <div class="panel">
+    <h3>1. Who gets the drug?</h3>
+    <div class="row" id="methods">
+      <button class="btn prior" type="button" data-m="choose">Patients choose</button>
+      <button class="btn" type="button" data-m="coin">Coin flip</button>
+    </div>
+    <p class="note" style="margin-top:.5rem"><span class="tip" tabindex="0" data-tip="Health is a hidden score. Higher means a patient is more likely to recover with or without the drug.">Hidden health</span> drives who chooses. The matching histogram lights up.</p>
+    <h3>2. Settings</h3>
+    <div class="field"><label for="eff">True drug effect (extra recoveries per 100): <b id="effv"></b></label></div>
+    <div class="field"><input id="eff" type="range" min="-10" max="20" step="1" value="0"></div>
+    <div class="field"><label for="str">Healthy people choose it more: <b id="strv"></b></label></div>
+    <div class="field"><input id="str" type="range" min="0" max="2.5" step="0.5" value="1.5"></div>
+    <div class="field"><label for="nn">Patients per trial: <b id="nnv"></b></label></div>
+    <div class="field"><input id="nn" type="range" min="20" max="400" step="20" value="200"></div>
+    <div class="row"><button class="btn primary" id="oneBtn" type="button">New trial (picture below)</button></div>
+  </div>
+  <div>
+    <div class="plotbox"><svg id="plot"></svg>
+      <div class="chips" aria-live="polite" id="chips"></div>
+      <p class="note" id="plotNote" style="margin:.5rem 0 0"></p>
+    </div>
+  </div>
+</section>
+
+<section class="fig" aria-label="One computer trial as an icon array">
+  <h3>One computer trial, patient by patient</h3>
+  <div class="legend"><span><i style="background:#E07A3F"></i>sicker</span><span><i style="background:#2D8B8B"></i>healthier</span><span><i style="background:#fff;border:2.5px solid #0A1628"></i>recovered</span></div>
+  <svg id="icons" role="img" aria-label="Icons for each patient in the control group and the drug group, colored by hidden health"></svg>
+  <p class="note" id="iconNote"></p>
+</section>
+
+<section class="section">
+  <h2>Predict, then check</h2>
+  <div class="scorebar" id="score"></div>
+  <div class="qcards" id="qcards"></div>
+</section>
+
+<section class="fig" aria-label="Who knows what">
+  <h3>Blinding: who is kept in the dark?</h3>
+  <div class="lvl" id="lvl"></div>
+  <svg id="blind" viewBox="0 0 560 200" role="img" aria-label="Eyes show who knows the treatment in open, single, double and triple blind trials"></svg>
+  <p class="note" id="blindNote"></p>
+</section>
+
+<section class="fig" aria-label="Dropouts and intention to treat">
+  <h3>Quit the drug? Still counted. <span class="tip" tabindex="0" data-tip="Intention to treat: everyone is analyzed in the group they were randomized to, even if they stopped the drug.">ITT</span></h3>
+  <div class="field"><label for="qs">Share of drug group who quit: <b id="qsv"></b></label></div>
+  <div class="field"><input id="qs" type="range" min="0" max="60" step="5" value="30"></div>
+  <svg id="itt" viewBox="0 0 560 150" role="img" aria-label="Twenty control icons and twenty drug icons, some drug icons hollow because those patients quit"></svg>
+  <div class="chips" id="ittChips"></div>
+  <p class="note">Assumption for this picture: the drug adds 10 points for anyone who takes it, so quitters dilute the group average.</p>
+  <p>These are two different questions (an <span class="tip" tabindex="0" data-tip="An estimand is the exact question a trial answers, including what happens to patients who stop the drug.">estimand</span>). "What if we offer the drug?" counts everyone. "What if everyone takes it?" needs other methods, not dropping people.</p>
+</section>
+
+<section class="example">
+  <h2>Real trials</h2>
+  <div class="two">
+    <div>
+      <h3>RECOVERY: dexamethasone</h3>
+      <p class="note">28-day death rate ratio vs usual care. Below 1 means fewer deaths.</p>
+      <div id="recFig"></div>
+      <p class="note"><span class="tip" tabindex="0" data-tip="Open label means patients and doctors both know who got the drug. Module 6 explains blinding above.">Open label</span>, yet still fair: death cannot be colored by hope.</p>
+      <p class="src">Horby et al., N Engl J Med 2021;384:693-704 (via Sokolova and Sokolov, 2026).</p>
+    </div>
+    <div>
+      <h3>PANORAMIC: molnupiravir</h3>
+      <p class="note">26,411 patients were randomized. About 1 in 100 in each group was hospitalized or died. Same rate in both groups, so no gain.</p>
+      <div id="panFig"></div>
+      <p class="src">Butler et al., Lancet 2023;401:281-293 (via Sokolova and Sokolov, 2026). A clear "no" is a useful answer.</p>
+    </div>
+  </div>
+  <p class="src" style="margin-top:.8rem">Hormone therapy (WHI): Rossouw et al., JAMA 2002;288:321-333, shown in the last card above (+29% heart attacks, +41% strokes).</p>
+</section>
+
+<div id="code"></div>
+
+<section class="reg">
+  <h3>Regulator's corner</h3>
+  <blockquote>"Preservation of the initial randomisation in analysis is important in preventing bias"</blockquote>
+  <p>ICH E9, the statistics guideline of the <span class="tip" tabindex="0" data-tip="International Council for Harmonisation: the group of regulators and industry that writes shared trial rules.">ICH</span>, section 5.2.1. <a href="https://database.ich.org/sites/default/files/E9_Guideline.pdf">Read the guideline (PDF)</a>. Why rules like this exist (thalidomide) is in module 10.</p>
+</section>
+
+<section class="takeaway">
+  <h2>Takeaway</h2>
+  <ul>
+    <li>If people choose, the groups differ before the drug does anything. A coin flip makes them alike on average.</li>
+    <li>Hide who got what, so hopes cannot color the results.</li>
+    <li>Count everyone as randomized, even people who quit.</li>
+  </ul>
+</section>
+</main>
+
+<footer class="labfoot"><div class="wrap">
+  <strong>Further reading</strong>
+  <ul>
+    <li>Polson, N. and Sokolov, V. (2026). <a href="https://vsokolov.org/books/bayes_ai_deep_learning/">Bayes, AI and Deep Learning: Foundations of Data Science</a>. doi:10.5281/zenodo.23992805</li>
+    <li>Sokolova, A. and Sokolov, V. (2026). <a href="https://vsokolov.org/books/clinical_trials_in_practice/">Clinical Trials in Practice: From Foundations to AI Agents</a> (chapters on <a href="https://vsokolov.org/clinos-book/">trial design and analysis</a>). doi:10.5281/zenodo.23933570</li>
+    <li>Sokolova, A., Sokolov, V. and Polson, N. (2026). <a href="https://arxiv.org/abs/2602.09208">Some Bayesian Perspectives on Clinical Trials</a>. arXiv:2602.09208</li>
+  </ul>
+  <div class="nyt">&copy; 2026 Nytel. Nightingale + Intelligence. <a href="mailto:contact@nytel.ai">contact@nytel.ai</a></div>
+</div></footer>
+
+<script src="lab.js"></script>
+<script>
+(function () {
+  var TEAL = '#2D8B8B', ORANGE = '#E07A3F', NAVY = '#0A1628', NS = 'http://www.w3.org/2000/svg';
+  var rng = Lab.rng(606);
+  var $ = function (id) { return document.getElementById(id); };
+  function E(tag, attrs, parent) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+  function clamp(p) { return Math.min(0.98, Math.max(0.02, p)); }
+  function signed(v, d) { var s = v.toFixed(d == null ? 1 : d); return (v > 0 ? '+' : '') + s; }
+  function pctTxt(x) { return Math.round(100 * x) + '%'; }
+
+  /* ---------- Simulation model (all simulated) ---------- */
+  // Recovery chance = 0.5 + 0.10 * health + drug effect (if treated), kept inside [0.02, 0.98].
+  function assign(r, h, o) { return o.method === 'coin' ? r() < 0.5 : r() < Lab.normalCdf(o.str * h, 0, 1); }
+  function estimate(r, o) {
+    var nT = 0, nC = 0, yT = 0, yC = 0;
+    for (var i = 0; i < o.N; i++) {
+      var h = Lab.normal(r), t = assign(r, h, o), y = r() < clamp(0.5 + 0.1 * h + (t ? o.eff / 100 : 0));
+      if (t) { nT++; if (y) yT++; } else { nC++; if (y) yC++; }
+    }
+    return (nT && nC) ? 100 * (yT / nT - yC / nC) : 0;
+  }
+  function many(o, k) { var out = []; for (var i = 0; i < k; i++) out.push(estimate(rng, o)); return out; }
+  function trialPts(o) {
+    var pts = [];
+    for (var i = 0; i < o.N; i++) { var h = Lab.normal(rng), t = assign(rng, h, o); pts.push({ h: h, t: t, y: rng() < clamp(0.5 + 0.1 * h + (t ? o.eff / 100 : 0)) }); }
+    return pts;
+  }
+
+  /* ---------- Main lab ---------- */
+  var S = { method: 'choose', eff: 0, str: 1.5, N: 200 };
+  var KTR = 500, NB = 40, LO = -50, HI = 50;
+  var plot = Lab.Plot($('plot'), { xlim: [LO, HI], ylim: [0, 0.2], xlabel: 'Estimated drug effect (points of recovery rate)', ylabel: 'Share of 500 pretend trials', label: 'Histograms of the estimated drug effect over 500 pretend trials: patients choose in orange, coin flip in teal', yfmt: function (v) { return Math.round(v * 100) + '%'; } });
+  function heights(vals) { return Lab.histogram(vals, LO, HI, NB).counts.map(function (c) { return c / vals.length; }); }
+  function chip(txt, val, warm) { return '<span class="chip' + (warm ? ' warm' : '') + '">' + txt + ' <b>' + val + '</b></span>'; }
+  var LAST = null;
+  function paint(ms) {
+    if (!LAST) return;
+    plot.bars('choose', LAST.ha, LO, HI, { fill: ORANGE, opacity: S.method === 'choose' ? 0.75 : 0.15 }, ms);
+    plot.bars('coin', LAST.hb, LO, HI, { fill: TEAL, opacity: S.method === 'coin' ? 0.75 : 0.15 }, ms);
+  }
+  function runMany(ms) {
+    var oc = { method: 'choose', eff: S.eff, str: S.str, N: S.N }, ok = { method: 'coin', eff: S.eff, str: S.str, N: S.N };
+    var a = many(oc, KTR), b = many(ok, KTR), ha = heights(a), hb = heights(b);
+    LAST = { ha: ha, hb: hb };
+    plot.setYlim(0, Math.ceil(Math.max(Math.max.apply(null, ha), Math.max.apply(null, hb)) * 1.2 * 20) / 20);
+    paint(ms);
+    plot.vline('true', S.eff, 'true ' + signed(S.eff, 0), { color: NAVY, dash: '4 3' }, 0);
+    plot.legend([{ label: 'Patients choose', color: ORANGE, kind: 'box' }, { label: 'Coin flip', color: TEAL, kind: 'box' }]);
+    $('chips').innerHTML = chip('True effect', signed(S.eff, 0) + ' pts') +
+      chip('Average, choose', signed(Lab.mean(a)) + ' pts', true) + chip('Average, coin', signed(Lab.mean(b)) + ' pts') +
+      chip('Trials showing a gain: choose', pctTxt(Lab.prob(a, function (v) { return v > 0; })), true) + chip('coin', pctTxt(Lab.prob(b, function (v) { return v > 0; })));
+    $('plotNote').innerHTML = '500 pretend trials per color. One trial = one value in a histogram.';
+  }
+  var ICON_SEED = 0;
+  function drawIcons() {
+    var o = { method: S.method, eff: S.eff, str: S.str, N: S.N }, pts = trialPts(o), svg = $('icons'), g, i;
+    svg.innerHTML = '';
+    var narrow = window.innerWidth < 800, W = narrow ? 340 : 640, groups = [{ name: 'Control', arr: pts.filter(function (p) { return !p.t; }) }, { name: 'Drug', arr: pts.filter(function (p) { return p.t; }) }], maxn = Math.max(groups[0].arr.length, groups[1].arr.length, 1);
+    var cols = Math.max(4, Math.ceil(Math.sqrt(maxn * 1.6))), cell = Math.min(16, (narrow ? 310 : 290) / cols), rows = Math.ceil(maxn / cols), BH = 40 + rows * cell + 40, H = narrow ? 2 * BH : BH;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    groups.forEach(function (gr, gi) {
+      var x0 = narrow ? 15 : 15 + gi * 320, oy = narrow ? gi * BH : 0, rec = gr.arr.filter(function (p) { return p.y; }).length, avg = gr.arr.length ? Lab.mean(gr.arr.map(function (p) { return p.h; })) : 0;
+      E('text', { x: x0, y: oy + 18, 'class': 'big' }, svg).textContent = gr.name + ' group: ' + gr.arr.length + ' patients';
+      gr.arr.forEach(function (p, k) {
+        var t = Math.min(1, Math.max(0, (p.h + 2) / 4)), c1 = [224, 122, 63], c2 = [45, 139, 139];
+        var col = 'rgb(' + c1.map(function (v, j) { return Math.round(v + (c2[j] - v) * t); }).join(',') + ')';
+        E('circle', { cx: x0 + (k % cols) * cell + cell / 2, cy: oy + 32 + Math.floor(k / cols) * cell + cell / 2, r: cell * 0.38, fill: col, stroke: p.y ? NAVY : 'none', 'stroke-width': 2.2 }, svg);
+      });
+      E('text', { x: x0, y: oy + BH - 20 }, svg).textContent = 'Recovered: ' + rec + ' of ' + gr.arr.length + ' (' + (gr.arr.length ? pctTxt(rec / gr.arr.length) : '0%') + ')';
+      E('text', { x: x0, y: oy + BH - 5 }, svg).textContent = 'Average hidden health: ' + signed(avg, 2);
+    });
+    var rc = groups[0].arr.filter(function (p) { return p.y; }).length / Math.max(1, groups[0].arr.length), rd = groups[1].arr.filter(function (p) { return p.y; }).length / Math.max(1, groups[1].arr.length);
+    $('iconNote').innerHTML = (S.method === 'choose' ? 'Patients chose.' : 'A coin decided.') + ' This trial says the drug adds <b>' + signed(100 * (rd - rc), 1) + ' points</b>; the truth is ' + signed(S.eff, 0) + '.';
+  }
+  function sync() {
+    $('effv').textContent = signed(S.eff, 0) + ' points'; $('strv').textContent = S.str === 0 ? 'no' : S.str <= 1 ? 'a little' : S.str <= 2 ? 'a lot' : 'strongly';
+    $('nnv').textContent = S.N;
+    $('eff').value = S.eff; $('str').value = S.str; $('nn').value = S.N;
+    document.querySelectorAll('#methods .btn').forEach(function (b) { b.classList.toggle('on', b.dataset.m === S.method); });
+  }
+  function refresh(ms) { sync(); runMany(ms); drawIcons(); }
+  var PRESETS = [
+    { label: 'Patients choose', o: { method: 'choose', eff: 0, str: 1.5, N: 200 } },
+    { label: 'Coin flip', o: { method: 'coin', eff: 0, str: 1.5, N: 200 } },
+    { label: 'Harmful drug, healthy users', o: { method: 'choose', eff: -5, str: 1.5, N: 200 } },
+    { label: 'Drug adds 10, coin', o: { method: 'coin', eff: 10, str: 1.5, N: 200 } },
+    { label: 'Tiny trial, coin', o: { method: 'coin', eff: 0, str: 1.5, N: 20 } }
+  ];
+  PRESETS.forEach(function (p, i) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = p.label;
+    b.addEventListener('click', function () { Object.assign(S, p.o); refresh(700); document.querySelectorAll('#examples .btn').forEach(function (x) { x.classList.toggle('on', x === b); }); });
+    $('examples').appendChild(b);
+  });
+  function off() { document.querySelectorAll('#examples .btn').forEach(function (x) { x.classList.remove('on'); }); }
+  document.querySelectorAll('#methods .btn').forEach(function (b) { b.addEventListener('click', function () { S.method = b.dataset.m; off(); sync(); paint(250); drawIcons(); }); });
+  [['eff', 'eff'], ['str', 'str'], ['nn', 'N']].forEach(function (p) { $(p[0]).addEventListener('input', function () { S[p[1]] = parseFloat(this.value); off(); refresh(300); }); });
+  $('oneBtn').addEventListener('click', drawIcons);
+
+  /* ---------- Mini figures inside question cards ---------- */
+  function miniBox(card) { var old = card.querySelector('.mini'); if (old) old.remove(); var d = document.createElement('div'); d.className = 'mini'; card.appendChild(d); return d; }
+  // Overlaid histograms; series [{vals, color, label}]; mark = x of a reference line.
+  function miniHist(card, series, lo, hi, nb, mark, cap) {
+    var box = miniBox(card), svg = E('svg', { viewBox: '0 0 360 170', role: 'img', 'aria-label': cap }, box), ml = 10, iw = 340, top = 14, ih = 110, mx = 0;
+    var hs = series.map(function (s) { var h = Lab.histogram(s.vals, lo, hi, nb).counts.map(function (c) { return c / s.vals.length; }); mx = Math.max(mx, Math.max.apply(null, h)); return h; });
+    var sx = function (x) { return ml + (x - lo) / (hi - lo) * iw; };
+    hs.forEach(function (h, si) { h.forEach(function (v, i) { E('rect', { x: sx(lo + i * (hi - lo) / nb) + 0.5, y: top + ih - v / mx * ih, width: iw / nb - 1, height: v / mx * ih, fill: series[si].color, opacity: 0.6 }, svg); }); });
+    E('line', { x1: ml, x2: ml + iw, y1: top + ih, y2: top + ih, stroke: '#8a93a0' }, svg);
+    [lo, mark, hi].forEach(function (v) { E('text', { x: sx(v), y: top + ih + 14, 'text-anchor': 'middle' }, svg).textContent = signed(v, 0).replace('+', ''); });
+    E('line', { x1: sx(mark), x2: sx(mark), y1: top, y2: top + ih, stroke: NAVY, 'stroke-dasharray': '4 3', 'stroke-width': 1.5 }, svg);
+    series.forEach(function (s, i) { E('rect', { x: 10 + i * 150, y: 152, width: 12, height: 9, fill: s.color, opacity: 0.7 }, svg); E('text', { x: 26 + i * 150, y: 161 }, svg).textContent = s.label; });
+    var p = document.createElement('p'); p.className = 'cap'; p.textContent = cap; box.appendChild(p);
+  }
+  // Horizontal bars; items [{label, value, color}], ref = vertical line value.
+  function miniBars(card, items, max, ref, fmt, cap, simulated) {
+    var box = miniBox(card), h = 16 + items.length * 34, svg = E('svg', { viewBox: '0 0 360 ' + h, role: 'img', 'aria-label': cap }, box), lx = 150, iw = 150;
+    items.forEach(function (it, i) {
+      var y = 10 + i * 34, w = Math.max(1, it.value / max * iw);
+      E('text', { x: lx - 6, y: y + 16, 'text-anchor': 'end' }, svg).textContent = it.label;
+      E('rect', { x: lx, y: y, width: w, height: 24, fill: it.color, opacity: 0.85 }, svg);
+      E('text', { x: lx + w + 6, y: y + 16, 'class': 'big' }, svg).textContent = fmt(it.value);
+    });
+    if (ref != null) E('line', { x1: lx + ref / max * iw, x2: lx + ref / max * iw, y1: 4, y2: h - 4, stroke: NAVY, 'stroke-dasharray': '4 3' }, svg);
+    var p = document.createElement('p'); p.className = 'cap'; p.textContent = cap; box.appendChild(p);
+  }
+
+  /* ---------- Question cards ---------- */
+  var score = Lab.Score($('score')), Q = $('qcards');
+  function card(o) { var c = Lab.QuestionCard(Q, o); return c; }
+  var cardEl = {};
+  function reveal(key, fn) { return function (res) { fn(cardEl[key].el, res); }; }
+  function mk(key, o) { var orig = o.onReveal; o.score = score; var c = Lab.QuestionCard(Q, o); cardEl[key] = c; return c; }
+
+  /* ---------- Two futures per patient (counterfactuals) ---------- */
+  var cfRng = Lab.rng(66), CF = { mode: 'choose', eff: 10, pts: null, t: null };
+  function cfCohort(r, n) {
+    var a = [], i, h, p0, u;
+    for (i = 0; i < n; i++) { h = Lab.normal(r); p0 = clamp(0.5 + 0.18 * h); u = r(); a.push({ h: h, p0: p0, u: u }); }
+    return a;
+  }
+  function cfOut(pt, eff) { return { y0: pt.u < pt.p0, y1: pt.u < clamp(pt.p0 + eff / 100) }; }
+  function cfAssign(r, pts, mode) { return pts.map(function (p) { return mode === 'coin' ? r() < 0.5 : r() < Lab.normalCdf(1.5 * p.h, 0, 1); }); }
+  function cfTrue(pts, eff) { var s = 0; pts.forEach(function (p) { var o = cfOut(p, eff); s += (o.y1 ? 1 : 0) - (o.y0 ? 1 : 0); }); return 100 * s / pts.length; }
+  function cfEst(pts, t, eff) {
+    var nT = 0, nC = 0, yT = 0, yC = 0;
+    pts.forEach(function (p, i) { var o = cfOut(p, eff); if (t[i]) { nT++; if (o.y1) yT++; } else { nC++; if (o.y0) yC++; } });
+    return (nT && nC) ? 100 * (yT / nT - yC / nC) : 0;
+  }
+  // k trials; fixed cohort if given, else new patients each time. Returns estimates and the average true effect.
+  function cfMany(mode, eff, k, fixed) {
+    var est = [], tr = 0, i, pts;
+    for (i = 0; i < k; i++) { pts = fixed || cfCohort(cfRng, 40); est.push(cfEst(pts, cfAssign(cfRng, pts, mode), eff)); tr += cfTrue(pts, eff); }
+    return { est: est, truth: tr / k };
+  }
+  function cfDraw() {
+    var svg = $('cfIcons'), pts = CF.pts, t = CF.t, eff = CF.eff, step = 18.5, x0 = 4, bandH = 82;
+    svg.innerHTML = ''; svg.setAttribute('viewBox', '0 0 380 ' + (2 * bandH));
+    function person(x, y, rec, seen) {
+      var g = E('g', { transform: 'translate(' + x + ',' + y + ') scale(1.125)', opacity: seen ? 1 : 0.25 }, svg), at = rec ? { fill: TEAL } : { fill: 'none', stroke: '#9AA3AE', 'stroke-width': 1.3 };
+      at.cx = 8; at.cy = 5; at.r = 4; E('circle', at, g);
+      var at2 = rec ? { fill: TEAL } : { fill: 'none', stroke: '#9AA3AE', 'stroke-width': 1.3 }; at2.d = 'M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z'; E('path', at2, g);
+    }
+    pts.forEach(function (p, i) {
+      var band = Math.floor(i / 20), x = x0 + (i % 20) * step, y = band * bandH + 4, o = cfOut(p, eff), q = Math.min(1, Math.max(0, (p.h + 2) / 4)), c1 = [224, 122, 63], c2 = [45, 139, 139];
+      var col = 'rgb(' + c1.map(function (v, j) { return Math.round(v + (c2[j] - v) * q); }).join(',') + ')';
+      person(x, y, o.y1, t[i]); person(x, y + 25, o.y0, !t[i]);
+      E('rect', { x: x + 1, y: y + 52, width: 16, height: 4, rx: 2, fill: col }, svg);
+      E('text', { x: x + 9, y: y + 70, 'text-anchor': 'middle' }, svg).textContent = t[i] ? 'D' : '-';
+    });
+    var tru = cfTrue(pts, eff), est = cfEst(pts, t, eff), nD = t.filter(Boolean).length;
+    var hD = Lab.mean(pts.filter(function (p, i) { return t[i]; }).map(function (p) { return p.h; })), hC = Lab.mean(pts.filter(function (p, i) { return !t[i]; }).map(function (p) { return p.h; }));
+    $('cfChips').innerHTML = chip('True effect (both outcomes)', signed(tru, 1) + ' pts') + chip("Trial's estimate", signed(est, 1) + ' pts', true) + chip('Took the drug', nD + ' of 40') + chip('Health, drug minus no drug', signed(hD - hC, 2));
+    $('cfNote').innerHTML = (CF.mode === 'choose' ? 'Patients chose, so D marks the healthier columns more often.' : 'A coin decided, so D is spread evenly over healthy and sick.') + ' The trial compares the bright top people (D) with the bright bottom people (-).';
+    $('cfEffv').textContent = signed(eff, 0) + ' points' + (eff === 0 ? ' (both outcomes always match)' : '');
+    document.querySelectorAll('#cfMode .btn').forEach(function (b) { b.classList.toggle('on', b.dataset.m === CF.mode); });
+  }
+  function cfDeal() { CF.t = cfAssign(cfRng, CF.pts, CF.mode); cfDraw(); }
+  function cfNewPts() { CF.pts = cfCohort(cfRng, 40); cfDeal(); }
+  var cfRan = false;
+  function cfRunMany() {
+    cfRan = true;
+    var a = cfMany('choose', CF.eff, 500, CF.pts), b = cfMany('coin', CF.eff, 500, CF.pts), tru = cfTrue(CF.pts, CF.eff);
+    miniHist($('cfHist'), [{ vals: a.est, color: ORANGE, label: 'Patients choose' }, { vals: b.est, color: TEAL, label: 'Coin decides' }], -60, 60, 48, tru, '500 trials on these 40 patients. Dashed line = true effect ' + signed(tru, 1) + '. Average estimate: ' + signed(Lab.mean(a.est), 1) + ' (choose), ' + signed(Lab.mean(b.est), 1) + ' (coin).');
+    $('cfHist').dataset.ran = '1';
+  }
+  document.querySelectorAll('#cfMode .btn').forEach(function (b) { b.addEventListener('click', function () { CF.mode = b.dataset.m; cfDeal(); }); });
+  $('cfEff').addEventListener('input', function () { CF.eff = parseFloat(this.value); cfDraw(); if (cfRan) cfRunMany(); });
+  $('cfAgain').addEventListener('click', cfDeal);
+  $('cfNew').addEventListener('click', function () { cfNewPts(); if (cfRan) cfRunMany(); });
+  $('cfRun').addEventListener('click', cfRunMany);
+  CF.pts = cfCohort(cfRng, 40); CF.t = cfAssign(cfRng, CF.pts, CF.mode); cfDraw();
+
+  function cfCard(key, o) { o.score = score; var c = Lab.QuestionCard($('cfCards'), o); cardEl[key] = c; return c; }
+  var qa = { tag: 'Predict 1', type: 'choice',
+    q: 'The drug does nothing: both outcomes match for every patient. Patients choose, and healthier people choose it more. Will the trials still show a benefit?',
+    options: [{ value: 'up', label: 'Yes, it looks like it helps' }, { value: 'zero', label: 'No, nothing on average' }, { value: 'down', label: 'It looks like it hurts' }],
+    answer: function () { qa.m = cfMany('choose', 0, 500, null); var m = Lab.mean(qa.m.est); return m > 2 ? 'up' : m < -2 ? 'down' : 'zero'; },
+    onReveal: function () { miniHist(cardEl.qa.el, [{ vals: qa.m.est, color: ORANGE, label: 'Patients choose' }], -60, 60, 48, 0, '500 trials, true effect 0. Average estimate ' + signed(Lab.mean(qa.m.est), 1) + ' points.'); },
+    explain: function () { return 'Healthier people took the drug, so the drug group did better with no help from the drug. The trial mistakes who chose for what the drug did.'; } };
+  cfCard('qa', qa);
+  var qb = { tag: 'Predict 2', type: 'slider', min: 0, max: 20, step: 1, start: 0, tol: 2, fmt: function (v) { return signed(Math.round(v), 0) + ' pts'; },
+    q: 'The drug truly adds 10 points and a coin decides. Drag to where the average of 500 trial estimates will land.',
+    answer: function () { qb.c = cfMany('coin', 10, 500, null); qb.p = cfMany('choose', 10, 500, null); return Lab.mean(qb.c.est); },
+    onReveal: function () { miniHist(cardEl.qb.el, [{ vals: qb.c.est, color: TEAL, label: 'Coin decides' }, { vals: qb.p.est, color: ORANGE, label: 'Patients choose' }], -60, 60, 48, qb.c.truth, 'Dashed line = average true effect ' + signed(qb.c.truth, 1) + '. Averages: ' + signed(Lab.mean(qb.c.est), 1) + ' (coin), ' + signed(Lab.mean(qb.p.est), 1) + ' (choose).'); },
+    explain: function () { return 'The coin ignores health, so the estimates center on the truth. Single trials of 40 still wobble a lot.'; } };
+  cfCard('qb', qb);
+
+  // 2. Coin flip centers on the truth.
+  var q2 = { tag: 'Predict 4', type: 'slider', min: -10, max: 10, step: 1, start: 0, tol: 2, fmt: function (v) { return signed(Math.round(v), 0) + ' pts'; },
+    q: 'Same useless drug, but a coin flip decides. Drag to where the average estimate will land.',
+    answer: function () { q2.m = many({ method: 'coin', eff: 0, str: 1.5, N: 200 }, 500); return Lab.mean(q2.m); },
+    onReveal: function () { miniHist(cardEl.q2.el, [{ vals: q2.m, color: TEAL, label: 'Coin flip' }], -50, 50, 40, 0, '500 pretend trials. Average ' + signed(Lab.mean(q2.m)) + ' points. Single trials still wobble.'); },
+    explain: function () { return 'A coin does not care about health, so the estimates center on the truth. A coin flip that assigns treatment is called randomization.'; } };
+  mk('q2', q2);
+
+  // 3. Chance of an exact split.
+  var q3 = { tag: 'Predict 5', type: 'choice',
+    q: 'A coin flip assigns 20 patients. How often do the groups end up exactly 10 and 10?',
+    options: [{ value: 'a', label: 'About 5% of the time' }, { value: 'b', label: 'About 18% of the time' }, { value: 'c', label: 'About 50% of the time' }],
+    answer: function () { var p = Lab.binomPmf(10, 20, 0.5); return Math.abs(p - 0.05) < Math.abs(p - 0.18) ? 'a' : Math.abs(p - 0.5) < Math.abs(p - 0.18) ? 'c' : 'b'; },
+    onReveal: function () {
+      var box = miniBox(cardEl.q3.el), svg = E('svg', { viewBox: '0 0 360 150', role: 'img', 'aria-label': 'Chance of each group size' }, box), mx = Lab.binomPmf(10, 20, 0.5), k;
+      for (k = 0; k <= 20; k++) { var v = Lab.binomPmf(k, 20, 0.5), hh = v / mx * 90; E('rect', { x: 14 + k * 16, y: 100 - hh, width: 13, height: hh, fill: k === 10 ? TEAL : (k <= 6 || k >= 14) ? ORANGE : '#B8C4CC' }, svg); if (k % 5 === 0) E('text', { x: 20 + k * 16, y: 114, 'text-anchor': 'middle' }, svg).textContent = k; }
+      E('text', { x: 180, y: 130, 'text-anchor': 'middle' }, svg).textContent = 'Patients in the drug group (out of 20)';
+      var p10 = Lab.binomPmf(10, 20, 0.5), tail = 0; for (k = 0; k <= 6; k++) tail += 2 * Lab.binomPmf(k, 20, 0.5);
+      var cp = document.createElement('p'); cp.className = 'cap'; cp.innerHTML = 'Teal: exactly 10 (' + Lab.pct(p10, 1) + '). Orange: 14 or more in one group (' + Lab.pct(tail, 1) + ').'; box.appendChild(cp);
+    },
+    explain: function () { return 'Chance alone can leave unequal groups. Trials can force 10 and 10 by flipping within small blocks. Block randomization means randomizing in small groups so the arms stay equal in size.'; } };
+  mk('q3', q3);
+
+  // 4. Blinding.
+  var q4 = { tag: 'Predict 6', type: 'choice',
+    q: 'A pill does nothing. Patients know who got it and rate how they feel. Does the pill look useful?',
+    options: [{ value: 'up', label: 'Yes, a bit' }, { value: 'zero', label: 'No' }, { value: 'down', label: 'It looks harmful' }],
+    answer: function () {
+      var a = [], b = [], i, j, sa, sb, na, nb;
+      for (i = 0; i < 500; i++) { sa = 0; sb = 0; for (j = 0; j < 100; j++) { sa += 8 + 15 * Lab.normal(rng); sb += 15 * Lab.normal(rng); } a.push(sa / 100 - sb / 100); sa = 0; sb = 0; for (j = 0; j < 100; j++) { sa += 15 * Lab.normal(rng); sb += 15 * Lab.normal(rng); } b.push(sa / 100 - sb / 100); }
+      q4.o = a; q4.b = b; return Lab.mean(a) > 2 ? 'up' : 'zero';
+    },
+    onReveal: function () { miniHist(cardEl.q4.el, [{ vals: q4.o, color: ORANGE, label: 'Patients know' }, { vals: q4.b, color: TEAL, label: "Patients don't know" }], -15, 15, 30, 0, '500 pretend trials. Assumed: knowing you got the pill adds 8 points to the rating. Average ' + signed(Lab.mean(q4.o)) + ' (open) vs ' + signed(Lab.mean(q4.b)) + ' (blinded).'); },
+    explain: function () { return 'Hope, not the pill, moved the scores. A look-alike dummy pill (a placebo) removes that.'; } };
+  mk('q4', q4);
+
+  // 5. ITT with 30% not taking the drug.
+  var q5 = { tag: 'Predict 7', type: 'slider', min: 0, max: 12, step: 1, start: 10, tol: 1.5, fmt: function (v) { return Math.round(v) + ' pts'; },
+    q: 'The drug truly adds 10 points. But 30% of the drug group never take it. Drag to the effect that "count everyone as assigned" will show.',
+    answer: function () {
+      var est = [], i, j, s1, s0;
+      for (i = 0; i < 500; i++) { s1 = 0; s0 = 0; for (j = 0; j < 200; j++) { s1 += 15 * Lab.normal(rng) + (rng() < 0.7 ? 10 : 0); s0 += 15 * Lab.normal(rng); } est.push((s1 - s0) / 200); }
+      q5.m = Lab.mean(est); return 10 * 0.7;
+    },
+    onReveal: function () { miniBars(cardEl.q5.el, [{ label: 'Effect if taken', value: 10, color: '#8a93a0' }, { label: 'Count everyone', value: q5.m, color: TEAL }], 12, null, function (v) { return v.toFixed(1); }, '500 pretend trials, 200 per group. Math: 10 x 0.7 = 7.', true); },
+    explain: function () { return 'The estimate answers "what if we offer the drug", and it is diluted to 7.'; } };
+  mk('q5', q5);
+
+  // 6. Per-protocol trap.
+  var q6 = { tag: 'Predict 8', type: 'choice',
+    q: 'Useless drug again. Sicker patients quit the drug. We drop the quitters and compare the rest to control. Compared with counting everyone, does the drug look better, same or worse?',
+    options: [{ value: 'up', label: 'Better' }, { value: 'same', label: 'The same' }, { value: 'down', label: 'Worse' }],
+    answer: function () {
+      var a = [], b = [], i, j, h, y, nT, yT, qT, nQ, yQ, nC, yC, yAll, nAll;
+      for (i = 0; i < 500; i++) {
+        nC = 0; yC = 0; nT = 0; yT = 0; nAll = 0; yAll = 0;
+        for (j = 0; j < 400; j++) {
+          h = Lab.normal(rng); y = rng() < clamp(0.5 + 0.1 * h);
+          if (rng() < 0.5) { nC++; if (y) yC++; } else { nAll++; if (y) yAll++; if (rng() >= Lab.normalCdf(-1.2 * h - 0.3, 0, 1)) { nT++; if (y) yT++; } }
+        }
+        a.push(100 * (yAll / nAll - yC / nC)); b.push(100 * (yT / nT - yC / nC));
+      }
+      q6.a = a; q6.b = b; return Lab.mean(b) - Lab.mean(a) > 1 ? 'up' : 'same';
+    },
+    onReveal: function () { miniHist(cardEl.q6.el, [{ vals: q6.a, color: TEAL, label: 'Count everyone' }, { vals: q6.b, color: ORANGE, label: 'Drop quitters' }], -30, 30, 40, 0, '500 pretend trials, true effect 0. Average ' + signed(Lab.mean(q6.a)) + ' (everyone) vs ' + signed(Lab.mean(q6.b)) + ' (quitters dropped).'); },
+    explain: function () { return 'Dropping quitters keeps only the healthier drug patients. That breaks the coin flip.'; } };
+  mk('q6', q6);
+
+  // 7. HRT.
+  var q7 = { tag: 'Predict 9', type: 'choice',
+    q: 'Many studies saw women on hormone therapy having fewer heart problems. Then a large randomized trial (WHI) tested it. What happened to the risk of heart attacks?',
+    options: [{ value: 'lower', label: 'Lower, as expected' }, { value: 'same', label: 'No change' }, { value: 'higher', label: 'Higher' }],
+    answer: 'higher',
+    onReveal: function () { miniBars(cardEl.q7.el, [{ label: 'Heart attacks', value: 29, color: ORANGE }, { label: 'Stroke', value: 41, color: ORANGE }], 50, null, function (v) { return '+' + v + '%'; }, 'Change in risk on hormones vs placebo, randomized Women\'s Health Initiative (Rossouw et al., JAMA 2002).', false); },
+    explain: function () { return 'Women who chose hormones were healthier already. Randomization removed that trap.'; } };
+  mk('q7', q7);
+
+  /* ---------- Real trials figures ---------- */
+  (function () {
+    var box = $('recFig'), svg = E('svg', { viewBox: '0 0 300 130', role: 'img', 'aria-label': 'Rate ratios 0.83 overall and 0.64 on invasive ventilation' }, box), x0 = 120, w = 150;
+    [['Everyone', 0.83], ['On a ventilator', 0.64]].forEach(function (d, i) {
+      var y = 14 + i * 40;
+      E('text', { x: x0 - 8, y: y + 16, 'text-anchor': 'end' }, svg).textContent = d[0];
+      E('rect', { x: x0, y: y, width: d[1] * w, height: 26, fill: i ? TEAL : '#7FB8B8' }, svg);
+      E('text', { x: x0 + d[1] * w - 6, y: y + 17, 'text-anchor': 'end', 'class': 'big', style: 'fill:#0A1628' }, svg).textContent = d[1].toFixed(2);
+    });
+    E('line', { x1: x0 + w, x2: x0 + w, y1: 6, y2: 98, stroke: NAVY, 'stroke-dasharray': '4 3' }, svg);
+    E('text', { x: x0 + w - 30, y: 114, 'text-anchor': 'middle' }, svg).textContent = '1.00 = no difference';
+    var cap = $('recFig'); var p = document.createElement('p'); p.className = 'note'; p.textContent = Math.round((1 - 0.83) * 100) + '% lower death rate overall, ' + Math.round((1 - 0.64) * 100) + '% lower on ventilators.'; cap.appendChild(p);
+    var pb = $('panFig'), s2 = E('svg', { viewBox: '0 0 300 150', role: 'img', 'aria-label': 'One in 100 icons highlighted in each group' }, pb), g;
+    [['Molnupiravir', 0], ['Usual care', 1]].forEach(function (d, gi) {
+      var ox = 10 + gi * 150;
+      E('text', { x: ox, y: 12, 'class': 'big' }, s2).textContent = d[0];
+      for (var k = 0; k < 100; k++) E('circle', { cx: ox + (k % 10) * 13 + 6, cy: 24 + Math.floor(k / 10) * 11 + 5, r: 4, fill: k === 0 ? ORANGE : '#B8C4CC' }, s2);
+      E('text', { x: ox, y: 146 }, s2).textContent = '1 in 100 (orange)';
+    });
+  })();
+
+  /* ---------- Blinding figure ---------- */
+  (function () {
+    var LV = [['Open label', [1, 1, 1], 'Everyone knows. Hopes can color ratings.'], ['Single blind', [0, 1, 1], 'Patients do not know. Doctors might nudge.'], ['Double blind', [0, 0, 1], 'Patients and doctors do not know.'], ['Triple blind', [0, 0, 0], 'Analysts do not know either.']];
+    var svg = $('blind'), cols = ['Patient', 'Doctor', 'Analyst'], cur = 2;
+    function eye(x, y, knows) {
+      E('ellipse', { cx: x, cy: y, rx: 16, ry: 9, fill: '#fff', stroke: NAVY, 'stroke-width': 1.5 }, svg);
+      if (knows) E('circle', { cx: x, cy: y, r: 5, fill: TEAL }, svg);
+      else { E('line', { x1: x - 18, y1: y + 11, x2: x + 18, y2: y - 11, stroke: ORANGE, 'stroke-width': 3 }, svg); }
+    }
+    function draw() {
+      svg.innerHTML = '';
+      cols.forEach(function (c, i) { E('text', { x: 230 + i * 100, y: 18, 'text-anchor': 'middle', 'class': 'big' }, svg).textContent = c; });
+      LV.forEach(function (l, r) {
+        var y = 48 + r * 42;
+        if (r === cur) E('rect', { x: 4, y: y - 22, width: 552, height: 40, rx: 8, fill: '#E8F4F4' }, svg);
+        E('text', { x: 14, y: y + 4, 'class': 'big' }, svg).textContent = l[0];
+        l[1].forEach(function (k, i) { eye(230 + i * 100, y, k); });
+      });
+      $('blindNote').innerHTML = '<b>' + LV[cur][0] + ':</b> ' + LV[cur][2] + ' Teal dot = knows. Orange slash = blind.';
+      document.querySelectorAll('#lvl .btn').forEach(function (b, i) { b.classList.toggle('on', i === cur); });
+    }
+    LV.forEach(function (l, i) { var b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = l[0]; b.addEventListener('click', function () { cur = i; draw(); }); $('lvl').appendChild(b); });
+    draw();
+  })();
+
+  /* ---------- ITT figure ---------- */
+  function drawItt() {
+    var q = parseInt($('qs').value, 10) / 100, svg = $('itt'), quit = Math.round(q * 20), i;
+    svg.innerHTML = '';
+    E('text', { x: 6, y: 18, 'class': 'big' }, svg).textContent = 'Control (20)';
+    E('text', { x: 6, y: 88, 'class': 'big' }, svg).textContent = 'Drug (20), all counted';
+    for (i = 0; i < 20; i++) E('circle', { cx: 20 + i * 27, cy: 44, r: 10, fill: ORANGE }, svg);
+    for (i = 0; i < 20; i++) {
+      if (i >= 20 - quit) E('circle', { cx: 20 + i * 27, cy: 114, r: 9, fill: '#fff', stroke: TEAL, 'stroke-width': 2.5, 'stroke-dasharray': '3 3' }, svg);
+      else E('circle', { cx: 20 + i * 27, cy: 114, r: 10, fill: TEAL }, svg);
+    }
+    $('qsv').textContent = Math.round(q * 100) + '% (' + quit + ' of 20)';
+    $('ittChips').innerHTML = chip('Effect if taken', '10 pts') + chip('Counting everyone', (10 * (1 - quit / 20)).toFixed(1) + ' pts', true) + chip('Hollow = quit, still counted', quit);
+  }
+  $('qs').addEventListener('input', drawItt);
+
+  /* ---------- Code ---------- */
+  Lab.CodeBox($('code'), {
+    py: 'import numpy as np\nfrom scipy.stats import norm\nrng = np.random.default_rng(1)\n' +
+      'def trial(choose, n=200, eff=0.0, s=1.5):\n' +
+      '    h = rng.normal(size=n)                        # hidden health\n' +
+      '    t = rng.random(n) < (norm.cdf(s*h) if choose else 0.5)\n' +
+      '    y = rng.random(n) < np.clip(0.5 + 0.10*h + eff*t, 0.02, 0.98)\n' +
+      '    return 100 * (y[t].mean() - y[~t].mean())     # effect in points\n' +
+      'for choose in (True, False):\n' +
+      '    print(choose, np.mean([trial(choose) for _ in range(500)]))',
+    r: 'trial <- function(choose, n = 200, eff = 0, s = 1.5) {\n' +
+      '  h <- rnorm(n)                                   # hidden health\n' +
+      '  t <- runif(n) < (if (choose) pnorm(s * h) else 0.5)\n' +
+      '  y <- runif(n) < pmin(pmax(0.5 + 0.10 * h + eff * t, 0.02), 0.98)\n' +
+      '  100 * (mean(y[t]) - mean(y[!t]))                # effect in points\n' +
+      '}\n' +
+      'for (choose in c(TRUE, FALSE)) print(mean(replicate(500, trial(choose))))'
+  });
+
+  refresh(0);
+  drawItt();
+  document.querySelector('#examples .btn').classList.add('on');
+})();
+</script>
+</body>
+</html>
