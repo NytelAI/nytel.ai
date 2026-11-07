@@ -345,44 +345,51 @@
   function P(o) { o.nA = o.nA || o.n; o.nB = o.nB || o.n; o.m = o.m || o.nA; return o; }
   // Number of successes among n trials, counting by geometric jumps (fast when p is small).
   function geoBinom(r, n, p) { var k = 0, pos = -1, lg = Math.log(1 - p); for (;;) { pos += 1 + Math.floor(Math.log(1 - r()) / lg); if (pos >= n) return k; k++; } }
-  function binBin(pre, a, b) { return Math.round(Math.abs(a / pre.nA - b / pre.nB) * pre.m); }
+  // Optional preset fields: unit (gap scale, default 100 = points), bw (bin width in gap units), gunit (gap label), deathsOnly (deal only the deaths).
+  function bwOf(pre) { return pre.bw || 100 / pre.m; }
+  function gapVal(pre, a, b) { return Math.abs(a / pre.nA - b / pre.nB) * (pre.unit || 100); }
+  function gunit(pre) { return pre.gunit || ' points'; }
+  function binBin(pre, a, b) { return pre.bw ? Math.min(pre.m, Math.round(gapVal(pre, a, b) / pre.bw)) : Math.round(Math.abs(a / pre.nA - b / pre.nB) * pre.m); }
   function obsBin(pre) { return binBin(pre, pre.k[0], pre.k[1]); }
-  function gapPts(pre) { return Math.abs(pre.k[0] / pre.nA - pre.k[1] / pre.nB) * 100; }
+  function gapPts(pre) { return gapVal(pre, pre.k[0], pre.k[1]); }
   function makePool(pre) { return arrOf(pre.nA, pre.k[0]).concat(arrOf(pre.nB, pre.k[1])); }
   var LASTK = [0, 0];
   // One re-dealing: shuffle the pool, or (large groups) draw both counts from the pooled rate.
   function drawGap(pre, pool) {
     var a = 0, b = 0, i;
-    if (pre.binom) { var p = (pre.k[0] + pre.k[1]) / (pre.nA + pre.nB); a = geoBinom(rng, pre.nA, p); b = geoBinom(rng, pre.nB, p); }
+    if (pre.deathsOnly) { var tot = pre.k[0] + pre.k[1], pa = pre.nA / (pre.nA + pre.nB); for (i = 0; i < tot; i++) if (rng() < pa) a++; b = tot - a; }
+    else if (pre.binom) { var p = (pre.k[0] + pre.k[1]) / (pre.nA + pre.nB); a = geoBinom(rng, pre.nA, p); b = geoBinom(rng, pre.nB, p); }
     else { shuffle(pool); for (i = 0; i < pre.nA; i++) a += pool[i]; for (; i < pool.length; i++) b += pool[i]; }
     LASTK = [a, b]; return binBin(pre, a, b);
   }
   function permHist(pre, N) { var pool = pre.binom ? null : makePool(pre), h = new Array(pre.m + 1).fill(0), i; for (i = 0; i < N; i++) h[drawGap(pre, pool)]++; return h; }
   function tailShare(h, N, d) { var c = 0, i; for (i = d; i < h.length; i++) c += h[i]; return N ? c / N : 0; }
   function tailCount(h, d) { var c = 0, i; for (i = d; i < h.length; i++) c += h[i]; return c; }
-  function permXlim(m, d) { var D = Math.min(m, Math.max(d + 2, Math.ceil(2.5 * Math.sqrt(m / 2)))), w = 100 / m; return { D: D, lo: -0.5 * w, hi: (D + 0.5) * w }; }
+  function permXlim(m, d, pre) { var D = Math.min(m, Math.max(d + 2, pre && pre.hlen ? pre.hlen : Math.ceil(2.5 * Math.sqrt(m / 2)))), w = pre ? bwOf(pre) : 100 / m; return { D: D, lo: -0.5 * w, hi: (D + 0.5) * w }; }
   // Draw the histogram of gaps, shading gaps at least as big as d (bins).
-  function drawPerm(Pl, hist, N, m, d, ms, vlabel) {
-    var X = permXlim(m, d), h = [], t = [], i, top = 1, v;
+  function drawPerm(Pl, hist, N, m, d, ms, vlabel, pre) {
+    var X = permXlim(m, d, pre), h = [], t = [], i, top = 1, v;
     for (i = 0; i <= X.D; i++) { v = N ? 100 * hist[i] / N : 0; h.push(v); t.push(i >= d ? v : 0); if (v > top) top = v; }
     Pl.setYlim(0, nice(top));
     Pl.bars('all', h, X.lo, X.hi, { fill: TEAL, opacity: 0.8 }, ms);
     Pl.bars('tail', t, X.lo, X.hi, { fill: OR, opacity: 0.95 }, ms);
-    Pl.vline('obs', d * 100 / m, vlabel || '', { color: NAVY, dash: '5 4' }, 0);
+    Pl.vline('obs', pre && pre.deathsOnly ? gapPts(pre) : d * (pre ? bwOf(pre) : 100 / m), vlabel || '', { color: NAVY, dash: '5 4' }, 0);
   }
-  function permMini(box, st, m, d) {
-    var X = permXlim(m, d), Pl = Lab.miniPlot(box, { xlim: [X.lo, X.hi], ylim: [0, 10], xlabel: 'gap (points)', ylabel: '% of re-randomizations', label: 'Histogram of gaps after re-randomizing; gaps at least as big as the real gap are orange' });
-    drawPerm(Pl, st.hist, st.N, m, d, 600);
+  function permMini(box, st, m, d, pre) {
+    var X = permXlim(m, d, pre), Pl = Lab.miniPlot(box, { xlim: [X.lo, X.hi], ylim: [0, 10], xlabel: pre && pre.xlabel ? pre.xlabel : 'gap (points)', ylabel: '% of re-randomizations', label: 'Histogram of gaps after re-randomizing; gaps at least as big as the real gap are orange' });
+    drawPerm(Pl, st.hist, st.N, m, d, 600, '', pre);
   }
   function permStat(pre, N) { var h = permHist(pre, N), d = obsBin(pre); return { hist: h, N: N, share: tailShare(h, N, d), tail: tailCount(h, d) }; }
   function nf(x) { return x.toLocaleString('en-US'); }
-  function rowsText(pre) { return pre.k[0] + '/' + nf(pre.nA) + ' vs ' + pre.k[1] + '/' + nf(pre.nB); }
+  function rowsText(pre) { if (pre.deathsOnly) return pre.k[0] + ' vs ' + pre.k[1] + ' deaths'; return pre.k[0] + '/' + nf(pre.nA) + ' vs ' + pre.k[1] + '/' + nf(pre.nB); }
 
   /* ---------- 3. Randomization test ---------- */
   var SRC_ULCER = 'Ulcer surgery deaths, Novick and Grizzle (1965), as in Polson and Sokolov (2026), <a href="https://vsokolov.org/html/_book/06-hyp.html">chapter 6</a>. Best against worst of four arms, chosen after looking, so read it with care. More in <a href="05-ulcer-trial.html">module 5</a>.';
   var SRC_ECMO = 'Newborn ECMO trial, Bartlett et al. (1985), as retold in <a href="https://arxiv.org/abs/2602.09208">Sokolova, Sokolov and Polson (2026)</a>. Assignment was adaptive, not a fair coin, so this re-dealing is only an illustration.';
   var SRC_PAN = 'PANORAMIC trial of molnupiravir for COVID-19, Butler et al. (2023), Lancet: 105 of 12,529 vs 98 of 12,525 hospitalized or died within 28 days. Rows show 100 patients per group; the test uses everyone.';
   var SRC_REC = 'RECOVERY trial of dexamethasone for patients in hospital with COVID-19, RECOVERY Collaborative Group (2021), NEJM: 482 of 2,104 vs 1,110 of 4,321 died within 28 days. Rows show 100 patients per group; the test uses everyone.';
+  var SRC_VIOXX = 'APPROVe trial of rofecoxib (Vioxx) against placebo, Bresalier et al. (2005), NEJM 352:1092-1102, <a href="https://doi.org/10.1056/NEJMoa050493">doi:10.1056/NEJMoa050493</a>: 46 of 1,287 vs 26 of 1,299 had a confirmed heart attack, stroke or other clot-related event. A randomized trial against placebo; it led to Vioxx being withdrawn in 2004.';
+  var SRC_VIAGRA = 'Polson and Sokolov, <a href="https://vsokolov.org/html/_book/05-ab.html">Bayes, AI and Deep Learning, chapter 5</a>. The 77 heart-related deaths were reported to FDA in 1998, among more than 6 million prescriptions (trade press report of FDA data; reports do not prove the drug caused them). The comparison group of 1.5 million men is made up, as in the book. Nobody was randomized, so even a real gap could come from who chose to take Viagra.';
   var PRE = [
     P({ id: 'drug10', label: 'Small drug trial (made up)', names: ['Drug', 'Placebo'], n: 10, k: [7, 4], yes: '✓', no: '✕', what: 'improved', src: 'Made-up numbers.' }),
     P({ id: 'drug100', label: 'Bigger drug trial (made up)', names: ['Drug', 'Placebo'], n: 100, k: [70, 40], yes: '✓', no: '✕', what: 'improved', src: 'Made-up numbers: same rates as the small trial, ten times the people.' }),
@@ -390,6 +397,8 @@
     P({ id: 'ecmo', label: 'ECMO newborns (real)', names: ['ECMO', 'Standard care'], nA: 11, nB: 1, m: 11, k: [11, 0], yes: '✓', no: '✕', what: 'survived', real: true, src: SRC_ECMO }),
     P({ id: 'panoramic', label: 'PANORAMIC (real)', names: ['Molnupiravir', 'Usual care'], nA: 12529, nB: 12525, k: [105, 98], big: true, binom: true, yes: '!', no: '·', what: 'hospitalized or died (fewer is better)', real: true, src: SRC_PAN }),
     P({ id: 'recovery', label: 'RECOVERY dexamethasone (real)', names: ['Dexamethasone', 'Usual care'], nA: 2104, nB: 4321, k: [482, 1110], big: true, binom: true, yes: '!', no: '·', what: 'died (fewer is better)', real: true, src: SRC_REC }),
+    P({ id: 'vioxx', label: 'Vioxx, APPROVe (real)', names: ['Vioxx (rofecoxib)', 'Placebo'], nA: 1287, nB: 1299, m: 1287, k: [46, 26], big: true, binom: true, yes: '!', no: '·', what: 'heart attack, stroke or other clot-related event (fewer is better)', real: true, src: SRC_VIOXX }),
+    P({ id: 'viagra', label: 'Viagra (book example, comparison made up)', names: ['Viagra users', 'Comparison men'], nA: 6000000, nB: 1500000, m: 60, bw: 5 / 6, hlen: 18, unit: 1e6, gunit: ' deaths per million men', xlabel: 'gap (per million men)', xtitle: 'Gap in deaths per million men', k: [77, 11], deathsOnly: true, yes: '!', no: '·', what: 'coronary deaths (fewer is better)', real: false, src: SRC_VIAGRA }),
     P({ id: 'coins', label: 'Two coins (made up)', names: ['Coin A', 'Coin B'], n: 20, k: [11, 8], yes: 'H', no: 'T', what: 'heads', src: 'Made-up numbers.' }),
     P({ id: 'ft', label: 'Free throws (made up)', names: ['Maya', 'Leo'], n: 20, k: [14, 11], yes: '✓', no: '✕', what: 'shots made', src: 'Made-up numbers.' })
   ];
@@ -402,22 +411,23 @@
     var ob = $('obsBox'); ob.innerHTML = '';
     [0, 1].forEach(function (j) {
       var n = j ? pre.nB : pre.nA, k = pre.k[j];
-      if (pre.big) addRow(ob, pre.names[j], nf(k) + ' of ' + nf(n), arrOf(100, Math.round(100 * k / n)), pre.yes, pre.no);
+      if (pre.deathsOnly) addRow(ob, pre.names[j], k + ' deaths of ' + nf(n) + ' men: ' + (k * 1e6 / n).toFixed(1) + ' per million', arrOf(15, Math.round(k * 1e6 / n)), pre.yes, pre.no);
+      else if (pre.big) addRow(ob, pre.names[j], nf(k) + ' of ' + nf(n), arrOf(100, Math.round(100 * k / n)), pre.yes, pre.no);
       else addRow(ob, pre.names[j], k + ' of ' + n, arrOf(n, k), pre.yes, pre.no);
     });
-    var lg = el('p', 'legend'); var dd = pre.yes === '!'; lg.innerHTML = ico(1, dd) + ' ' + (dd ? 'orange = ' + pre.what.replace(' (fewer is better)', '') + ', outline = did not' : 'filled = ' + pre.what + ', outline = did not') + '.' + (pre.big ? ' Each row shows 100 patients (per 100 patients); the test uses everyone.' : ''); ob.appendChild(lg);
+    var lg = el('p', 'legend'); var dd = pre.yes === '!'; lg.innerHTML = ico(1, dd) + ' ' + (dd ? 'orange = ' + pre.what.replace(' (fewer is better)', '') + ', outline = did not' : 'filled = ' + pre.what + ', outline = did not') + '.' + (pre.deathsOnly ? ' Each row shows deaths per million men (15 icons); the test uses all the deaths.' : pre.big ? ' Each row shows 100 patients (per 100 patients); the test uses everyone.' : ''); ob.appendChild(lg);
     $('shufBox').innerHTML = '<p class="note">Press "Re-randomize once".</p>'; $('shufTitle').textContent = 'After re-randomizing';
-    var X = permXlim(pre.m, obsBin(pre));
-    S3.P = Lab.Plot($('plot3'), { xlim: [X.lo, X.hi], ylim: [0, 20], h: 320, xlabel: 'Gap between the two rows (percentage points)', ylabel: 'Share of re-randomizations (%)', label: 'Histogram of gaps from re-randomized rows, with the observed gap marked' });
+    var X = permXlim(pre.m, obsBin(pre), pre);
+    S3.P = Lab.Plot($('plot3'), { xlim: [X.lo, X.hi], ylim: [0, 20], h: 320, xlabel: pre.xtitle || 'Gap between the two rows (percentage points)', ylabel: 'Share of re-randomizations (%)', label: 'Histogram of gaps from re-randomized rows, with the observed gap marked' });
     S3.P.legend([{ label: 'Gaps after re-randomizing', color: TEAL, kind: 'box' }, { label: 'At least as big as yours', color: OR, kind: 'box' }, { label: 'Your gap', color: NAVY, kind: 'dash' }]);
     update3(0);
   }
   function update3(ms) {
     var pre = S3.pre, m = pre.m, d = obsBin(pre), g = gapPts(pre);
-    drawPerm(S3.P, S3.hist, S3.N, m, d, ms, 'yours');
+    drawPerm(S3.P, S3.hist, S3.N, m, d, ms, 'yours', pre);
     var tc = tailCount(S3.hist, d);
-    $('chips3').innerHTML = chip('Your gap', fmtGap(+g.toFixed(2)) + ' points (' + rowsText(pre) + ')', true) +
-      chip('Last gap', S3.last == null ? '–' : fmtGap(+(S3.last * 100 / m).toFixed(2)) + ' points') + chip('Re-randomizations', nf(S3.N)) +
+    $('chips3').innerHTML = chip('Your gap', fmtGap(+g.toFixed(2)) + gunit(pre) + ' (' + rowsText(pre) + ')', true) +
+      chip('Last gap', S3.last == null ? '–' : fmtGap(+(pre.deathsOnly ? gapVal(pre, LASTK[0], LASTK[1]) : S3.last * bwOf(pre)).toFixed(2)) + gunit(pre)) + chip('Re-randomizations', nf(S3.N)) +
       chip('At least as big as yours', S3.N ? nf(tc) + ' of ' + nf(S3.N) + ' (' + pct(tc / S3.N, S3.N >= 1000 ? 1 : 0) + ')' : '–');
     var note = '';
     if (S3.N >= 200) {
@@ -430,15 +440,18 @@
   function showDealt(pre) {
     var box = $('shufBox'), ka = LASTK[0], kb = LASTK[1];
     box.innerHTML = ''; $('shufTitle').textContent = 'After re-randomizing: dealt back at random';
-    if (pre.big) {
+    if (pre.deathsOnly) {
+      addRow(box, pre.names[0], ka + ' deaths: ' + (ka * 1e6 / pre.nA).toFixed(1) + ' per million', arrOf(15, Math.round(ka * 1e6 / pre.nA)), pre.yes, pre.no);
+      addRow(box, pre.names[1], kb + ' deaths: ' + (kb * 1e6 / pre.nB).toFixed(1) + ' per million', arrOf(15, Math.round(kb * 1e6 / pre.nB)), pre.yes, pre.no);
+    } else if (pre.big) {
       addRow(box, pre.names[0], nf(ka) + ' of ' + nf(pre.nA), arrOf(100, Math.round(100 * ka / pre.nA)), pre.yes, pre.no);
       addRow(box, pre.names[1], nf(kb) + ' of ' + nf(pre.nB), arrOf(100, Math.round(100 * kb / pre.nB)), pre.yes, pre.no);
     } else {
       addRow(box, pre.names[0], ka + ' of ' + pre.nA, S3.pool.slice(0, pre.nA), pre.yes, pre.no);
       addRow(box, pre.names[1], kb + ' of ' + pre.nB, S3.pool.slice(pre.nA), pre.yes, pre.no);
     }
-    var g = Math.abs(ka / pre.nA - kb / pre.nB) * 100;
-    box.appendChild(el('p', 'verdict', 'New gap: ' + fmtGap(+g.toFixed(2)) + ' points' + (ka / pre.nA === kb / pre.nB ? '' : ka / pre.nA > kb / pre.nB ? ', ' + pre.names[0] + ' ahead' : ', ' + pre.names[1] + ' ahead') + '. A gap either way counts (yours was ' + fmtGap(+gapPts(pre).toFixed(2)) + ').'));
+    var g = gapVal(pre, ka, kb);
+    box.appendChild(el('p', 'verdict', 'New gap: ' + fmtGap(+g.toFixed(2)) + gunit(pre) + (ka / pre.nA === kb / pre.nB ? '' : ka / pre.nA > kb / pre.nB ? ', ' + pre.names[0] + ' ahead' : ', ' + pre.names[1] + ' ahead') + '. A gap either way counts (yours was ' + fmtGap(+gapPts(pre).toFixed(2)) + ').'));
   }
   function shuffleOnce() {
     if (S3.busy) return; var pre = S3.pre, d;
@@ -475,9 +488,9 @@
     var c = el('div', 'excard');
     c.innerHTML = '<h3></h3><span class="badge' + (pre.real ? ' real' : '') + '">' + (pre.real ? 'real data' : 'made up') + '</span>';
     c.querySelector('h3').textContent = pre.label.replace(/ \((real|made up)\)/, '');
-    var p = el('p', '', pre.names[0] + ' ' + nf(pre.k[0]) + ' of ' + nf(pre.nA) + ' vs ' + pre.names[1] + ' ' + nf(pre.k[1]) + ' of ' + nf(pre.nB) + ' (' + pre.what + '). Gap ' + fmtGap(+gapPts(pre).toFixed(2)) + ' points.');
+    var p = pre.deathsOnly ? el('p', '', pre.names[0] + ' ' + pre.k[0] + ' deaths among ' + nf(pre.nA) + ' men vs ' + pre.names[1] + ' ' + pre.k[1] + ' among ' + nf(pre.nB) + '. Gap ' + fmtGap(+gapPts(pre).toFixed(2)) + gunit(pre) + '.') : el('p', '', pre.names[0] + ' ' + nf(pre.k[0]) + ' of ' + nf(pre.nA) + ' vs ' + pre.names[1] + ' ' + nf(pre.k[1]) + ' of ' + nf(pre.nB) + ' (' + pre.what + '). Gap ' + fmtGap(+gapPts(pre).toFixed(2)) + ' points.');
     p.style.marginTop = '.5rem'; c.appendChild(p);
-    var mb = el('div', 'minibox'); c.appendChild(mb); permMini(mb, st, pre.m, d);
+    var mb = el('div', 'minibox'); c.appendChild(mb); permMini(mb, st, pre.m, d, pre);
     var ch = el('div', 'chips'); ch.innerHTML = chip('Re-randomizations at least as big', pct(st.share, 1), true); c.appendChild(ch);
     var src = el('p', 'note'); src.style.marginTop = '.5rem'; src.innerHTML = pre.src; c.appendChild(src);
     $('excards').appendChild(c);
