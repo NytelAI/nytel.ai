@@ -49,7 +49,8 @@
   .hide { display: none !important; }
   .hero .qtop { max-width: 620px; margin: 1rem 0 .5rem; }
   .fig3 .plotbox { padding: .4rem; }
-  details.aside summary { cursor: pointer; padding: .5rem 0; font-weight: 600; color: var(--teal-dark); }
+  .fig3 { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 800px) { .fig3 { grid-template-columns: 1fr; } }
   @media (max-width: 800px) { #tv .rowwrap { grid-template-columns: 5.5rem 1fr; } }
   @media (prefers-reduced-motion: reduce) { #tv .tbar i, .progress i { transition: none; } }
 </style>
@@ -95,19 +96,6 @@
     <div class="field col"><div class="lab2"><label for="c">Success bar</label><output id="cO"></output></div><input id="c" type="range" min="0.9" max="0.9999" step="0.0001" value="0.975"></div>
     <div class="field col"><div class="lab2"><label for="f">Give-up bar</label><output id="fO"></output></div><input id="f" type="range" min="0" max="0.5" step="0.01" value="0.05"></div>
     <p class="note" style="margin:0">Below it at an early look: stop and give up. Off = never give up.</p>
-    <details class="aside"><summary>More settings</summary>
-      <div class="field col"><div class="lab2"><label for="margin">Drug must beat placebo by at least</label><output id="marginO"></output></div><input id="margin" type="range" min="0" max="0.2" step="0.01" value="0"></div>
-      <p class="note" style="margin:0 0 .3rem">Starting belief (<a href="01-prior-posterior.html">module 1</a>): past patients who improved / did not improve. 1 and 1 = no opinion.</p>
-      <div class="field"><label>Placebo</label><input id="a0" class="w" type="number" min="0.1" max="100" step="0.5" value="1" aria-label="Placebo: past patients who improved"> improved <input id="b0" class="w" type="number" min="0.1" max="100" step="0.5" value="1" aria-label="Placebo: past patients who did not improve"> not</div>
-      <div class="field"><label>Drug</label><input id="a1" class="w" type="number" min="0.1" max="100" step="0.5" value="1" aria-label="Drug: past patients who improved"> improved <input id="b1" class="w" type="number" min="0.1" max="100" step="0.5" value="1" aria-label="Drug: past patients who did not improve"> not</div>
-      <div class="field"><label for="nsim">Simulated trials</label><input id="nsim" class="big" type="number" min="200" max="20000" step="200" value="2000"></div>
-      <div class="field"><label for="seed">Trial batch number</label><input id="seed" class="big" type="number" min="1" max="999999" step="1" value="20260801"></div>
-      <div class="row" role="group" aria-label="Classic rule version">
-        <button class="btn on" id="gL" type="button" aria-pressed="true">Lan-DeMets</button>
-        <button class="btn" id="gO" type="button" aria-pressed="false">Classical O&rsquo;Brien-Fleming</button>
-      </div>
-      <p class="note" style="margin:.4rem 0 0">Classic rule version.</p>
-    </details>
     <div class="row" style="margin-top:.8rem"><button class="btn primary" id="again" type="button">New random trials</button></div>
     <p class="note" style="margin-top:.5rem">Fixed and classic designs always use equal groups.</p>
   </div>
@@ -125,9 +113,8 @@
   <h2>When do the trials stop?</h2>
   <p>Share of trials stopping at each look.</p>
   <div class="fig3">
-    <div class="plotbox"><h4>Fixed design</h4><svg id="sp1"></svg></div>
-    <div class="plotbox"><h4>Classic rule</h4><svg id="sp2"></svg></div>
-    <div class="plotbox"><h4>Your bar</h4><svg id="sp3"></svg></div>
+    <div class="plotbox"><h4>Classic rule</h4><svg id="sp1"></svg></div>
+    <div class="plotbox"><h4>Your bar</h4><svg id="sp2"></svg></div>
   </div>
 </section>
 
@@ -230,13 +217,12 @@
   var PERSON = '<svg class="pp CLS" viewBox="0 0 16 20" aria-hidden="true"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg>';
 
   /* ---------- Controls ---------- */
-  var state = { alloc: 'fixed', gs: 'ld' };
+  var state = { alloc: 'fixed', gs: 'ld', seed: 20260801 };
   var fmts = {
     p0: function (v) { return pc(v, 0); }, p1: function (v) { return pc(v, 0); },
     N: function (v) { return comma(v); }, K: function (v) { return String(v); },
     cap: function (v) { return pc(v, 0); }, burn: function (v) { return v + ' patients'; },
-    c: function (v) { return pc(v, 1); }, f: function (v) { return v === 0 ? 'off' : pc(v, 0); },
-    margin: function (v) { return Math.round(100 * v) + ' points'; }
+    c: function (v) { return pc(v, 1); }, f: function (v) { return v === 0 ? 'off' : pc(v, 0); }
   };
   var ids = Object.keys(fmts);
   function showOut(id) { $(id + 'O').textContent = fmts[id](parseFloat($(id).value)); }
@@ -244,18 +230,17 @@
     var P = {
       p0: parseFloat($('p0').value), p1: parseFloat($('p1').value), N: parseInt($('N').value, 10), K: parseInt($('K').value, 10),
       alloc: state.alloc, cap: parseFloat($('cap').value), burnIn: parseInt($('burn').value, 10),
-      a0: parseFloat($('a0').value) || 1, b0: parseFloat($('b0').value) || 1, a1: parseFloat($('a1').value) || 1, b1: parseFloat($('b1').value) || 1,
-      margin: parseFloat($('margin').value), c: parseFloat($('c').value), f: parseFloat($('f').value),
-      nsim: Math.max(200, Math.min(20000, parseInt($('nsim').value, 10) || 2000)), seed: parseInt($('seed').value, 10) || 1, gs: state.gs, alpha: 0.025
+      a0: 1, b0: 1, a1: 1, b1: 1,
+      margin: 0, c: parseFloat($('c').value), f: parseFloat($('f').value),
+      nsim: 2000, seed: state.seed, gs: state.gs, alpha: 0.025
     };
     return S.withDefaults(P);
   }
   function setPair(on, off, btnOn, btnOff) { btnOn.classList.add('on'); btnOff.classList.remove('on'); btnOn.setAttribute('aria-pressed', 'true'); btnOff.setAttribute('aria-pressed', 'false'); }
   function setAlloc(a) { state.alloc = a; if (a === 'fixed') setPair(0, 0, $('aF'), $('aT')); else setPair(0, 0, $('aT'), $('aF')); $('tsBox').classList.toggle('hide', a !== 'ts'); }
-  function setGs(g) { state.gs = g; if (g === 'ld') setPair(0, 0, $('gL'), $('gO')); else setPair(0, 0, $('gO'), $('gL')); }
   function setVals(o) {
     Object.keys(o).forEach(function (k) {
-      if (k === 'alloc') setAlloc(o[k]); else if (k === 'gs') setGs(o[k]); else if ($(k)) $(k).value = o[k];
+      if (k === 'alloc') setAlloc(o[k]); else if (k === 'gs' || k === 'margin' || /^[ab][01]$/.test(k)) return; else if ($(k)) $(k).value = o[k];
     });
     ids.forEach(showOut);
   }
@@ -279,7 +264,7 @@
   }
 
   /* ---------- Plots ---------- */
-  var sp = [1, 2, 3].map(function (i) { return Lab.Plot($('sp' + i), { xlim: [0.5, 4.5], ylim: [0, 1], xlabel: 'Look when the trial stopped', ylabel: 'Share of trials', yfmt: pctAxis, small: true, w: 300, h: 200, label: 'Histogram of the look at which simulated trials stopped' }); });
+  var sp = [1, 2].map(function (i) { return Lab.Plot($('sp' + i), { xlim: [0.5, 4.5], ylim: [0, 1], xlabel: 'Look when the trial stopped', ylabel: 'Share of trials', yfmt: pctAxis, small: true, w: 300, h: 200, label: 'Histogram of the look at which simulated trials stopped' }); });
   var estPlot = Lab.Plot($('estPlot'), { xlim: [-0.3, 0.7], ylim: [0, 0.2], xlabel: 'Estimated gap, in points (drug minus placebo)', ylabel: 'Share of trials', xfmt: function (v) { return (100 * v).toFixed(0); }, w: 640, h: 300, label: 'Histogram of the estimated gap at stopping' });
   var pathPlot = Lab.Plot($('pathPlot'), { xlim: [0, 300], ylim: [0, 1], xlabel: 'Patients enrolled', ylabel: 'Chance drug is better', w: 640, h: 280, label: 'One simulated trial: chance the drug is better as patients enroll, with the success and give-up bars' });
   var calPlot = Lab.Plot($('calPlot'), { xlim: [0.9, 1], ylim: [0, 0.15], xlabel: 'Success bar', ylabel: 'False positives', yfmt: function (v) { return (100 * v).toFixed(0) + '%'; }, w: 640, h: 300, label: 'False-positive rate against the success bar' });
@@ -307,9 +292,9 @@
   function renderStops() {
     var P = cur.P, R = cur.res, K = P.K, xt = [], k;
     for (k = 1; k <= K; k++) xt.push({ x: k, label: String(k) });
-    [R.fixed, R.gs, R.bayes].forEach(function (d, i) {
+    [R.gs, R.bayes].forEach(function (d, i) {
       var p = sp[i]; p.setXlim(0.5, K + 0.5);
-      p.bars('b', d.stopHist, 0.5, K + 0.5, { fill: [GREY, SLATE, TEAL][i], opacity: 0.85 }, 400);
+      p.bars('b', d.stopHist, 0.5, K + 0.5, { fill: [SLATE, TEAL][i], opacity: 0.85 }, 400);
     });
   }
   function renderEst() {
@@ -413,12 +398,9 @@
 
   /* ---------- Wiring ---------- */
   ids.forEach(function (id) { $(id).addEventListener('input', function () { showOut(id); later(); }); });
-  ['a0', 'b0', 'a1', 'b1', 'nsim', 'seed'].forEach(function (id) { $(id).addEventListener('change', later); });
   $('aF').addEventListener('click', function () { setAlloc('fixed'); later(); });
   $('aT').addEventListener('click', function () { setAlloc('ts'); later(); });
-  $('gL').addEventListener('click', function () { setGs('ld'); later(); });
-  $('gO').addEventListener('click', function () { setGs('obf'); later(); });
-  $('again').addEventListener('click', function () { $('seed').value = (parseInt($('seed').value, 10) || 1) + 1; exIdx = 0; run(); });
+  $('again').addEventListener('click', function () { state.seed += 1; exIdx = 0; run(); });
   $('cal').addEventListener('click', calibrate);
   $('useCal').addEventListener('click', function () { if (cal.c) { $('c').value = cal.c; showOut('c'); run(); } });
   $('exNext').addEventListener('click', function () { exIdx = (exIdx + 1) % cur.P.nsim; renderPath(); });

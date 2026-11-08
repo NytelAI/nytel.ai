@@ -107,7 +107,7 @@ svg text { font-family: var(--sans); }
     <p class="note">One trial tests a useless drug this many times. Every <span class="tip" tabindex="0" data-tip="A test passes the cutoff even though nothing real is going on.">false alarm</span> is luck.</p>
   </div>
   <div>
-    <div class="plotbox"><svg id="plot"></svg>
+    <div class="plotbox">
       <div class="chips" aria-live="polite" id="chips"></div>
       <p class="note" id="plotNote" style="margin:.5rem 0 0"></p>
     </div>
@@ -255,28 +255,12 @@ svg text { font-family: var(--sans); }
     return { counts: c, any: any / n, mean: tot / n };
   }
 
-  /* ---------- Main histogram ---------- */
+  /* ---------- Main chips ---------- */
   function renderMain() {
-    var k = S.k, c = S.counts, mx = 0, i;
-    for (i = 0; i <= k; i++) if (c[i] > 0) mx = i;
-    mx = Math.min(Math.max(mx + 1, 4), k);
-    var h0 = [], h1 = [], ex = [], xs = [], top = 0.1, any = METHODS.filter(function (x) { return x.id === S.m; })[0], hasEx = exactPmf(S.m, k, S.a, 0) !== null;
-    for (i = 0; i <= mx; i++) {
-      var v = c[i] / S.n; h0.push(i === 0 ? v : 0); h1.push(i === 0 ? 0 : v); xs.push(i);
-      top = Math.max(top, v); if (hasEx) { var e = exactPmf(S.m, k, S.a, i); ex.push(e); top = Math.max(top, e); }
-    }
-    top = Math.min(1, Math.ceil(top * 1.15 * 10) / 10);
-    var P = Lab.Plot($('plot'), { xlim: [-0.5, mx + 0.5], ylim: [0, top], xlabel: 'False alarms in one trial (out of ' + k + ' tests)', ylabel: 'Share of ' + fmtInt(S.n) + ' simulated trials', label: 'Histogram of the number of false alarms per simulated trial. Teal bar: none. Orange bars: one or more.', xfmt: function (v) { return Math.abs(v - Math.round(v)) < 1e-9 ? String(Math.round(v)) : ''; }, yfmt: function (v) { return pct(v, 0); } });
-    P.bars('ok', h0, -0.5, mx + 0.5, { fill: TEAL, opacity: 0.85 }, 700);
-    P.bars('bad', h1, -0.5, mx + 0.5, { fill: ORANGE, opacity: 0.85 }, 700);
-    var lg = [{ label: 'No false alarm', color: TEAL, kind: 'box' }, { label: '1 or more', color: ORANGE, kind: 'box' }];
-    if (hasEx) { P.line('exact', xs, ex, { stroke: NAVY, width: 2 }, 700); lg.push({ label: 'By formula', color: NAVY, kind: 'line' }); }
-    P.legend(lg);
-    var last = S.ps ? countOf(evalRun(S.ps, S.m, S.a)) : 0;
+    var k = S.k, any = METHODS.filter(function (x) { return x.id === S.m; })[0];
     $('chips').innerHTML =
       '<span class="chip warm">At least 1 false alarm: <b>' + pct(exactAny(S.m, k, S.a)) + '</b> by formula, <b>' + pct(S.any) + '</b> in 1,000 trials</span>' +
       '<span class="chip">Average false alarms per trial: <b>' + num(S.mean, 2) + '</b></span>';
-    $('plotNote').innerHTML = '';
     $('mlabel').textContent = any.cap;
   }
 

@@ -133,7 +133,7 @@
 
 <section class="example" id="real">
   <h2>Real trials, real numbers</h2>
-  <p>Planning a trial means asking: how many patients, or how many events?</p>
+  <p>Planning a trial means asking: how many patients?</p>
   <div class="exgrid">
     <div class="figure">
       <h3>A worked design</h3>
@@ -148,28 +148,14 @@
       <p class="note">At the starting values, <i>Clinical Trials in Practice</i> also finds 467 patients in total.</p>
     </div>
     <div class="figure">
-      <h3>Cancer trials count events</h3>
-      <p class="note" style="margin:0">An event is a patient whose cancer grew or who died; the trial runs until enough happen. Hazard ratio (HR) 0.5: at any moment, patients on the drug have half the risk of an event.</p>
-      <svg id="plotB"></svg>
-      <div class="chips" id="chipB"></div>
-      <p class="note">FOCUS4-N, a UK bowel cancer trial, planned 635 events for HR 0.8.</p>
-    </div>
-  </div>
-  <div class="exgrid">
-    <div class="figure">
       <h3>Rare side effects need crowds</h3>
       <p class="note" style="margin:0"><span class="tip" tabindex="0" data-tip="International Council for Harmonisation: regulators and industry who write trial rules that the US, Europe and Japan share.">ICH</span> E1 asks for about 1,500 patients exposed to a drug taken long-term for a non-life-threatening condition. Pick a true side-effect rate.</p>
       <div class="row" id="rates" style="margin:.5rem 0"></div>
       <svg id="people" class="dotsvg" viewBox="0 0 500 200" role="img" aria-label="1,500 person icons, one per patient; orange filled icons are patients with the side effect"></svg>
       <p class="plain" id="peopleOut"></p>
     </div>
-    <div class="figure">
-      <h3>Why sample size is a money question</h3>
-      <svg id="cost" class="dotsvg" viewBox="0 0 440 200" role="img" aria-label="Average cost per study by trial phase, log scale"></svg>
-      <p class="note">Average cost per study (<i>Clinical Trials in Practice</i>, citing Sertkaya 2016 and Moore 2018). Phase II: a few hundred patients to find a dose; Phase III: large trials to prove the drug works.</p>
-    </div>
   </div>
-  <p class="note">Sources: design numbers from Sokolova and Sokolov (2026), <i>Clinical Trials in Practice</i>. FOCUS4-N: Adams R.A. et al. (2021), J Clin Oncol 39:3693-3704 (<a href="https://discovery.ucl.ac.uk/10134621/1/jco.21.01436.pdf">UCL Discovery copy</a>): 644 patients and 635 events for 80% power at HR 0.8, two-sided 5%. Safety numbers: <a href="https://database.ich.org/sites/default/files/E1_Guideline.pdf">ICH E1 guideline</a>.</p>
+  <p class="note">Sources: design numbers from Sokolova and Sokolov (2026), <i>Clinical Trials in Practice</i>. Safety numbers: <a href="https://database.ich.org/sites/default/files/E1_Guideline.pdf">ICH E1 guideline</a>.</p>
 </section>
 
 <div id="code"></div>
@@ -544,17 +530,6 @@
   $('sd').addEventListener('input', function () { A.sd = +this.value; renderA(0); });
   renderA(0);
 
-  // B: events against hazard ratio
-  function events(hr, pw) { var z = 1.959964 + Lab.normalQuantile(pw, 0, 1); return 4 * z * z / (Math.log(hr) * Math.log(hr)); }
-  var plotB = Lab.Plot($('plotB'), { w: 460, h: 260, xlim: [0.4, 0.85], ylim: [0, 1800], xlabel: 'Hazard ratio (lower = stronger drug)', ylabel: 'Events needed', label: 'Events needed against hazard ratio, for 80% and 90% power' });
-  var xsB = Lab.linspace(0.4, 0.85, 46);
-  plotB.line('p90', xsB, xsB.map(function (h) { return events(h, 0.9); }), { stroke: DARKO, width: 2.5 }, 0);
-  plotB.line('p80', xsB, xsB.map(function (h) { return events(h, 0.8); }), { stroke: TEAL, width: 2.5 }, 0);
-  plotB.vline('h5', 0.5, 'HR 0.5: ' + Math.ceil(events(0.5, 0.9)), { color: NAVY, dash: '4 3' }, 0);
-  plotB.vline('h8', 0.8, 'HR 0.8: ' + Math.ceil(events(0.8, 0.8)), { color: NAVY, dash: '4 3' }, 0);
-  plotB.legend([{ label: '90% power', color: DARKO, kind: 'line' }, { label: '80% power', color: TEAL, kind: 'line' }]);
-  $('chipB').innerHTML = chip('HR 0.5, 90% power', Math.ceil(events(0.5, 0.9)) + ' events', true) + chip('HR 0.8, 80% power', Math.ceil(events(0.8, 0.8)) + ' events') + chip('FOCUS4-N planned', '635 events');
-
   // C: rare side effects
   var people = (function () {
     var svg = $('people'), out = [], i;
@@ -578,24 +553,6 @@
     $('rates').appendChild(b);
   });
   runRate(0.001); $('rates').firstChild.classList.add('on');
-
-  // D: cost ranges, log axis
-  (function () {
-    var s = $('cost'), lo = Math.log(5), hi = Math.log(400), X0 = 150, X1 = 420;
-    var sx = function (v) { return X0 + (Math.log(v) - lo) / (hi - lo) * (X1 - X0); };
-    [5, 10, 20, 50, 100, 200, 400].forEach(function (v) {
-      svgEl('line', { x1: sx(v), x2: sx(v), y1: 20, y2: 150, stroke: '#E1E5EA' }, s);
-      var t = svgEl('text', { x: sx(v), y: 168, 'text-anchor': 'middle', 'font-size': 11, fill: '#4a5568', 'font-family': 'inherit' }, s); t.textContent = '$' + v + 'M';
-    });
-    var t2 = svgEl('text', { x: (X0 + X1) / 2, y: 190, 'text-anchor': 'middle', 'font-size': 11, fill: '#4a5568', 'font-family': 'inherit' }, s); t2.textContent = 'Cost per study';
-    [{ y: 40, a: 7, b: 20, l: 'Mid-size (Phase II)', c: TEAL, n: '$7M to $20M' }, { y: 85, a: 12, b: 53, l: 'Big final (Phase III)', c: DARKO, n: '$12M to $53M' }, { y: 130, a: 350, b: 350, l: 'Most expensive Phase III', c: NAVY, n: 'about $350M' }].forEach(function (r) {
-      var l = svgEl('text', { x: 8, y: r.y + 4, 'font-size': 12, 'font-weight': 600, fill: NAVY, 'font-family': 'inherit' }, s); l.textContent = r.l;
-      if (r.a === r.b) svgEl('circle', { cx: sx(r.a), cy: r.y, r: 7, fill: r.c }, s);
-      else svgEl('rect', { x: sx(r.a), y: r.y - 8, width: sx(r.b) - sx(r.a), height: 16, rx: 4, fill: r.c }, s);
-      var n = svgEl('text', { x: Math.min(sx(r.b) + 10, 330), y: r.y - 14, 'font-size': 11, fill: '#4a5568', 'font-family': 'inherit' }, s); n.textContent = r.n;
-      if (r.a === r.b) { n.setAttribute('x', sx(r.a) - 40); }
-    });
-  })();
 
   /* ---------- Code ---------- */
   Lab.CodeBox($('code'), {

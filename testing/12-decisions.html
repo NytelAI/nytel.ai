@@ -16,13 +16,6 @@
 <style>
 .tip { border-bottom: 1.5px dotted var(--teal-dark); cursor: help; position: relative; }
 .tip:hover::after, .tip:focus::after { content: attr(data-tip); position: absolute; left: 0; top: 1.5em; z-index: 30; width: 16rem; max-width: 70vw; background: var(--navy); color: #fff; font-size: .82rem; font-weight: 400; line-height: 1.35; padding: .45rem .6rem; border-radius: 6px; font-style: normal; text-transform: none; letter-spacing: 0; }
-.words { background: var(--teal-light); border-radius: 10px; padding: .6rem 1rem; margin: 1rem 0; font-size: .92rem; }
-.words ul { margin: .3rem 0 0; padding-left: 1.1rem; } .words li { margin: .15rem 0; }
-.ihole { display: flex; gap: 2rem; flex-wrap: wrap; margin: .6rem 0; }
-.igrp .lab2 { font-size: .85rem; font-weight: 600; margin-bottom: .3rem; }
-.igrid { display: grid; grid-template-columns: repeat(10, 14px); gap: 3px; }
-.igrid i { width: 14px; height: 14px; border-radius: 50%; display: block; }
-.igrid i.y { background: var(--teal-dark); } .igrid i.n { background: #fff; border: 1.5px solid #9AA5B1; box-sizing: border-box; }
 .sec { margin: 2.5rem 0 1rem; }
 .sec h2 { font-size: 1.5rem; }
 .sec .setup { color: var(--text-secondary); }
@@ -88,13 +81,6 @@
   <div class="presets" id="examples"><span class="lbl">Jump to an example:</span></div>
 </section>
 
-<div class="words"><b>Words used here, in plain terms</b>
-  <ul>
-    <li><b>Effect</b>: how much the drug helps, such as 3 points. <b>SD</b>: how much patients differ from each other. <b>Standard error (SE)</b>: how far a result lands from the truth by luck (<a href="02-p-values.html">module 2</a>).</li>
-    <li><b>Type I error</b> (false approval): approving a drug that does nothing. <b>Type II error</b>: missing a drug that works. <b>Power</b>: the chance a trial finds a real effect (<a href="03-errors-power.html">module 3</a>).</li>
-    <li><b>Alpha</b>: the false approval chance we allow. <b>One-sided</b>: only a wrong "drug is better" counts as a false approval. <b>Endpoint</b>: an outcome the trial measures. <b>Prior</b>: what we believe before the trial. <b>Posterior</b>: what we believe after it (<a href="01-prior-posterior.html">module 1</a>).</li>
-  </ul></div>
-
 <section class="sec" id="secA">
   <h2>A. Two ways to be wrong</h2>
   <p class="setup">A regulator can approve a drug that does nothing (false approval) or reject a good one. Which mistake is worse?</p>
@@ -104,9 +90,9 @@
       <div class="chipbtns" id="aPresets"></div>
       <div class="rl"><span>Cost ratio</span><output id="aRatioOut">39 : 1</output></div>
       <input id="aRatio" type="range" min="1" max="100" step="1" value="39" aria-label="Cost ratio, false approval to missed drug">
-      <div class="rl"><span>How strong the data look</span><output id="aMOut"></output></div>
+      <div class="rl"><span><span class="tip" tabindex="0" data-tip="Measured in standard errors (SE): how far a result lands from the truth by luck.">How strong the data look</span></span><output id="aMOut"></output></div>
       <input id="aM" type="range" min="0" max="4" step="0.1" value="1.5" aria-label="Strength of evidence in standard errors">
-      <p class="note" style="margin-top:.6rem">Approve only if we are at least <b id="aGam">39/(39+1) = 97.5%</b> sure the drug works.</p>
+      <p class="note" style="margin-top:.6rem">Approve only if we are at least <b id="aGam">39/(39+1) = 97.5%</b> <span class="tip" tabindex="0" data-tip="Sure: what we believe after seeing the trial data (the posterior).">sure</span> the drug works.</p>
     </div>
     <div>
       <div class="plotbox"><svg id="aPlot"></svg>
@@ -128,7 +114,7 @@
 </section>
 
 <section class="sec" id="secB">
-  <h2>B. The price of safety: loss of power</h2>
+  <h2>B. The price of safety: loss of <span class="tip" tabindex="0" data-tip="Power: the chance a trial finds a real effect when there is one.">power</span></h2>
   <p class="setup">A stricter bar for "yes" protects against false alarms. It also makes real drugs harder to find.</p>
   <div id="labB" class="labgrid" aria-label="Power lab" style="margin-top:.5rem">
     <div class="panel">
@@ -138,9 +124,9 @@
       <h3>Patients</h3>
       <div class="rl"><span>In the trial</span><output id="bNOut"></output></div>
       <input id="bN" type="range" min="10" max="1500" step="1" value="467" aria-label="Total patients">
-      <h3>Alpha (<span class="tip" tabindex="0" data-tip="One-sided: only a wrong 'drug is better' counts as a false approval.">one-sided</span>)</h3>
+      <h3><span class="tip" tabindex="0" data-tip="Alpha: the false approval chance we allow.">Alpha</span> (<span class="tip" tabindex="0" data-tip="One-sided: only a wrong 'drug is better' counts as a false approval.">one-sided</span>)</h3>
       <div class="chipbtns" id="bAlpha"></div>
-      <h3>Endpoints tested (<span class="tip" tabindex="0" data-tip="Bonferroni: to keep the chance of any false approval at alpha across all endpoints, test each one at alpha divided by the number of endpoints.">Bonferroni</span>)</h3>
+      <h3><span class="tip" tabindex="0" data-tip="Endpoint: an outcome the trial measures.">Endpoints</span> tested (<span class="tip" tabindex="0" data-tip="Bonferroni: to keep the chance of any false approval at alpha across all endpoints, test each one at alpha divided by the number of endpoints.">Bonferroni</span>)</h3>
       <div class="rl"><span>Endpoints</span><output id="bMOut"></output></div>
       <input id="bM" type="range" min="1" max="20" step="1" value="1" aria-label="Number of tests">
       <h3>Looks at the data (<a href="07-interim-looks.html">module 7</a>)</h3>
@@ -154,17 +140,6 @@
       </div>
     </div>
   </div>
-</section>
-
-<section class="sec" id="secT">
-  <h2>Truth versus one trial</h2>
-  <p class="setup">The old drug truly helps 30 of 100 patients. Pick how much the new drug truly helps, then see what one trial of 100 per arm shows.</p>
-  <div class="chipbtns" id="tBtns"></div>
-  <div class="bars" id="tTrue" aria-label="True response rates"></div>
-  <div class="ihole" id="tRows" aria-label="Observed patients in one trial"></div>
-  <div class="chips" id="tChips" aria-live="polite"></div>
-  <div class="chipbtns" style="margin-top:.5rem" id="tRun"></div>
-  <p class="note" id="tNote"></p>
 </section>
 
 <section class="sec" id="secC">
@@ -194,14 +169,6 @@
       <div id="dBarsN"></div>
       <p class="refline" id="dNote"></p>
     </div>
-    <div class="figure">
-      <p class="note" style="margin:0 0 .4rem">Dashed line: the penalty rule at seven patient costs. Cheaper patients: bigger trials, more power.</p>
-      <h3 id="fTitle">Power by patient cost (dashed line)</h3>
-      <svg id="fPlot"></svg>
-      <div class="rl" style="display:flex;justify-content:space-between;font-size:.9rem;margin-top:.4rem"><span>Cost of each extra patient pair</span><output id="fCOut" style="font-family:var(--mono);font-weight:600;color:var(--teal-dark)"></output></div>
-      <input id="fC" type="range" min="0" max="6" step="1" value="5" style="width:100%;accent-color:var(--teal-dark)" aria-label="Cost of sampling">
-      <div class="chips" id="fChips" aria-live="polite"></div>
-    </div>
   </div>
   <p class="note">Rules are tuned differently, so this is not a ranking. Costs are made up.</p>
 </section>
@@ -229,7 +196,7 @@
   <ul>
     <li>Polson, N. and Sokolov, V. (2026). <a href="https://vsokolov.org/books/bayes_ai_deep_learning/">Bayes, AI and Deep Learning: Foundations of Data Science</a>. doi:10.5281/zenodo.23992805</li>
     <li>Sokolova, A. and Sokolov, V. (2026). <a href="https://vsokolov.org/books/clinical_trials_in_practice/">Clinical Trials in Practice: From Foundations to AI Agents</a>. doi:10.5281/zenodo.23933570 (worked design: effect 3, SD 10, 90% power, one-sided 0.025)</li>
-    <li>Sokolova, A., Sokolov, V. and Polson, N. (2026). A Tutorial on Bayesian Clinical Trial Design: Prior Specification, Computation, and Optimal Stopping. Manuscript submitted to Statistics in Medicine. All numbers in section D and the cards on costs and priors.</li>
+    <li>Sokolova, A., Sokolov, V. and Polson, N. (2026). A Tutorial on Bayesian Clinical Trial Design: Prior Specification, Computation, and Optimal Stopping. Manuscript submitted to Statistics in Medicine. All numbers in section D and the card on priors.</li>
     <li>FDA (2026, draft). <a href="https://www.fda.gov/media/190505/download">Use of Bayesian Methodology in Clinical Trials of Drug and Biological Products</a>, Section IV.A.</li>
     <li>ICH (International Council for Harmonisation, the group of regulators and industry that writes shared trial rules) E20 (draft, 2025), <a href="https://www.fda.gov/media/188961/download">Adaptive Designs for Clinical Trials</a>, Section 5.3. FDA (2019), <a href="https://www.fda.gov/media/78495/download">Adaptive Designs for Clinical Trials of Drugs and Biologics</a>, Section VI.A.</li>
   </ul>
@@ -399,36 +366,6 @@
    ['False approval 39 times worse', function () { A.ratio = 39; $('aRatio').value = 39; renderA(600); $('secA').scrollIntoView({ behavior: 'smooth' }); }]
   ].forEach(function (e) { btn($('examples'), e[0], '', e[1]); });
 
-  /* ---------- Truth versus one trial ---------- */
-  var TR = { p: 0.30, trials: 0, better: 0, last: null, cur: null };
-  var TP = [0.30, 0.40, 0.55];
-  function tIcons(k) { var h = ''; for (var i = 0; i < 100; i++) h += '<i class="' + (i < k ? 'y' : 'n') + '"></i>'; return h; }
-  function tDeal() {
-    var kc = 0, kt = 0, i, idx;
-    var ca = [], ta = [];
-    for (i = 0; i < 100; i++) { ca.push(rng() < 0.30); ta.push(rng() < TR.p); }
-    kc = ca.filter(Boolean).length; kt = ta.filter(Boolean).length;
-    TR.last = TR.cur; TR.cur = { kc: kc, kt: kt, gap: kt - kc };
-    TR.trials++; if (kt > kc) TR.better++;
-  }
-  function tRender() {
-    var c = TR.cur;
-    $('tTrue').innerHTML =
-      '<div class="brow"><span>Old drug, true rate</span><span class="tr"><span class="fl grey" style="display:block;width:30%"></span></span><span class="v">30%</span></div>' +
-      '<div class="brow"><span>New drug, true rate</span><span class="tr"><span class="fl teal" style="display:block;width:' + Math.round(TR.p * 100) + '%"></span></span><span class="v">' + Math.round(TR.p * 100) + '%</span></div>';
-    $('tRows').innerHTML =
-      '<div class="igrp"><div class="lab2">Observed: old drug, ' + c.kc + ' of 100 better</div><div class="igrid">' + tIcons(c.kc) + '</div></div>' +
-      '<div class="igrp"><div class="lab2">Observed: new drug, ' + c.kt + ' of 100 better</div><div class="igrid">' + tIcons(c.kt) + '</div></div>';
-    $('tChips').innerHTML = '<span class="chip warm">Gap this trial: <b>' + (c.gap > 0 ? '+' : '') + c.gap + '</b> points (new minus old)</span>' +
-      '<span class="chip">Last trial&rsquo;s gap: <b>' + (TR.last ? (TR.last.gap > 0 ? '+' : '') + TR.last.gap : 'none yet') + '</b></span>' +
-      '<span class="chip">New drug looked better in <b>' + TR.better + ' of ' + TR.trials + '</b> trials</span>';
-    $('tNote').textContent = 'True gap: ' + Math.round((TR.p - 0.30) * 100) + ' points. Each new trial has 200 new patients, so luck moves the gap around it.';
-    mark($('tBtns'), TP.indexOf(TR.p));
-  }
-  TP.forEach(function (p) { btn($('tBtns'), p === 0.30 ? 'New drug does nothing (30%)' : 'New drug truly ' + Math.round(p * 100) + '%', '', function () { TR.p = p; TR.trials = 0; TR.better = 0; TR.last = null; tDeal(); tRender(); }); });
-  btn($('tRun'), 'Run the trial again', '', function () { tDeal(); tRender(); });
-  tDeal(); tRender();
-
   /* ---------- Section C pictures ---------- */
   function curveSvg(el, mu, cutx, fillColor, xmin, xmax) {
     var w = 220, h = 80, pts = [], tail = [], x, sx = function (v) { return 10 + (v - xmin) / (xmax - xmin) * 200; }, sy = function (v) { return 70 - v * 150; };
@@ -453,17 +390,7 @@
     0.15: [[0.912, 19.9], [0.541, 63.9], [0.582, 63.2], [0.608, 85.7], [0.602, 100]],
     0.25: [[0.976, 14.4], [0.911, 54.3], [0.928, 48.2], [0.957, 64.8], [0.957, 100]]
   };
-  var FRONT = { // cost c -> [average patients, chance of picking the treatment] per gain (5,000 simulated trials per cell)
-    0: [[66.4, 0.019], [62.0, 0.026], [57.4, 0.024], [52.2, 0.025], [43.8, 0.025], [34.7, 0.022], [25.0, 0.024]],
-    0.05: [[77.9, 0.105], [74.6, 0.119], [70.2, 0.104], [66.1, 0.113], [57.4, 0.103], [46.8, 0.098], [33.0, 0.090]],
-    0.15: [[89.4, 0.594], [86.5, 0.600], [83.8, 0.579], [80.5, 0.585], [73.7, 0.562], [62.9, 0.524], [47.1, 0.444]],
-    0.25: [[76.0, 0.948], [72.9, 0.950], [70.2, 0.951], [67.2, 0.952], [61.2, 0.935], [53.6, 0.905], [43.4, 0.808]]
-  };
-  var CLAB = ['0.000001', '0.0000025', '0.000005', '0.00001', '0.000025', '0.00005 (used in the bars)', '0.0001'];
-  var D = { d: 0, c: 5 };
-  var fPlot = Lab.Plot($('fPlot'), { xlim: [0, 110], ylim: [0, 1], xlabel: 'Average patients per arm', ylabel: 'Power', label: 'Power against average patients for seven costs per patient pair, with other methods marked', h: 340 });
-  var fSvg = $('fPlot'), fg = document.createElementNS('http://www.w3.org/2000/svg', 'g'); fSvg.appendChild(fg);
-  function svgEl(tag, at) { var e = document.createElementNS('http://www.w3.org/2000/svg', tag); for (var k in at) e.setAttribute(k, at[k]); fg.appendChild(e); return e; }
+  var D = { d: 0 };
   function renderD() {
     var key = DELTAS[D.d], rows = TABLE[key], isNull = key === 0;
     var pb = '', nb = '';
@@ -474,29 +401,9 @@
     });
     $('dBarsP').innerHTML = pb; $('dBarsN').innerHTML = nb;
     $('dNote').innerHTML = isNull ? 'The drug does nothing, so every bar is a false approval. With no penalty, the rule picks it about half the time.' : 'The new drug truly helps, so each bar is power.';
-    // frontier
-    var ymax = key === 0 ? 0.6 : key === 0.05 ? 0.8 : 1;
-    fPlot.setYlim(0, ymax); fPlot.setLabels('Average patients per arm', isNull ? 'False approval chance' : 'Power');
-    while (fg.firstChild) fg.removeChild(fg.firstChild);
-    $('fTitle').textContent = isNull ? 'False approvals against patients' : 'Power by patient cost (dashed line)';
-    var refs = [[0, 'U'], [2, 'P'], [3, 'O'], [4, 'F']];
-    refs.forEach(function (r) {
-      var v = rows[r[0]], x = fPlot.sx(v[1]), y = fPlot.sy(v[0]);
-      svgEl('rect', { x: x - 6, y: y - 6, width: 12, height: 12, fill: NAVY, opacity: 0.8 });
-      var side = r[1] === 'O' ? -1 : r[1] === 'F' ? 1 : 0, t = svgEl('text', { x: x + side * 10, y: side ? y + 4 : y - 10, 'text-anchor': side < 0 ? 'end' : side > 0 ? 'start' : 'middle', 'font-size': 12, 'font-weight': 600, fill: NAVY }); t.textContent = MSHORT[r[0]];
-    });
-    var pts = FRONT[key], path = 'M' + pts.map(function (p) { return fPlot.sx(p[0]).toFixed(1) + ',' + fPlot.sy(p[1]).toFixed(1); }).join('L');
-    svgEl('path', { d: path, fill: 'none', stroke: TEAL, 'stroke-width': 2, 'stroke-dasharray': '4 3' });
-    pts.forEach(function (p, i) {
-      svgEl('circle', { cx: fPlot.sx(p[0]), cy: fPlot.sy(p[1]), r: i === D.c ? 9 : 5, fill: i === D.c ? ORANGE : TEAL, stroke: '#fff', 'stroke-width': 2 });
-    });
-    $('fCOut').textContent = CLAB[D.c];
-    var p = pts[D.c];
-    $('fChips').innerHTML = '<span class="chip warm">Average patients <b>' + p[0].toFixed(1) + '</b> per arm</span><span class="chip">' + (isNull ? 'False approval chance' : 'Power') + ' <b>' + f3(p[1]) + '</b></span><span class="chip" style="font-size:.78rem">Squares: the other four rules</span>';
     var tb = $('dTabs').querySelectorAll('.btn'); for (var i = 0; i < tb.length; i++) tb[i].classList.toggle('on', i === D.d);
   }
   DELTAS.forEach(function (d, i) { btn($('dTabs'), GAINL[i], '', function () { D.d = i; renderD(); }); });
-  $('fC').addEventListener('input', function () { D.c = +this.value; renderD(); });
 
   /* ---------- Question cards ---------- */
   var score = Lab.Score($('score')), Q = $('qcards');
@@ -543,22 +450,10 @@
     explain: function () { return 'It picks the useless drug about half the time (' + Lab.pct(TABLE[0][0][0], 0) + '). A penalty cuts that to ' + Lab.pct(TABLE[0][1][0], 1) + '.'; },
     revealPlot: function (box) { miniBars(box, 'Chance of picking a useless drug', METHODS.map(function (m, i) { return { l: MSHORT[i], v: TABLE[0][i][0], c: i === 0 ? BAD : TEAL }; }), 0.6, fp1); }
   });
-  // 4 cost of sampling
-  Lab.QuestionCard(Q, {
-    tag: 'Predict 4', score: score, type: 'choice',
-    q: 'Patients become 100 times cheaper. Does the rule use more or fewer patients, and does power rise or fall (new drug 30% to 55%)?',
-    options: [{ value: 'more', label: 'More patients, more power' }, { value: 'fewer', label: 'Fewer patients, more power' }, { value: 'less', label: 'More patients, less power' }, { value: 'same', label: 'No change' }],
-    answer: function () { return FRONT[0][0][0] > FRONT[0][6][0] && FRONT[0.25][0][1] > FRONT[0.25][6][1] ? 'more' : 'fewer'; },
-    explain: function () { return 'Patients per arm: ' + Math.round(FRONT[0][6][0]) + ' to ' + Math.round(FRONT[0][0][0]) + '. Power (30% to 55%): ' + Lab.pct(FRONT[0.25][6][1], 0) + ' to ' + Lab.pct(FRONT[0.25][0][1], 0) + '.'; },
-    revealPlot: function (box) {
-      miniBars(box, 'Patients per arm', [{ l: 'Costly patients', v: FRONT[0][6][0], c: GREY }, { l: 'Cheap patients', v: FRONT[0][0][0], c: TEAL }], 80, function (v) { return Math.round(v); });
-      miniBars(box, 'Power, 30% to 55%', [{ l: 'Costly patients', v: FRONT[0.25][6][1], c: GREY }, { l: 'Cheap patients', v: FRONT[0.25][0][1], c: TEAL }], 1, fp0);
-    }
-  });
-  // 5 skeptical prior
+  // 4 skeptical prior
   var PRI = { flat: [0.026, 0.896], skep: [0.020, 0.867] };
   Lab.QuestionCard(Q, {
-    tag: 'Predict 5', score: score, type: 'choice',
+    tag: 'Predict 4', score: score, type: 'choice',
     q: 'Before the trial, assume the new drug is no better (as if 3 of 10 improved on each arm). What happens to false approvals and power (new drug 30% to 55%)?',
     options: [{ value: 'a', label: 'Fewer false approvals, more power' }, { value: 'b', label: 'Fewer false approvals, less power' }, { value: 'c', label: 'More false approvals, more power' }, { value: 'd', label: 'No change' }],
     answer: function () { return PRI.skep[0] < PRI.flat[0] && PRI.skep[1] < PRI.flat[1] ? 'b' : 'a'; },
@@ -568,18 +463,18 @@
       miniBars(box, 'Power, 30% to 55%', [{ l: 'No assumption', v: PRI.flat[1], c: GREY }, { l: 'Doubtful start', v: PRI.skep[1], c: ORANGE }], 1, fp0);
     }
   });
-  // 6 Bayesian escape
+  // 5 Bayesian escape
   Lab.QuestionCard(Q, {
-    tag: 'Predict 6', score: score, type: 'choice',
+    tag: 'Predict 5', score: score, type: 'choice',
     q: 'Does a Bayesian design escape the false approval checks at FDA?',
     options: [{ value: 'yes', label: 'Yes, Bayes needs no error rates' }, { value: 'no', label: 'Usually no: show its false approval rate, with exceptions' }],
     answer: 'no',
     explain: function () { return 'Default 2.5% one-sided; FDA may accept another bar if earlier data are borrowed. "Approve if 90% sure" alone gives ' + Lab.pct(1 - Phi(Qn(0.9)), 0) + ' false approvals.'; },
     revealPlot: function (box) { miniBars(box, 'False approvals by sureness bar', [0.9, 0.95, 0.975].map(function (g) { return { l: Math.round(g * 1000) / 10 + '% sure', v: 1 - Phi(Qn(g)), c: g === 0.975 ? TEAL : ORANGE }; }), 0.12, fp1); }
   });
-  // 7 rare disease power
+  // 6 rare disease power
   Lab.QuestionCard(Q, {
-    tag: 'Predict 7', score: score, type: 'slider', min: 0, max: 1, step: 0.01, start: 0.5, tol: 0.1, fmt: function (v) { return Lab.pct(v, 0); },
+    tag: 'Predict 6', score: score, type: 'slider', min: 0, max: 1, step: 0.01, start: 0.5, tol: 0.1, fmt: function (v) { return Lab.pct(v, 0); },
     q: 'Rare disease: 40 patients, drug helps 5 points, SD 10. Guess the power.',
     answer: function () { return Phi(Math.sqrt(40) * 5 / 20 - Qn(0.975)); },
     explain: function () { return 'Power is only ' + Lab.pct(Phi(Math.sqrt(40) * 5 / 20 - Qn(0.975)), 0) + '. A stricter bar makes it worse.'; },

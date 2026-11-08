@@ -37,7 +37,7 @@
 .pp, .fig svg.pp { width: 18px; height: 22px; display: inline-block; vertical-align: middle; }
 .src { font-size: .85rem; color: var(--text-tertiary); }
 @media (max-width: 800px) { .two { grid-template-columns: 1fr; }
-  #blind text, #itt text { font-size: 17px; } #icons text { font-size: 12.5px; } #icons .big { font-size: 13.5px; }
+  #blind text { font-size: 17px; } #icons text { font-size: 12.5px; } #icons .big { font-size: 13.5px; }
   #plot text { font-size: 19px; } .mini svg text { font-size: 15px; } .example svg text { font-size: 15px; } .example svg .big { font-size: 16px; } }
 </style>
 </style>
@@ -110,17 +110,6 @@
   <div class="legend"><span><i style="background:#2D8B8B"></i>knows</span><span><i style="background:#E07A3F"></i>blind</span><span>Analyst = the person who crunches the results</span></div>
   <svg id="blind" viewBox="0 0 560 200" role="img" aria-label="Eyes show who knows the treatment in open, single, double and triple blind trials"></svg>
   <p class="note" id="blindNote"></p>
-</section>
-
-<section class="fig" aria-label="Dropouts and intention to treat">
-  <h3>Quit the drug? Still counted <span class="tip" tabindex="0" data-tip="Intention to treat: everyone is analyzed in the group they were randomized to, even if they stopped the drug.">(intention to treat)</span></h3>
-  <div class="field"><label for="qs">Share of drug group who quit: <b id="qsv"></b></label></div>
-  <div class="field"><input id="qs" type="range" min="0" max="60" step="5" value="30"></div>
-  <svg id="itt" viewBox="0 0 560 150" role="img" aria-label="Twenty placebo icons and twenty drug icons, some drug icons hollow because those patients quit"></svg>
-  <div class="legend"><span><i style="background:#fff;border:2.5px dashed #2D8B8B"></i>hollow = quit but still counted</span></div>
-  <div class="chips" id="ittChips"></div>
-  <p class="note">The drug adds 10 per 100 for those who take it. Quitters pull the average down.</p>
-  <p>Counting everyone answers "What if we offer the drug?" "What if everyone takes it?" is a different question, and dropping quitters does not answer it.</p>
 </section>
 
 <section class="example">
@@ -404,22 +393,6 @@
     draw();
   })();
 
-  /* ---------- ITT figure ---------- */
-  function drawItt() {
-    var q = parseInt($('qs').value, 10) / 100, svg = $('itt'), quit = Math.round(q * 20), i;
-    svg.innerHTML = '';
-    E('text', { x: 6, y: 18, 'class': 'big' }, svg).textContent = 'Placebo (20)';
-    E('text', { x: 6, y: 88, 'class': 'big' }, svg).textContent = 'Drug (20), all counted';
-    for (i = 0; i < 20; i++) E('circle', { cx: 20 + i * 27, cy: 44, r: 10, fill: ORANGE }, svg);
-    for (i = 0; i < 20; i++) {
-      if (i >= 20 - quit) E('circle', { cx: 20 + i * 27, cy: 114, r: 9, fill: '#fff', stroke: TEAL, 'stroke-width': 2.5, 'stroke-dasharray': '3 3' }, svg);
-      else E('circle', { cx: 20 + i * 27, cy: 114, r: 10, fill: TEAL }, svg);
-    }
-    $('qsv').textContent = Math.round(q * 100) + '% (' + quit + ' of 20)';
-    $('ittChips').innerHTML = chip('Counting everyone, extra recoveries per 100', (10 * (1 - quit / 20)).toFixed(1), true);
-  }
-  $('qs').addEventListener('input', drawItt);
-
   /* ---------- Code ---------- */
   Lab.CodeBox($('code'), {
     py: 'import numpy as np\nfrom scipy.stats import norm\nrng = np.random.default_rng(1)\n' +
@@ -443,7 +416,6 @@
   });
 
   refresh(0);
-  drawItt();
   document.querySelector('#examples .btn').classList.add('on');
 })();
 </script>

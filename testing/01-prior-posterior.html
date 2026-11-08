@@ -533,7 +533,7 @@
     m0.legend([{ label: 'fit bars', color: SLATE, kind: 'box' }, { label: 'curve of the formula', color: NAVY, kind: 'line' }]);
     $('m0cap').textContent = 'Data: ' + h + ' responders, ' + t + ' non-responders. The bars and the curve match.';
   }
-  var GAL = [[1, 1, 'no patients yet: anything goes'], [2, 2, 'as if 1 responder, 1 non-responder'], [8, 4, 'as if 7 responders, 3 non-responders'], [4, 8, 'as if 3 responders, 7 non-responders'], [30, 30, 'as if 29 of each: sure it is close to 0.5'], [71, 31, 'as if 70 responders, 30 non-responders']];
+  var GAL = [[1, 1, 'no patients yet: anything goes'], [8, 4, 'as if 7 responders, 3 non-responders'], [30, 30, 'as if 29 of each: sure it is close to 0.5']];
   GAL.forEach(function (g) {
     var c = document.createElement('div'); c.className = 'gcell';
     c.innerHTML = '<h4>Beta(' + g[0] + ', ' + g[1] + ')</h4><div class="gplot"></div><p>' + g[2] + '</p>';
