@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../fonts.css">
 <link rel="stylesheet" href="../chrome.css">
 <link rel="stylesheet" href="lab.css">
 <style>
@@ -125,10 +126,7 @@
     <div class="pillrow"><button class="btn" id="arNew" type="button">New random set</button></div>
     <div id="arOut" aria-live="polite" hidden>
       <div class="verdict" id="arVerdict"></div>
-      <div class="chips" id="arChips"></div>
-      <p class="note">Gap score: 1 means perfectly even (soldiers in a row, Arnold's "barracks"). Random sets score about 1.9 on average, and most land between 1.4 and 2.6. 15 means all dots in one clump. The score cannot catch every fake: one of the three rules above looks random to it.</p>
-      <div class="plotbox"><svg id="plotAr"></svg>
-        <p class="note" style="margin:.5rem 0 0">10,000 computer-random sets of 15 dots. Orange is the share at or below the chosen set's score.</p></div>
+      <p class="note">Look at the gaps: the formula sets spread their dots more evenly than chance would.</p>
     </div>
   </div>
   <div class="block">
@@ -139,15 +137,22 @@
       <button class="btn" id="arRand" type="button">Place a dot at a random spot</button>
       <button class="btn" id="arReset" type="button">Clear</button>
     </div>
+    <p class="note">Your gap score is about 2 for dots that look random, and closer to 1 when the dots are spread too evenly.</p>
     <div id="arMineOut" aria-live="polite" hidden>
       <div class="chips" id="arMineChip"></div>
-      <div class="plotbox"><svg id="plotMine"></svg></div>
     </div>
+    <details class="code"><summary>Optional: how the gap score works (you can skip this)</summary>
+      <div style="padding:0 1rem 1rem">
+        <p>Walk around the circle and measure each gap between neighboring dots, as a share of the whole circle. Square each gap, add them up, and multiply by the number of dots: \(s = T \sum (\text{gap}/L)^2\), with \(T = 15\) dots.</p>
+        <p>Perfectly even dots have every gap equal to 1/15, so \(s = 1\) (Arnold's "barracks"). All dots in one clump leave one gap equal to the whole circle, so \(s = 15\).</p>
+        <p>Random dots score \(2T/(T+1) = 1.875\) on average, Arnold's "freedom-loving value", and most land between 1.4 and 2.6. "Random sets spread as evenly as yours" is the share of 10,000 computer-random sets with a score at or below yours.</p>
+        <div class="plotbox"><svg id="plotMine"></svg><p class="note" style="margin:.5rem 0 0">Gap scores of 10,000 computer-random sets of 15 dots. Your score is marked once you place 15 dots.</p></div>
+      </div>
+    </details>
   </div>
   <p class="note">Idea from V. I. Arnold, <a href="https://old.mccme.ru/free-books/arnold/VIA-eulergroups.pdf" target="_blank" rel="noopener">Euler Groups and Arithmetics of Geometric Progressions, paragraph 9</a>.</p>
 </section>
 
-<p class="bridge">Trials record 0s and 1s: improved or not. Same question: real pattern, or chance?</p>
 
 <section class="section" id="game">
   <h2>Same or different?</h2>
@@ -725,24 +730,13 @@
       b.addEventListener('click', function () { arReveal(i); });
     });
   }
-  var ARP = null;
   function arReveal(i) {
     AR.pick = i; AR.shade = i;
     var ok = AR.sets[i].rnd;
     $('arOut').hidden = false;
     $('arVerdict').className = 'verdict ' + (ok ? 'ok' : 'no');
     $('arVerdict').textContent = ok ? 'Right. Set ' + (i + 1) + ' is the computer-random one.' : 'Not quite. Set ' + (i + 1) + ' was made by a formula (' + AR.sets[i].k + ').';
-    var ch = '';
-    AR.sets.forEach(function (s, j) {
-      drawCircle(s.svg, s.pts, true);
-      ch += chip('Set ' + (j + 1) + (s.rnd ? ' (computer-random)' : ' (made by a formula)') + ' scores', s.score.toFixed(2), !s.rnd) + chip('Random sets this even or more', fmtShare(shareLE(s.score)));
-    });
-    $('arChips').innerHTML = ch;
-    arHist();
-  }
-  function arHist() {
-    ARP = Lab.Plot($('plotAr'), { xlim: [ARHIST.lo, ARHIST.hi], ylim: [0, 10], xlabel: 'gap score s', ylabel: '% of random sets', label: 'Histogram of gap scores of computer-random sets with the three sets marked' });
-    drawHist(ARP, AR.sets[AR.shade].score, AR.sets.map(function (s, j) { return { x: s.score, l: 'Set ' + (j + 1) }; }));
+    AR.sets.forEach(function (s) { drawCircle(s.svg, s.pts, true); });
   }
   $('arNew').addEventListener('click', newArnold);
 
@@ -753,10 +747,13 @@
     if (MINE.length >= AT) {
       var s = gscore(MINE); drawCircle($('arMine'), MINE, true);
       $('arMineOut').hidden = false;
-      $('arMineChip').innerHTML = chip('Your gap score', s.toFixed(2), true) + chip('Random sets this even or more', fmtShare(shareLE(s))) + '<p class="note">' + (shareLE(s) < 0.05 ? 'Too even to look random: real random dots almost never spread out this neatly.' : shareLE(s) > 0.95 ? 'Very clumpy: real random dots rarely bunch up this much.' : 'Looks random: plenty of random sets are spread like this.') + '</p>';
-      var P = Lab.Plot($('plotMine'), { xlim: [ARHIST.lo, ARHIST.hi], ylim: [0, 10], xlabel: 'gap score s', ylabel: '% of random sets', label: 'Histogram of gap scores with your score marked' });
-      drawHist(P, s, [{ x: s, l: 'you' }]);
-    } else { $('arMineOut').hidden = true; }
+      $('arMineChip').innerHTML = chip('Your gap score', s.toFixed(2), true) + chip('Random sets spread as evenly as yours', fmtShare(shareLE(s))) + '<p class="note">' + (shareLE(s) < 0.05 ? 'Too even to look random: real random dots almost never spread out this neatly.' : shareLE(s) > 0.95 ? 'Very clumpy: real random dots rarely bunch up this much.' : 'Looks random: plenty of random sets are spread like this.') + '</p>';
+      mineHist(s);
+    } else { $('arMineOut').hidden = true; mineHist(null); }
+  }
+  function mineHist(s) {
+    var P = Lab.Plot($('plotMine'), { xlim: [ARHIST.lo, ARHIST.hi], ylim: [0, 10], xlabel: 'gap score s', ylabel: '% of random sets', label: 'Histogram of gap scores of computer-random sets, with your score marked when complete' });
+    drawHist(P, s == null ? 0 : s, s == null ? [] : [{ x: s, l: 'you' }]);
   }
   function mineAdd(p) { if (MINE.length < AT) { MINE.push(p); mineDraw(); } }
   $('arMine').addEventListener('click', function (e) {

@@ -7,7 +7,7 @@
   --bad: #A8341F;
 }
 *, *::before, *::after { box-sizing: border-box; }
-body.lab { margin: 0; font-family: var(--sans); background: var(--bg); color: var(--text); line-height: 1.5; font-size: 17px; }
+body.lab { margin: 0; font-family: var(--sans, 'IBM Plex Sans', system-ui, -apple-system, sans-serif); background: var(--bg); color: var(--text); line-height: 1.5; font-size: 17px; }
 .lab a { color: var(--teal-dark); }
 .lab h1, .lab h2, .lab h3 { line-height: 1.2; margin: 0 0 .5rem; color: var(--navy); }
 .lab p { margin: 0 0 .75rem; max-width: 62ch; }
