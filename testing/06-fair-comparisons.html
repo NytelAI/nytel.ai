@@ -35,6 +35,23 @@
 .lvl { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .5rem; }
 .pp, .fig svg.pp { width: 18px; height: 22px; display: inline-block; vertical-align: middle; }
 .src { font-size: .85rem; color: var(--text-tertiary); }
+.deal { position: relative; max-width: 600px; margin: .6rem auto 0; height: 100px; }
+.deal .blk { position: absolute; top: 0; bottom: 0; border: 1.5px dashed var(--border-strong); border-radius: 10px; }
+.deal .bl { position: absolute; left: 8px; top: 4px; font-size: .8rem; font-weight: 600; color: var(--text-secondary); }
+.deal .dp { position: absolute; left: 0; top: 0; width: 12px; height: 15px; line-height: 0; }
+.deal .dp svg { width: 12px; height: 15px; display: block; }
+.deal .coin { position: absolute; left: 50%; top: 2px; margin-left: -14px; width: 28px; height: 28px; border-radius: 50%; background: #F3D9A4; border: 2px solid #B8861F; color: #6b4a08; font: 600 13px/24px var(--sans); text-align: center; }
+.deal .coin.spin { animation: cspin .45s ease-in-out; }
+@keyframes cspin { from { transform: rotateY(0); } to { transform: rotateY(900deg); } }
+@media (prefers-reduced-motion: reduce) { .deal .coin.spin { animation: none; } }
+.bal { display: table; width: 100%; border-collapse: collapse; margin: .5rem 0; font-size: .95rem; }
+.bal th, .bal td { padding: .35rem .5rem; border-bottom: 1px solid var(--border); text-align: right; }
+.bal th:first-child, .bal td:first-child { text-align: left; }
+.bal td.sym { text-align: center; font-weight: 600; font-size: 1.1rem; }
+.bal td.ok { color: var(--teal-dark); } .bal td.bad { color: #B8531A; }
+#sbBars text { font-family: var(--sans); font-size: 13px; fill: var(--text-secondary); }
+#sbBars .big, .mini .big { font-size: 13px; font-weight: 600; fill: var(--navy); }
+@media (max-width: 800px) { #sbBars text { font-size: 14.5px; } .bal { font-size: .85rem; } .bal th, .bal td { padding: .3rem .25rem; } .deal .bl { font-size: .72rem; } }
 @media (max-width: 800px) { .two { grid-template-columns: 1fr; }
   #blind text, #itt text { font-size: 17px; } #icons text { font-size: 12.5px; } #icons .big { font-size: 13.5px; }
   #plot text { font-size: 19px; } .mini svg text { font-size: 15px; } .example svg text { font-size: 15px; } .example svg .big { font-size: 16px; } }
@@ -69,9 +86,22 @@
   <div class="field"><input id="cfEff" type="range" min="0" max="20" step="1" value="10"></div>
   <div class="row"><button class="btn primary" id="cfAgain" type="button">New assignment, same patients</button><button class="btn" id="cfNew" type="button">New patients</button><button class="btn primary" id="cfRun" type="button">Run 500 times</button></div>
   <div class="legend"><span><svg class="pp" viewBox="0 0 16 20" aria-hidden="true" style="fill:#2D8B8B"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> recovered</span><span><svg class="pp" viewBox="0 0 16 20" aria-hidden="true" style="fill:none;stroke:#9AA3AE;stroke-width:1.3"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> not recovered</span><span><svg class="pp" viewBox="0 0 16 20" aria-hidden="true" style="fill:#2D8B8B;opacity:.25"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> faded = counterfactual (the trial never sees it)</span><span><i style="background:#E07A3F;border-radius:2px"></i>sicker mark</span><span><i style="background:#2D8B8B;border-radius:2px"></i>healthier mark</span></div>
+  <div class="deal" id="cfDeal" role="img" aria-label="Forty patients sorted into a drug block and a placebo block"></div>
+  <p class="mini cap" style="border:0;margin:.2rem 0 .6rem;text-align:center">Shade shows hidden health: orange sicker, teal healthier.</p>
   <svg id="cfIcons" style="max-width:600px;margin:0 auto" role="img" aria-label="Forty patients, each shown twice as a person icon: outcome on the drug and outcome off the drug"></svg>
   <div class="chips" aria-live="polite" id="cfChips"></div>
   <p class="note" id="cfNote"></p>
+  <h3 style="margin-top:1.2rem">Why the gap is not the drug</h3>
+  <p>The gap you see is the drug's effect on the people who took it, plus how different the groups already were.</p>
+  <svg id="sbBars" viewBox="0 0 540 250" style="max-width:600px;margin:0 auto" role="img" aria-label="Three bars: drug group observed, the same drug group had it skipped the drug, placebo group observed"></svg>
+  <div class="chips" aria-live="polite" id="sbChips"></div>
+  <p class="note" id="sbNote"></p>
+  <p class="src" id="sbMath">In symbols: observed gap E[Y|D=1] &minus; E[Y|D=0] = effect on the treated + selection bias, E[Y&#8320;|D=1] &minus; E[Y&#8320;|D=0]. See Angrist and Pischke (2009).</p>
+  <h3 style="margin-top:1.2rem">Do the groups match?</h3>
+  <p>A fair comparison needs groups alike before the drug, including in what nobody measured.</p>
+  <table class="bal" id="balTab"><caption class="src" style="text-align:left;caption-side:top">Average per group</caption><thead><tr><th scope="col">Trait</th><th scope="col">Drug</th><th scope="col">Placebo</th><th scope="col">Match?</th></tr></thead><tbody id="balBody"></tbody></table>
+  <div class="row"><button class="btn" id="balRev" type="button" aria-pressed="false">Reveal hidden trait</button></div>
+  <p class="note" id="balNote"></p>
   <div id="cfHist"></div>
   <div class="qcards" id="cfCards"></div>
 </section>
@@ -181,6 +211,7 @@
     <li>Polson, N. and Sokolov, V. (2026). <a href="https://vsokolov.org/books/bayes_ai_deep_learning/">Bayes, AI and Deep Learning: Foundations of Data Science</a>. doi:10.5281/zenodo.23992805</li>
     <li>Sokolova, A. and Sokolov, V. (2026). <a href="https://vsokolov.org/books/clinical_trials_in_practice/">Clinical Trials in Practice: From Foundations to AI Agents</a> (chapters on <a href="https://vsokolov.org/clinos-book/">trial design and analysis</a>). doi:10.5281/zenodo.23933570</li>
     <li>Sokolova, A., Sokolov, V. and Polson, N. (2026). <a href="https://arxiv.org/abs/2602.09208">Some Bayesian Perspectives on Clinical Trials</a>. arXiv:2602.09208</li>
+    <li>Angrist, J. D. and Pischke, J.-S. (2009). Mostly Harmless Econometrics: An Empiricist's Companion. Princeton University Press (selection bias and the treated-versus-untreated decomposition, chapter 3).</li>
   </ul>
   <div class="nyt">&copy; 2026 Nytel. Nightingale + Intelligence. <a href="mailto:contact@nytel.ai">contact@nytel.ai</a></div>
 </div></footer>
@@ -322,7 +353,7 @@
   var cfRng = Lab.rng(66), CF = { mode: 'choose', eff: 10, pts: null, t: null };
   function cfCohort(r, n) {
     var a = [], i, h, p0, u;
-    for (i = 0; i < n; i++) { h = Lab.normal(r); p0 = clamp(0.5 + 0.18 * h); u = r(); a.push({ h: h, p0: p0, u: u }); }
+    for (i = 0; i < n; i++) { h = Lab.normal(r); p0 = clamp(0.5 + 0.18 * h); u = r(); a.push({ h: h, p0: p0, u: u, age: 20 + 60 * r(), z: 0.7 * h + 0.714 * Lab.normal(r) }); }
     return a;
   }
   function cfOut(pt, eff) { return { y0: pt.u < pt.p0, y1: pt.u < clamp(pt.p0 + eff / 100) }; }
@@ -339,7 +370,7 @@
     for (i = 0; i < k; i++) { pts = fixed || cfCohort(cfRng, 40); est.push(cfEst(pts, cfAssign(cfRng, pts, mode), eff)); tr += cfTrue(pts, eff); }
     return { est: est, truth: tr / k };
   }
-  function cfDraw() {
+  function cfDraw(anim) {
     var svg = $('cfIcons'), pts = CF.pts, t = CF.t, eff = CF.eff, step = 18.5, x0 = 4, bandH = 82;
     svg.innerHTML = ''; svg.setAttribute('viewBox', '0 0 380 ' + (2 * bandH));
     function person(x, y, rec, seen) {
@@ -360,8 +391,9 @@
     $('cfNote').innerHTML = (CF.mode === 'choose' ? 'Patients chose, so D marks the healthier columns more often.' : 'A coin decided, so D is spread evenly over healthy and sick.') + ' The trial compares the bright top people (D) with the bright bottom people (-).';
     $('cfEffv').textContent = signed(eff, 0) + ' points' + (eff === 0 ? ' (both outcomes always match)' : '');
     document.querySelectorAll('#cfMode .btn').forEach(function (b) { b.classList.toggle('on', b.dataset.m === CF.mode); });
+    dealStrip(anim); sbDraw(); balDraw();
   }
-  function cfDeal() { CF.t = cfAssign(cfRng, CF.pts, CF.mode); cfDraw(); }
+  function cfDeal() { CF.t = cfAssign(cfRng, CF.pts, CF.mode); cfDraw(true); }
   function cfNewPts() { CF.pts = cfCohort(cfRng, 40); cfDeal(); }
   var cfRan = false;
   function cfRunMany() {
@@ -375,7 +407,96 @@
   $('cfAgain').addEventListener('click', cfDeal);
   $('cfNew').addEventListener('click', function () { cfNewPts(); if (cfRan) cfRunMany(); });
   $('cfRun').addEventListener('click', cfRunMany);
-  CF.pts = cfCohort(cfRng, 40); CF.t = cfAssign(cfRng, CF.pts, CF.mode); cfDraw();
+
+  /* ---------- Deal animation: coin or walking, then two blocks ---------- */
+  var REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function healthCol(h) { var q = Math.min(1, Math.max(0, (h + 2) / 4)), c1 = [224, 122, 63], c2 = [45, 139, 139]; return 'rgb(' + c1.map(function (v, j) { return Math.round(v + (c2[j] - v) * q); }).join(',') + ')'; }
+  function dealStrip(anim) {
+    var box = $('cfDeal'), pts = CF.pts, t = CF.t, W = box.clientWidth || 440, coin = CF.mode === 'coin', bw = Math.floor(W * 0.44), per = Math.max(3, Math.floor((bw - 12) / 14)), tok = (CF.tok = (CF.tok || 0) + 1);
+    var nD = t.filter(Boolean).length, rows = Math.ceil(Math.max(nD, pts.length - nD, 1) / per);
+    box.innerHTML = ''; box.style.height = Math.max(76, 30 + rows * 17 + 8) + 'px';
+    [[0, coin ? 'Heads → drug' : 'Chose the drug'], [W - bw, coin ? 'Tails → placebo' : 'Chose placebo']].forEach(function (b) {
+      var d = document.createElement('div'); d.className = 'blk'; d.style.left = b[0] + 'px'; d.style.width = bw + 'px'; var l = document.createElement('div'); l.className = 'bl'; l.textContent = b[1]; d.appendChild(l); box.appendChild(d);
+    });
+    var cn = null;
+    if (coin) { cn = document.createElement('div'); cn.className = 'coin'; cn.setAttribute('aria-hidden', 'true'); cn.textContent = cfRng() < 0.5 ? 'H' : 'T'; box.appendChild(cn); }
+    var kD = 0, kC = 0, els = [];
+    pts.forEach(function (p, i) {
+      var sp = document.createElement('span'); sp.className = 'dp'; sp.setAttribute('aria-hidden', 'true');
+      sp.innerHTML = '<svg viewBox="0 0 16 20" style="fill:' + healthCol(p.h) + '"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg>';
+      var k = t[i] ? kD++ : kC++, tx = (t[i] ? 0 : W - bw) + 6 + (k % per) * 14, ty = 28 + Math.floor(k / per) * 17;
+      sp._to = 'translate(' + tx + 'px,' + ty + 'px)';
+      sp._from = 'translate(' + Math.round((W - 20 * 14) / 2 + (i % 20) * 14) + 'px,' + (36 + Math.floor(i / 20) * 20) + 'px)';
+      sp.style.transform = (anim && !REDUCED) ? sp._from : sp._to; els.push(sp); box.appendChild(sp);
+    });
+    if (anim && !REDUCED) {
+      void box.offsetWidth;
+      if (cn) cn.classList.add('spin');
+      setTimeout(function () { if (tok !== CF.tok) return; els.forEach(function (sp, i) { sp.style.transition = 'transform .55s ease ' + (i * 6) + 'ms'; sp.style.transform = sp._to; }); }, coin ? 450 : 30);
+    }
+    box.setAttribute('aria-label', (coin ? 'A coin sent ' : 'By choice, ') + nD + ' of ' + pts.length + ' patients to the drug block and ' + (pts.length - nD) + ' to the placebo block');
+  }
+  window.addEventListener('resize', function () { if (CF.pts) dealStrip(false); });
+
+  /* ---------- Selection-bias bars ---------- */
+  function r1(x) { return Math.round(x * 10) / 10; }
+  function sbStat(pts, t, eff) {
+    var nD = 0, nC = 0, a = 0, b = 0, c = 0;
+    pts.forEach(function (p, i) { var o = cfOut(p, eff); if (t[i]) { nD++; if (o.y1) a++; if (o.y0) b++; } else { nC++; if (o.y0) c++; } });
+    return (nD && nC) ? { a: 100 * a / nD, b: 100 * b / nD, c: 100 * c / nC } : null;
+  }
+  // st: rates in percent. Rounded to tenths first, so the three numbers add up exactly.
+  function sbNums(st) { var a = r1(st.a), b = r1(st.b), c = r1(st.c); return { a: a, b: b, c: c, eff: r1(a - b), bias: r1(b - c), gap: r1(a - c) }; }
+  function sbSvg(svg, st) {
+    var n = sbNums(st), y0 = 200, sc = 1.8, Y = function (v) { return y0 - v * sc; }, bx = [15, 125, 235], W = 80, TD = '#1F6B6B', OR = '#C8682B';
+    svg.innerHTML = '';
+    E('line', { x1: 8, x2: 320, y1: y0, y2: y0, stroke: '#8a93a0' }, svg);
+    E('rect', { x: bx[0], y: Y(n.a), width: W, height: n.a * sc, fill: TEAL, opacity: 0.9 }, svg);
+    E('rect', { x: bx[1] + 1, y: Y(n.b), width: W - 2, height: n.b * sc, fill: '#E8F4F4', stroke: TEAL, 'stroke-width': 2, 'stroke-dasharray': '5 3' }, svg);
+    E('rect', { x: bx[2], y: Y(n.c), width: W, height: n.c * sc, fill: ORANGE, opacity: 0.9 }, svg);
+    [n.a, n.b, n.c].forEach(function (v, i) { E('text', { x: bx[i] + W / 2, y: Y(v) - 5, 'text-anchor': 'middle', 'class': 'big' }, svg).textContent = v.toFixed(1) + '%'; });
+    [['drug group,', 'observed'], ['drug group, had it', 'skipped the drug'], ['placebo group,', 'observed']].forEach(function (L, i) { L.forEach(function (ln, j) { E('text', { x: bx[i] + W / 2, y: y0 + 16 + j * 14, 'text-anchor': 'middle' }, svg).textContent = ln; }); });
+    function bracket(x, va, vb, col) { var ya = Y(va), yb = Y(vb); E('path', { d: 'M' + (x - 5) + ' ' + ya + 'H' + x + 'V' + yb + 'H' + (x - 5), fill: 'none', stroke: col, 'stroke-width': 2 }, svg); return (ya + yb) / 2; }
+    [n.a, n.b, n.c].forEach(function (v) { E('line', { x1: 95 + 0, x2: 340, y1: Y(v), y2: Y(v), stroke: '#B8C4CC', 'stroke-dasharray': '2 3' }, svg); });
+    var mE = bracket(340, n.a, n.b, TD), mB = bracket(358, n.b, n.c, OR);
+    var lab = [{ m: mE, col: TD, l: ['effect of the drug', 'on people who took it', signed(n.eff, 1) + ' pts'] }, { m: mB, col: OR, l: ['selection bias: groups', 'differed before any drug', signed(n.bias, 1) + ' pts'] }];
+    lab.forEach(function (o) { o.y = o.m - 13; });
+    var o1 = lab[0].m <= lab[1].m ? lab[0] : lab[1], o2 = o1 === lab[0] ? lab[1] : lab[0];
+    if (o2.y < o1.y + 46) o2.y = o1.y + 46;
+    lab.forEach(function (o) { o.l.forEach(function (ln, j) { var tx = E('text', { x: 368, y: o.y + 12 + j * 14, 'class': j === 2 ? 'big' : '' }, svg); tx.textContent = ln; if (j === 2) tx.style.fill = o.col; }); });
+    return n;
+  }
+  function sbChipsHtml(n) { return chip('Observed gap', signed(n.gap, 1) + ' pts') + chip('= effect on the takers', signed(n.eff, 1), false) + chip('+ selection bias', signed(n.bias, 1), true); }
+  function sbDraw() {
+    var st = sbStat(CF.pts, CF.t, CF.eff);
+    if (!st) { $('sbChips').innerHTML = ''; $('sbNote').textContent = 'One group is empty. Press New assignment.'; return; }
+    var n = sbSvg($('sbBars'), st);
+    $('sbChips').innerHTML = sbChipsHtml(n);
+    $('sbNote').textContent = (CF.mode === 'choose' ? 'Patients chose: the drug group was healthier to begin with, so the bias bracket is tall.' : 'A coin decided: the groups started alike, so the bias bracket is small.') + ' Dashed bar = the same drug group, had it skipped the drug.';
+  }
+
+  /* ---------- Balance table ---------- */
+  CF.rev = false;
+  function balDraw() {
+    var pts = CF.pts, t = CF.t, rows = [
+      { n: 'Average age (years)', f: function (p) { return p.age; }, sd: 17.3, fmt: function (v) { return v.toFixed(1); } },
+      { n: 'Average health score', f: function (p) { return 50 + 10 * p.h; }, sd: 10, fmt: function (v) { return v.toFixed(1); } },
+      { n: "Something we can't measure (sleep, 0 to 10)", f: function (p) { return 5 + 1.5 * p.z; }, sd: 1.5, fmt: function (v) { return v.toFixed(1); }, hid: true }
+    ], html = '', hiddenSym = '';
+    rows.forEach(function (r) {
+      var a = [], b = [];
+      pts.forEach(function (p, i) { (t[i] ? a : b).push(r.f(p)); });
+      if (!a.length || !b.length) { html += '<tr><td>' + r.n + '</td><td>-</td><td>-</td><td class="sym">-</td></tr>'; return; }
+      var ma = Lab.mean(a), mb = Lab.mean(b), same = Math.abs(ma - mb) <= 0.6 * r.sd, sym = same ? '≈' : '≠', hide = r.hid && !CF.rev;
+      if (r.hid) hiddenSym = sym;
+      html += '<tr><td>' + r.n + '</td><td>' + (hide ? '?' : r.fmt(ma)) + '</td><td>' + (hide ? '?' : r.fmt(mb)) + '</td><td class="sym ' + (hide ? '' : same ? 'ok' : 'bad') + '"' + (hide ? '' : ' aria-label="' + (same ? 'about equal' : 'not equal') + '"') + '>' + (hide ? '?' : sym) + '</td></tr>';
+    });
+    $('balBody').innerHTML = html;
+    $('balRev').setAttribute('aria-pressed', CF.rev ? 'true' : 'false'); $('balRev').textContent = CF.rev ? 'Hide the hidden trait' : 'Reveal hidden trait';
+    $('balNote').textContent = !CF.rev ? 'A trial cannot see the last row. Reveal it to check.' : hiddenSym === '≠' ? 'Even the trait nobody measured differs. The drug gets the credit for it.' : 'Even the trait nobody measured matches. That is what a coin buys.';
+  }
+  $('balRev').addEventListener('click', function () { CF.rev = !CF.rev; balDraw(); });
+  CF.pts = cfCohort(cfRng, 40); CF.t = cfAssign(cfRng, CF.pts, CF.mode); cfDraw(false);
 
   function cfCard(key, o) { o.score = score; var c = Lab.QuestionCard($('cfCards'), o); cardEl[key] = c; return c; }
   var qa = { tag: 'Predict 1', type: 'choice',
@@ -391,6 +512,21 @@
     onReveal: function () { miniHist(cardEl.qb.el, [{ vals: qb.c.est, color: TEAL, label: 'Coin decides' }, { vals: qb.p.est, color: ORANGE, label: 'Patients choose' }], -60, 60, 48, qb.c.truth, 'Dashed line = average true effect ' + signed(qb.c.truth, 1) + '. Averages: ' + signed(Lab.mean(qb.c.est), 1) + ' (coin), ' + signed(Lab.mean(qb.p.est), 1) + ' (choose).'); },
     explain: function () { return 'The coin ignores health, so the estimates center on the truth. Single trials of 40 still wobble a lot.'; } };
   cfCard('qb', qb);
+  var qc = { tag: 'Predict 3', type: 'choice',
+    q: 'Patients choose. Healthier people pick the drug. The drug does nothing. Does the trial show a benefit?',
+    options: [{ value: 'up', label: 'Yes, the drug group looks better' }, { value: 'zero', label: 'No, the groups look the same' }, { value: 'down', label: 'It looks like it hurts' }],
+    answer: function () {
+      var i, pts, st, k = 0, sa = 0, sb = 0, sc = 0;
+      for (i = 0; i < 500; i++) { pts = cfCohort(cfRng, 40); st = sbStat(pts, cfAssign(cfRng, pts, 'choose'), 0); if (st) { k++; sa += st.a; sb += st.b; sc += st.c; } }
+      qc.s = { a: sa / k, b: sb / k, c: sc / k }; return qc.s.a - qc.s.c > 2 ? 'up' : qc.s.a - qc.s.c < -2 ? 'down' : 'zero';
+    },
+    onReveal: function () {
+      var box = miniBox(cardEl.qc.el), svg = E('svg', { viewBox: '0 0 540 250', role: 'img', 'aria-label': 'Drug does nothing, patients choose: the drug group had already done better before any drug' }, box), n = sbSvg(svg, qc.s);
+      svg.style.maxWidth = '600px';
+      var p = document.createElement('p'); p.className = 'cap'; p.textContent = 'Averages over 500 pretend trials, drug effect 0. Gap ' + signed(n.gap, 1) + ' = effect ' + signed(n.eff, 1) + ' + selection bias ' + signed(n.bias, 1) + '.'; box.appendChild(p);
+    },
+    explain: function () { return 'The drug group looks better only because healthier people picked it. Its own "had it skipped the drug" bar is just as tall.'; } };
+  cfCard('qc', qc);
 
   // 2. Coin flip centers on the truth.
   var q2 = { tag: 'Predict 4', type: 'slider', min: -10, max: 10, step: 1, start: 0, tol: 2, fmt: function (v) { return signed(Math.round(v), 0) + ' pts'; },

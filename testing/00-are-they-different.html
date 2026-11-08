@@ -63,6 +63,15 @@
 .pcol .tile.fade { opacity: .28; }
 .pcol .tile.seen { box-shadow: 0 0 0 1px var(--navy); }
 .striphead { font-size: .85rem; color: var(--text-secondary); margin: .6rem 0 0; }
+.coin { position: absolute; right: 12px; top: 8px; width: 26px; height: 26px; border-radius: 50%; background: #F3D9A4; border: 2px solid #B8861F; color: #6b4a08; font: 600 12px/22px var(--sans); text-align: center; opacity: 0; pointer-events: none; }
+.plotbox { position: relative; }
+.dealing .coin { animation: coinflip .8s ease-in-out both; }
+.dealing #gA .pi { animation: dealA .5s ease-out both; animation-delay: calc(var(--i) * 8ms); }
+.dealing #gB .pi { animation: dealB .5s ease-out both; animation-delay: calc(var(--i) * 8ms); }
+@keyframes coinflip { 0% { opacity: 1; transform: rotateY(0); } 70% { opacity: 1; transform: rotateY(720deg); } 100% { opacity: 0; transform: rotateY(720deg); } }
+@keyframes dealA { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes dealB { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .dealing .coin, .dealing #gA .pi, .dealing #gB .pi { animation: none; } }
 </style>
 </head>
 <body class="lab">
@@ -129,7 +138,8 @@
       <div class="row" style="margin-top:.5rem"><button class="btn" id="gNext" type="button" disabled>Next round</button></div>
     </div>
     <div>
-      <div class="plotbox">
+      <div class="plotbox" id="gBox">
+        <span class="coin" aria-hidden="true">H</span>
         <div class="rowwrap"><div class="rl"><span id="lblA">Drug</span><b id="cntA"></b></div><div id="gA" role="img"></div></div>
         <div class="rowwrap"><div class="rl"><span id="lblB">Placebo</span><b id="cntB"></b></div><div id="gB" role="img"></div></div>
         <p class="legend"><svg class="pp yes" viewBox="0 0 16 20" aria-hidden="true"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> filled = improved &nbsp; <svg class="pp no" viewBox="0 0 16 20" aria-hidden="true"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> outline = did not. Placebo = a dummy pill.</p>
@@ -255,6 +265,12 @@
     var G = { n: 10, round: null, done: false, stats: {} };
   NS.forEach(function (n) { G.stats[n] = { r: 0, t: 0 }; });
   function gNames() { return ['Drug', 'Placebo']; }
+  // Short coin flip, then patients slide into the two rows (skipped for reduced motion via CSS).
+  function dealAnim() {
+    var box = $('gBox'); ['gA', 'gB'].forEach(function (id) { Array.prototype.forEach.call($(id).children, function (c, k) { c.style.setProperty('--i', k); }); });
+    box.classList.remove('dealing'); void box.offsetWidth; box.classList.add('dealing');
+    setTimeout(function () { box.classList.remove('dealing'); }, 1000);
+  }
   function newRound() {
     var q = drawRates(rng), n = G.n, a = [], b = [], i, dr = [], pl = [], idx = [];
     // Every patient has two hidden outcomes. If the drug does nothing, they match.
@@ -263,7 +279,7 @@
     var iD = idx.slice(0, n), iP = idx.slice(n);
     iD.forEach(function (j) { a.push(dr[j]); }); iP.forEach(function (j) { b.push(pl[j]); });
     G.round = { q: q, a: a, b: b, dr: dr, pl: pl, iD: iD, iP: iP }; G.done = false;
-    showRound(); $('gOut').hidden = true; $('gSame').disabled = false; $('gDiff').disabled = false; $('gNext').disabled = true;
+    showRound(); dealAnim(); $('gOut').hidden = true; $('gSame').disabled = false; $('gDiff').disabled = false; $('gNext').disabled = true;
     readout();
   }
   function showRound() {
