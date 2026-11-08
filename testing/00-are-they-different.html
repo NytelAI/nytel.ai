@@ -126,10 +126,10 @@
 
 <section class="section" id="arnold">
   <h2>Too even to be random? (Arnold's test)</h2>
-  <p>Each dot is the day one of 15 patients enrolled, on a 100-day clock. Real random days leave big and small gaps; made-up days are too even.</p>
+  <p>Each set is 15 points on a circle. Real random points leave big and small gaps; made-up points are too even.</p>
   <div class="block">
     <div class="arcs" id="arSets"></div>
-    <p class="legend">One clock has truly random days. Which?</p>
+    <p class="legend">One circle has truly random points. Which?</p>
     <div class="pillrow"><button class="btn" id="arNew" type="button">New random set</button></div>
     <div id="arOut" aria-live="polite" hidden>
       <div class="verdict" id="arVerdict"></div>
@@ -138,10 +138,10 @@
   </div>
   <div class="block">
     <h3>Your turn: can you make up random numbers?</h3>
-    <p>Click 15 enrollment days on the clock, as randomly as you can.</p>
-    <div class="arcs"><svg id="arMine" class="circ" tabindex="0" role="img" aria-label="Empty 100-day clock: click to place patient enrollment days"></svg></div>
+    <p>Click 15 points on the circle, as randomly as you can.</p>
+    <div class="arcs"><svg id="arMine" class="circ" tabindex="0" role="img" aria-label="Empty circle: click to place points"></svg></div>
     <div class="pillrow">
-      <button class="btn" id="arRand" type="button">Enroll a patient on a random day</button>
+      <button class="btn" id="arRand" type="button">Place a point at a random spot</button>
       <button class="btn" id="arReset" type="button">Clear</button>
     </div>
     <p class="note">We score your gaps: about 2 looks random, near 1 is too even.</p>
@@ -150,9 +150,9 @@
     </div>
     <details class="code"><summary>Optional: how the gap score works (you can skip this)</summary>
       <div style="padding:0 1rem 1rem">
-        <p>Walk around the circle and measure each gap between neighboring enrollment days, as a share of the whole clock. Square each gap, add them up, and multiply by the number of patients: \(s = T \sum (\text{gap}/L)^2\), with \(T = 15\) patients and \(L = 100\) days.</p>
-        <p>Perfectly even days have every gap equal to 1/15, so \(s = 1\). All patients enrolled on one day leave one gap equal to the whole clock, so \(s = 15\).</p>
-        <p>Random enrollment days score \(2T/(T+1) = 1.875\) on average, and most land between 1.4 and 2.6.</p>
+        <p>Walk around the circle and measure each gap between neighboring points, as a share of the whole circle. Square each gap, add them up, and multiply by the number of points: \(s = T \sum (\text{gap}/L)^2\), with \(T = 15\) points and \(L = 100\) the circle's length.</p>
+        <p>Perfectly even points have every gap equal to 1/15, so \(s = 1\). All points at one spot leave one gap equal to the whole circle, so \(s = 15\).</p>
+        <p>Random points score \(2T/(T+1) = 1.875\) on average, and most land between 1.4 and 2.6.</p>
         <div class="plotbox"><svg id="plotMine"></svg><p class="note" style="margin:.5rem 0 0">Scores of 10,000 random sets. Yours is marked.</p></div>
       </div>
     </details>
@@ -483,7 +483,7 @@
   function rowsText(pre) { if (pre.deathsOnly) return pre.k[0] + ' vs ' + pre.k[1] + ' deaths'; return pre.k[0] + '/' + nf(pre.nA) + ' vs ' + pre.k[1] + '/' + nf(pre.nB); }
 
   /* ---------- 3. Randomization test ---------- */
-  var SRC_ULCER = 'Ulcer surgery deaths, Novick and Grizzle (1965), as in Polson and Sokolov (2026), <a href="https://vsokolov.org/html/_book/06-hyp.html">chapter 6</a>. Best and worst of four treatments, picked after seeing results, so this overstates the evidence. More in <a href="05-ulcer-trial.html">module 5</a>.';
+  var SRC_ULCER = 'Ulcer surgery deaths, illustrative counts based on Novick and Grizzle (1965), as in Polson and Sokolov (2026), <a href="https://vsokolov.org/html/_book/06-hyp.html">chapter 6</a>. Best and worst of four treatments, picked after seeing results, so this overstates the evidence. More in <a href="05-ulcer-trial.html">module 5</a>.';
   var SRC_ECMO = 'Newborn ECMO trial, Bartlett et al. (1985), as retold in <a href="https://arxiv.org/abs/2602.09208">Sokolova, Sokolov and Polson (2026)</a>. The coin favored whichever treatment was winning, so this is only an illustration.';
   var SRC_PAN = 'Butler et al. (2023), Lancet.';
   var SRC_REC = 'RECOVERY (2021), NEJM.';
@@ -658,7 +658,7 @@
       'seen = gap(pool)\n' +
       'gaps = [gap(rng.permutation(pool)) for _ in range(10_000)]\n' +
       'print(np.mean(np.array(gaps) >= seen))   # share of re-randomizations at least as big\n' +
-      '# Arnold gap score (15 enrollment days on a 100-day clock)\n' +
+      '# Arnold gap score (15 points on a circle of length 100)\n' +
       'def gap_score(x, L=100):\n' +
       '    g = np.diff(np.append(np.sort(x % L), np.min(x % L) + L))\n' +
       '    return len(x) * np.sum((g / L) ** 2)   # 1 = even, about 2 = random',
@@ -728,7 +728,7 @@
     raw.forEach(function (s, i) {
       s.score = gscore(s.pts);
       var cell = el('div', 'cell'), svg = document.createElementNS(NSVG, 'svg'), b = el('button', 'btn', 'Set ' + (i + 1) + ' is random');
-      svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', 'Set ' + (i + 1) + ': 15 patient enrollment days on a 100-day clock');
+      svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', 'Set ' + (i + 1) + ': 15 points on a circle');
       cell.appendChild(el('div', 'rl', 'Set ' + (i + 1))); cell.appendChild(svg); cell.appendChild(b); box.appendChild(cell);
       s.svg = svg; drawCircle(svg, s.pts, false);
       b.addEventListener('click', function () { arReveal(i); });
@@ -751,7 +751,7 @@
     if (MINE.length >= AT) {
       var s = gscore(MINE); drawCircle($('arMine'), MINE, true);
       $('arMineOut').hidden = false;
-      $('arMineChip').innerHTML = chip('Your gap score', s.toFixed(2), true) + chip('Share of random sets this even', fmtShare(shareLE(s))) + '<p class="note">' + (shareLE(s) < 0.05 ? 'Too even to look random: real random enrollment days almost never spread out this neatly.' : shareLE(s) > 0.95 ? 'Very clumpy: real random enrollment days rarely bunch up this much.' : 'Looks random: plenty of random sets are spread like this.') + '</p>';
+      $('arMineChip').innerHTML = chip('Your gap score', s.toFixed(2), true) + chip('Share of random sets this even', fmtShare(shareLE(s))) + '<p class="note">' + (shareLE(s) < 0.05 ? 'Too even to look random: real random points almost never spread out this neatly.' : shareLE(s) > 0.95 ? 'Very clumpy: real random points rarely bunch up this much.' : 'Looks random: plenty of random sets are spread like this.') + '</p>';
       mineHist(s);
     } else { $('arMineOut').hidden = true; mineHist(null); }
   }

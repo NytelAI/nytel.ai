@@ -92,7 +92,7 @@ svg.fig text.dim { fill: rgba(10,22,40,.62); }
 
 <section class="example">
   <h2>A real trial</h2>
-  <p class="srcline">Data: Novick and Grizzle (1965), <a href="https://doi.org/10.1080/01621459.1965.10480777">"A Bayesian approach to the analysis of data from clinical trials"</a>.</p>
+  <p class="srcline">Illustrative counts based on Novick and Grizzle (1965), <a href="https://doi.org/10.1080/01621459.1965.10480777">"A Bayesian approach to the analysis of data from clinical trials"</a>.</p>
   <p class="note">The operations were not named.</p>
 </section>
 
@@ -291,7 +291,7 @@ svg.fig text.dim { fill: rgba(10,22,40,.62); }
     return [hi, lo];
   }
   var EX = [
-    { label: 'The 1965 table', f: function () { setS(BOOK, 0, 1, 1, 1); } },
+    { label: 'The book table', f: function () { setS(BOOK, 0, 1, 1, 1); } },
     { label: '400 patients each', f: function () { setS(BOOK.map(function (r) { return r.map(function (v) { return v * 4; }); }), 0, 1, 1, 1); } },
     { label: 'B has 2 deaths', f: function () { setS([BOOK[0], [89, 9, 2], BOOK[2], BOOK[3]], 0, 1, 1, 1); } },
     { label: 'Strong guess: 9% die', f: function () { setS(BOOK, 0, 1, 5, 50); } },
