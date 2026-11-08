@@ -16,7 +16,7 @@ body.lab { margin: 0; font-family: var(--sans, 'IBM Plex Sans', system-ui, -appl
 .skip:focus { left: 0; }
 
 /* 1. Top bar */
-.topbar { background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 20; }
+.topbar { background: var(--white); border-bottom: 1px solid var(--border); position: relative; z-index: 20; }
 .topbar .wrap { display: flex; align-items: center; gap: 1rem; min-height: 56px; flex-wrap: wrap; }
 .topbar img { display: block; height: 26px; }
 .topbar .crumb { font-size: .9rem; color: var(--text-tertiary); }
@@ -74,7 +74,7 @@ svg.plot .vlabel { font-size: 12px; font-weight: 600; fill: var(--navy); }
 
 /* 4. Question cards */
 .section h2 { font-size: 1.5rem; margin-top: 1.5rem; }
-.scorebar { position: sticky; top: 56px; z-index: 10; background: var(--navy); color: #fff; border-radius: 8px; padding: .4rem .9rem; display: inline-block; font-size: .9rem; font-weight: 600; margin-bottom: 1rem; }
+.scorebar { position: sticky; top: 0; z-index: 10; background: var(--navy); color: #fff; border-radius: 8px; padding: .4rem .9rem; display: inline-block; font-size: .9rem; font-weight: 600; margin-bottom: 1rem; }
 .qcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; }
 .qcard { background: var(--white); border: 1px solid var(--border); border-left: 5px solid var(--orange-fill); border-radius: 12px; padding: 1rem 1.1rem; }
 .qcard .qtag { font-family: var(--mono); font-size: .75rem; color: var(--orange); text-transform: uppercase; letter-spacing: .06em; }
