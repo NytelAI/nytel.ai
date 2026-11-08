@@ -451,7 +451,7 @@
   function binBin(pre, a, b) { return pre.bw ? Math.min(pre.m, Math.round(gapVal(pre, a, b) / pre.bw)) : Math.round(Math.abs(a / pre.nA - b / pre.nB) * pre.m); }
   function obsBin(pre) { return binBin(pre, pre.k[0], pre.k[1]); }
   function gapPts(pre) { return gapVal(pre, pre.k[0], pre.k[1]); }
-  function makePool(pre) { return arrOf(pre.nA, pre.k[0]).concat(arrOf(pre.nB, pre.k[1])); }
+  function makePool(pre) { if (pre.nA + pre.nB > 5000) return null; return arrOf(pre.nA, pre.k[0]).concat(arrOf(pre.nB, pre.k[1])); }
   var LASTK = [0, 0];
   // One re-dealing: shuffle the pool, or (large groups) draw both counts from the pooled rate.
   function drawGap(pre, pool) {
@@ -461,7 +461,7 @@
     else { shuffle(pool); for (i = 0; i < pre.nA; i++) a += pool[i]; for (; i < pool.length; i++) b += pool[i]; }
     LASTK = [a, b]; return binBin(pre, a, b);
   }
-  function permHist(pre, N) { var pool = pre.binom ? null : makePool(pre), h = new Array(pre.m + 1).fill(0), i; for (i = 0; i < N; i++) h[drawGap(pre, pool)]++; return h; }
+  function permHist(pre, N) { var pool = (pre.binom || pre.deathsOnly) ? null : makePool(pre), h = new Array(pre.m + 1).fill(0), i; for (i = 0; i < N; i++) h[drawGap(pre, pool)]++; return h; }
   function tailShare(h, N, d) { var c = 0, i; for (i = d; i < h.length; i++) c += h[i]; return N ? c / N : 0; }
   function tailCount(h, d) { var c = 0, i; for (i = d; i < h.length; i++) c += h[i]; return c; }
   function permXlim(m, d, pre) { var D = Math.min(m, Math.max(d + 2, pre && pre.hlen ? pre.hlen : Math.ceil(2.5 * Math.sqrt(m / 2)))), w = pre ? bwOf(pre) : 100 / m; return { D: D, lo: -0.5 * w, hi: (D + 0.5) * w }; }
@@ -504,7 +504,7 @@
   var S3 = { pre: PRE[0], hist: null, N: 0, last: null, pool: null, busy: false, P: null };
   function loadS3(pre) {
     S3.pre = pre; S3.hist = new Array(pre.m + 1).fill(0); S3.N = 0; S3.last = null; S3.busy = false;
-    S3.pool = pre.binom ? null : makePool(pre);
+    S3.pool = (pre.binom || pre.deathsOnly) ? null : makePool(pre);
     $('s3title').textContent = 'Observed: ' + pre.names[0] + ' vs ' + pre.names[1] + (pre.real ? ' (real data)' : pre.id === 'game' ? ' (your trial)' : ' (made-up numbers)');
     $('srcLine').innerHTML = pre.src || '';
     var ob = $('obsBox'); ob.innerHTML = '';
@@ -555,7 +555,7 @@
   }
   function shuffleOnce() {
     if (S3.busy) return; var pre = S3.pre, d;
-    if (pre.binom) { d = drawGap(pre, null); S3.hist[d]++; S3.N++; S3.last = d; showDealt(pre); update3(0); return; }
+    if (pre.binom || pre.deathsOnly) { d = drawGap(pre, null); S3.hist[d]++; S3.N++; S3.last = d; showDealt(pre); update3(0); return; }
     setBusy(true);
     var box = $('shufBox'); box.innerHTML = ''; $('shufTitle').textContent = 'Pooling everyone into one pile';
     var tl = el('div'); box.appendChild(tl); tiles(tl, S3.pool.slice(), pre.yes, pre.no, 'Everyone pooled in one row');
