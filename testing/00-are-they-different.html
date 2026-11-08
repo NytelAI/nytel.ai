@@ -185,10 +185,8 @@
           <p class="striphead" id="gStripHead2"></p>
           <div class="strips" id="gStrips" role="img"></div>
           <p class="legend" id="gStripNote"></p>
-          <svg id="plotG"></svg>
         </div>
       </div>
-      <div class="chips" aria-live="polite" id="gChips"></div>
     </div>
   </div>
 </section>
@@ -395,7 +393,7 @@
   function readout() {
     var s = G.stats[G.n], tot = 0;
     NS.forEach(function (n) { tot += G.stats[n].t; });
-    $('gChips').innerHTML = chip('Your right calls (' + G.n + ' per group)', s.t ? s.r + ' of ' + s.t + ' (' + pct(s.r / s.t) + ')' : '–', true) + chip('Trials judged', tot);
+    
   }
   function gGuess(sayDiff) {
     if (G.done) return; G.done = true;
@@ -414,13 +412,7 @@
     else msg = 'Not this time. ' + truth + ' ' + seen;
     v.textContent = msg;
     $('gOut').hidden = false;
-    var P = Lab.Plot($('plotG'), { xlim: [0, 2], ylim: [0, 1], h: 230, xticks: [{ x: 0.5, label: nm[0] }, { x: 1.5, label: nm[1] }], yfmt: function (x) { return Math.round(x * 100) + '%'; }, ylabel: 'Improved (%)', label: 'True and observed success rates of the two rows' });
-    P.bars('a', [q.pa], 0.1, 0.48, { fill: TEAL, opacity: 0.9 }, 600);
-    P.bars('as', [ka / n], 0.52, 0.9, { fill: TEAL, opacity: 0.35 }, 600);
-    P.bars('b', [q.pb], 1.1, 1.48, { fill: OR, opacity: 0.9 }, 600);
-    P.bars('bs', [kb / n], 1.52, 1.9, { fill: OR, opacity: 0.35 }, 600);
     drawStrips(r);
-    P.legend([{ label: 'True rate (dark)', color: '#555', kind: 'box' }, { label: 'This trial (light)', color: '#bbb', kind: 'box' }]);
     readout();
     $('gNext').focus();
   }
