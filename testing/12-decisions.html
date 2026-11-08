@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Decisions: what Type I control costs | Nytel Testing</title>
-<meta name="description" content="Interactive lesson: the price of controlling false alarms in patients and power, and how FDA expects Bayesian rules to be calibrated.">
+<title>Decisions: the price of avoiding false approvals | Nytel Testing</title>
+<meta name="description" content="Interactive lesson: the price of avoiding false approvals in patients and power, and how FDA expects Bayesian rules to be calibrated.">
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -76,37 +76,37 @@
 <div class="topbar"><div class="wrap">
   <a href="/"><img src="../logo.svg" alt="Nytel"></a>
   <span class="crumb"><a href="./">Testing</a></span>
-  <span class="title">12. Decisions: what Type I control costs</span>
+  <span class="title">12. Decisions: the price of avoiding false approvals</span>
   <span class="pn"><a href="11-substantial-evidence.html">&larr; Prev</a><a href="./">Index</a><a href="13-regulators-map.html">Next &rarr;</a></span>
 </div></div>
 
 <main class="wrap">
 <section class="hero">
   <div class="kicker">Module 12</div>
-  <h1>Decisions: what Type I control costs</h1>
-  <p class="hook">Every rule for saying "yes" trades false alarms against missed drugs. What does safety cost in patients?</p>
+  <h1>Decisions: the price of avoiding false approvals</h1>
+  <p class="hook">Every rule for saying "yes" trades false approvals against missed drugs. What does safety cost in patients?</p>
   <div class="presets" id="examples"><span class="lbl">Jump to an example:</span></div>
 </section>
 
 <div class="words"><b>Words used here, in plain terms</b>
   <ul>
-    <li><b>Effect size</b>: how big the benefit is, such as 3 points of improvement. <b>Standard error (SE)</b>: how far a result typically lands from the truth just by luck, so "1.5 SE" is a result 1.5 of those steps from zero (<a href="02-p-values.html">module 2</a>).</li>
-    <li><b>Type I error</b>: approving a drug that does nothing. <b>Type II error</b>: missing a drug that works. <b>Power</b>: the chance a trial finds a real effect (<a href="03-errors-power.html">module 3</a>).</li>
-    <li><b>Alpha</b>: the false-alarm chance we allow. <b>One-sided</b> counts only "the drug is better"; <b>two-sided</b> also counts "worse". <b>Posterior</b>: what we believe about the drug after seeing the data (<a href="01-prior-posterior.html">module 1</a>).</li>
+    <li><b>Effect</b>: how much the drug helps, such as 3 points. <b>SD</b>: how much patients differ from each other. <b>Standard error (SE)</b>: how far a result lands from the truth by luck (<a href="02-p-values.html">module 2</a>).</li>
+    <li><b>Type I error</b> (false approval): approving a drug that does nothing. <b>Type II error</b>: missing a drug that works. <b>Power</b>: the chance a trial finds a real effect (<a href="03-errors-power.html">module 3</a>).</li>
+    <li><b>Alpha</b>: the false approval chance we allow. <b>One-sided</b>: only a wrong "drug is better" counts as a false approval. <b>Endpoint</b>: an outcome the trial measures. <b>Prior</b>: what we believe before the trial. <b>Posterior</b>: what we believe after it (<a href="01-prior-posterior.html">module 1</a>).</li>
   </ul></div>
 
 <section class="sec" id="secA">
   <h2>A. Two ways to be wrong</h2>
-  <p class="setup">A regulator can approve a useless drug or reject a good one. Which mistake is worse?</p>
+  <p class="setup">A regulator can approve a drug that does nothing (false approval) or reject a good one. Which mistake is worse?</p>
   <div class="labgrid" aria-label="Cost of mistakes lab" style="margin-top:.5rem">
     <div class="panel">
-      <h3>Approving a useless drug is ... times worse</h3>
+      <h3>A false approval is ... times worse</h3>
       <div class="chipbtns" id="aPresets"></div>
       <div class="rl"><span>Cost ratio</span><output id="aRatioOut">39 : 1</output></div>
       <input id="aRatio" type="range" min="1" max="100" step="1" value="39" aria-label="Cost ratio, false approval to missed drug">
       <div class="rl"><span>How strong the data look</span><output id="aMOut"></output></div>
       <input id="aM" type="range" min="0" max="4" step="0.1" value="1.5" aria-label="Strength of evidence in standard errors">
-      <p class="note" style="margin-top:.6rem">Approve only if we are at least <b id="aGam">39/(39+1) = 97.5%</b> sure the drug works: the cost of a false alarm divided by the cost of both mistakes together. Call this sureness bar gamma.</p>
+      <p class="note" style="margin-top:.6rem">Approve only if we are at least <b id="aGam">39/(39+1) = 97.5%</b> sure the drug works.</p>
     </div>
     <div>
       <div class="plotbox"><svg id="aPlot"></svg>
@@ -119,12 +119,12 @@
     <div></div><div class="h">Approve</div><div class="h">Reject</div>
     <div class="h">Drug works</div>
     <div class="cell good"><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="#1F6B6B"/><path d="M9 17.5l5.5 5.5L25 11" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Right call</b><span>Patients get a good drug.</span></div>
-    <div class="cell fn"><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="#A8341F"/><path d="M11 11l12 12M23 11L11 23" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg><b>Missed drug (<span class="tip" tabindex="0" data-tip="Type II error: saying there is no effect when there is one. Power is one minus its chance.">Type II</span>)</b><span>Cost <span id="costFN">1</span></span><i class="cost" id="barFN"></i></div>
-    <div class="h">Drug useless</div>
-    <div class="cell fp"><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="#B8531A"/><path d="M17 8v12" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/><circle cx="17" cy="25.5" r="2.2" fill="#fff"/></svg><b>False alarm (<span class="tip" tabindex="0" data-tip="Type I error: concluding a drug works when it does not.">Type I</span>)</b><span>Cost <span id="costFP">39</span></span><i class="cost" id="barFP"></i></div>
-    <div class="cell good"><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="#1F6B6B"/><path d="M9 17.5l5.5 5.5L25 11" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Right call</b><span>A useless drug stays off the market.</span></div>
+    <div class="cell fn"><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="#A8341F"/><path d="M11 11l12 12M23 11L11 23" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg><b>Missed drug (<span class="tip" tabindex="0" data-tip="Type II error: saying there is no effect when there is one.">Type II</span>)</b><span>Cost <span id="costFN">1</span></span><i class="cost" id="barFN"></i></div>
+    <div class="h">Drug does nothing</div>
+    <div class="cell fp"><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="#B8531A"/><path d="M17 8v12" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/><circle cx="17" cy="25.5" r="2.2" fill="#fff"/></svg><b>False approval (<span class="tip" tabindex="0" data-tip="Type I error: concluding a drug works when it does not.">Type I</span>)</b><span>Cost <span id="costFP">39</span></span><i class="cost" id="barFP"></i></div>
+    <div class="cell good"><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="#1F6B6B"/><path d="M9 17.5l5.5 5.5L25 11" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Right call</b><span>A drug that does nothing stays off the market.</span></div>
   </div>
-  <p class="note">The effect is measured in standard errors, and the posterior is a bell-shaped curve (computer draws). P(drug works) assumes we start with no opinion about the drug. Costs are made up for teaching.</p>
+  <p class="note">We start with no opinion about the drug. Costs are made up.</p>
 </section>
 
 <section class="sec" id="secB">
@@ -135,15 +135,15 @@
       <h3>Example</h3>
       <div class="chipbtns" id="bPresets"></div>
       <p class="note" id="bPresetNote" style="margin:.4rem 0 0"></p>
-      <h3>Patients in the trial</h3>
-      <div class="rl"><span>Total patients</span><output id="bNOut"></output></div>
+      <h3>Patients</h3>
+      <div class="rl"><span>In the trial</span><output id="bNOut"></output></div>
       <input id="bN" type="range" min="10" max="1500" step="1" value="467" aria-label="Total patients">
-      <h3>Alpha (<span class="tip" tabindex="0" data-tip="One-sided: only counts the drug being better. Two-sided also counts it being worse.">one-sided</span>)</h3>
+      <h3>Alpha (<span class="tip" tabindex="0" data-tip="One-sided: only a wrong 'drug is better' counts as a false approval.">one-sided</span>)</h3>
       <div class="chipbtns" id="bAlpha"></div>
-      <h3>Number of <span class="tip" tabindex="0" data-tip="Bonferroni: to keep the chance of any false alarm at alpha across m tests, test each one at alpha divided by m.">Bonferroni</span> tests</h3>
-      <div class="rl"><span>Endpoints tested</span><output id="bMOut"></output></div>
+      <h3>Endpoints tested (<span class="tip" tabindex="0" data-tip="Bonferroni: to keep the chance of any false approval at alpha across all endpoints, test each one at alpha divided by the number of endpoints.">Bonferroni</span>)</h3>
+      <div class="rl"><span>Endpoints</span><output id="bMOut"></output></div>
       <input id="bM" type="range" min="1" max="20" step="1" value="1" aria-label="Number of tests">
-      <h3>Looks at the data, as in <a href="07-interim-looks.html">module 7</a> (<span class="tip" tabindex="0" data-tip="Peeks with strict early bars (Lan-DeMets alpha spending, module 7): a very high bar at early looks and almost the usual bar at the end, so peeking costs little.">peeks with strict early bars</span>)</h3>
+      <h3>Looks at the data (<a href="07-interim-looks.html">module 7</a>)</h3>
       <div class="chipbtns" id="bLooks"></div>
     </div>
     <div>
@@ -169,43 +169,41 @@
 
 <section class="sec" id="secC">
   <h2>C. What FDA asks for</h2>
-  <p class="setup">The January 2026 draft guidance on Bayesian methods (Section IV.A) lists three routes to a success criterion. Only the first is tied to Type I error. <a href="https://www.fda.gov/media/190505/download">Read it at fda.gov</a>.</p>
+  <p class="setup">FDA&rsquo;s 2026 draft gives three ways to decide a trial succeeded. <a href="https://www.fda.gov/media/190505/download">Read it at fda.gov</a>.</p>
   <div class="three">
-    <div class="rcard"><svg viewBox="0 0 220 80" id="c1" role="img" aria-label="Normal curve with a small orange tail beyond a cutoff"></svg><div class="n">Route 1</div><h3>Calibrate to Type I error</h3>
-      <blockquote>"... can be chosen such that the overall FWER is controlled at a given level, typically 0.025 one-sided"</blockquote>
-      <p class="note">Default bar: familywise error "no greater than 0.025, one-sided". <span class="tip" tabindex="0" data-tip="Familywise error rate: the chance of at least one false positive among all the tests in the family.">FWER</span> is the chance of any false alarm among all the tests (<a href="04-multiplicity.html">module 4</a>).</p></div>
-    <div class="rcard"><svg viewBox="0 0 220 80" id="c2" role="img" aria-label="Posterior curve with the area above a threshold shaded"></svg><div class="n">Route 2</div><h3>Read the posterior directly</h3>
-      <p>Use a prior that accurately sums up what is already known, then judge the posterior itself.</p>
-      <p class="note">The rule reads Pr(d &gt; a) &gt; c. Win if the chance that the drug beats the margin a is above c.</p></div>
+    <div class="rcard"><svg viewBox="0 0 220 80" id="c1" role="img" aria-label="Normal curve with a small orange tail beyond a cutoff"></svg><div class="n">Route 1</div><h3>Cap false approvals</h3>
+      <p class="note">Default: at most a 2.5% chance of any false approval across all endpoints (<a href="04-multiplicity.html">module 4</a>).</p></div>
+    <div class="rcard"><svg viewBox="0 0 220 80" id="c2" role="img" aria-label="Posterior curve with the area above a threshold shaded"></svg><div class="n">Route 2</div><h3>Judge what we believe after the trial</h3>
+      <p>Start from what is already known, then ask how sure we are now.</p>
+      <p class="note">Win if we are sure enough (say 97.5%) the drug beats placebo by a set amount.</p></div>
     <div class="rcard"><svg viewBox="0 0 220 80" id="c3" role="img" aria-label="A balance scale weighing benefit against risk"></svg><div class="n">Route 3</div><h3>Weigh benefit against risk</h3>
-      <p>Decision-theoretic criteria, like the cost ratio in section A.</p>
-      <p class="note">FDA's own heading (IV.A.3): "Success Criteria Based on Benefit-Risk Assessment or Decision-Theoretic Approaches". Benefit-risk means: do the gains outweigh the harms?</p></div>
+      <p>Weigh what each mistake costs, as in section A.</p>
+      <p class="note">Benefit-risk: do the gains outweigh the harms?</p></div>
   </div>
 </section>
 
 <section class="sec" id="secD">
-  <h2>D. Calibrating a Bayesian rule</h2>
-  <p class="setup">A computer ran 10,000 pretend two-arm trials for each case. On the old drug 30 of 100 patients get better. Each arm has at most 100 patients.</p>
-  <div class="tabs" id="dTabs"><span class="lbl note">Response rate on the new drug:</span></div>
+  <h2>D. Tuning a rule with simulated trials</h2>
+  <p class="setup">10,000 simulated trials per case. Old drug: 30% improve. Up to 100 patients per arm.</p>
+  <div class="tabs" id="dTabs"><span class="lbl note">Pick a case:</span></div>
   <div class="cmp">
     <div class="figure">
-      <h3>Chance the rule picks the treatment</h3>
+      <h3>Chance the rule picks the new drug</h3>
       <div id="dBarsP"></div>
-      <h3 style="margin-top:1rem">Average patients per arm (<span class="tip" tabindex="0" data-tip="E[N]: the average number of patients used per arm across many trials, since early stops use fewer.">E[N]</span>)</h3>
+      <h3 style="margin-top:1rem">Average patients per arm</h3>
       <div id="dBarsN"></div>
       <p class="refline" id="dNote"></p>
     </div>
     <div class="figure">
-      <p class="note" style="margin:0 0 .4rem">The frontier is the most power you can get for a given average trial size. A fixed design has no early looks: every patient is enrolled.</p>
-      <h3 id="fTitle">Power frontier: cheaper patients, more power</h3>
+      <p class="note" style="margin:0 0 .4rem">Dashed line: the penalty rule at seven patient costs. Cheaper patients: bigger trials, more power.</p>
+      <h3 id="fTitle">Power by patient cost (dashed line)</h3>
       <svg id="fPlot"></svg>
-      <div class="rl" style="display:flex;justify-content:space-between;font-size:.9rem;margin-top:.4rem"><span>Cost per patient pair <span class="tip" tabindex="0" data-tip="c: the cost of one more pair of patients, divided by the combined cost of the two kinds of wrong decision.">c</span> per patient pair</span><output id="fCOut" style="font-family:var(--mono);font-weight:600;color:var(--teal-dark)"></output></div>
+      <div class="rl" style="display:flex;justify-content:space-between;font-size:.9rem;margin-top:.4rem"><span>Cost of each extra patient pair</span><output id="fCOut" style="font-family:var(--mono);font-weight:600;color:var(--teal-dark)"></output></div>
       <input id="fC" type="range" min="0" max="6" step="1" value="5" style="width:100%;accent-color:var(--teal-dark)" aria-label="Cost of sampling">
       <div class="chips" id="fChips" aria-live="polite"></div>
     </div>
   </div>
-  <p class="note"><b>Rewards benefit only</b> picks the drug whenever it looks better on average and never charges for a false alarm. <b>Strict early bars</b> are the module 7 looks.</p>
-  <p class="note">These rules are tuned differently, so this is not a ranking. The rule that also penalizes false alarms (sureness bar 0.975, cost 5e-5) kept false alarms at most 0.05 in 99 no-effect cases and power at least 0.90 for 30% to 55%. The bars on the left come from 10,000 pretend trials and the frontier from 5,000, so the same rule differs a little between them. Costs are made up for teaching.</p>
+  <p class="note">Rules are tuned differently, so this is not a ranking. Costs are made up.</p>
 </section>
 
 <section class="sec section" id="secE">
@@ -219,9 +217,9 @@
 <section class="takeaway">
   <h2>Takeaway</h2>
   <ul>
-    <li>Every rule for saying yes trades false alarms against missed drugs and patients.</li>
-    <li>FDA's default bar is a 0.025 false-alarm chance, one-sided.</li>
-    <li>A Bayesian rule usually meets it by tuning the rule with pretend trials. Designs that borrow outside data may agree another criterion with FDA.</li>
+    <li>Every rule for saying yes trades false approvals against missed drugs and trial size.</li>
+    <li>FDA's default bar: at most a 2.5% false approval chance, one-sided.</li>
+    <li>Simulated trials tune a rule to meet it; borrowing designs may agree another bar.</li>
   </ul>
 </section>
 </main>
@@ -256,6 +254,8 @@
   function f2(v) { return v.toFixed(2); }
   function f3(v) { return v.toFixed(3); }
   function fmtA(v) { return v >= 0.001 ? String(parseFloat(v.toPrecision(2))) : v.toExponential(1).replace('e-', 'e-'); }
+  function fp1(v) { return Lab.pct(v, 1); }
+  function fp0(v) { return Lab.pct(v, 0); }
   function btn(parent, label, cls, fn) { var b = document.createElement('button'); b.type = 'button'; b.className = 'btn' + (cls ? ' ' + cls : ''); b.textContent = label; b.addEventListener('click', fn); parent.appendChild(b); return b; }
   function mark(box, idx) { var bs = box.querySelectorAll('.btn'); for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('on', i === idx); }
 
@@ -314,7 +314,7 @@
   function nOf(th, delta, sd) { return 4 * th * th * sd * sd / (delta * delta); }
 
   /* ---------- Section A ---------- */
-  var aPlot = Lab.Plot($('aPlot'), { xlim: [-4, 8], ylim: [0, 0.5], xlabel: 'Drug effect (in standard errors)', ylabel: 'Density of computer draws', label: 'Histogram of posterior draws of the drug effect, split at zero, with the threshold cut point', h: 320 });
+  var aPlot = Lab.Plot($('aPlot'), { xlim: [-4, 8], ylim: [0, 0.5], xlabel: 'Drug effect (in standard errors)', ylabel: 'How likely', label: 'Histogram of posterior draws of the drug effect, split at zero, with the threshold cut point', h: 320 });
   var zdraws = Lab.draws(8000, rng, Lab.normal);
   var A = { ratio: 39, m: 1.5 };
   function renderA(ms) {
@@ -325,7 +325,7 @@
     aPlot.bars('pos', pos, -4, 8, { fill: TEAL, opacity: 0.8 }, ms);
     aPlot.vline('zero', 0, '', { color: NAVY }, 0);
     aPlot.vline('cut', Math.max(-3.9, Math.min(7.9, cut)), '', { color: approve ? '#1F6B6B' : BAD, dash: '6 4' }, ms);
-    aPlot.legend([{ label: 'Drug useless (effect below 0)', color: ORANGE, kind: 'box' }, { label: 'Drug works', color: TEAL, kind: 'box' }, { label: 'Approve only if this line is right of zero', color: approve ? '#1F6B6B' : BAD, kind: 'dash' }]);
+    aPlot.legend([{ label: 'Drug does nothing (effect below 0)', color: ORANGE, kind: 'box' }, { label: 'Drug works', color: TEAL, kind: 'box' }, { label: 'Approve if the dashed line is right of zero', color: approve ? '#1F6B6B' : BAD, kind: 'dash' }]);
     $('aGam').textContent = A.ratio + '/(' + A.ratio + '+1) = ' + (100 * g).toFixed(1) + '%';
     var gc = $('grid22').children; [1,4,7].forEach(function (k) { gc[k].style.outline = approve ? '3px solid #1F6B6B' : 'none'; }); [2,5,8].forEach(function (k) { gc[k].style.outline = approve ? 'none' : '3px solid #A8341F'; });
     $('aRatioOut').textContent = A.ratio + ' : 1';
@@ -333,10 +333,10 @@
     $('costFP').textContent = A.ratio; $('barFP').style.width = Math.max(6, A.ratio * 1.2) + 'px';
     $('costFN').textContent = 1; $('barFN').style.width = '6px';
     $('aChips').innerHTML =
-      '<span class="chip warm">Sure enough? Need <b>' + f3(g) + '</b></span>' +
-      '<span class="chip">P(drug works) <b>' + f3(p) + '</b></span>' +
+      '<span class="chip warm">Need <b>' + Lab.pct(g, 1) + '</b> sure</span>' +
+      '<span class="chip">Sure now <b>' + Lab.pct(p, 1) + '</b></span>' +
       '<span class="badge ' + (approve ? 'yes' : 'no') + '">' + (approve ? 'APPROVE' : 'REJECT') + '</span>';
-    $('aNote').innerHTML = (approve ? 'The dashed line sits right of zero: ' : 'The dashed line sits left of zero: ') + 'P(drug works) ' + f3(p) + (approve ? ' beats ' : ' misses ') + f3(g) + '. Each bar counts 8,000 computer draws.';
+    $('aNote').innerHTML = Lab.pct(p, 1) + ' sure is ' + (approve ? 'above' : 'below') + ' the ' + Lab.pct(g, 1) + ' needed: ' + (approve ? 'approve.' : 'reject.');
     var pb = $('aPresets').querySelectorAll('.btn'), ids = [1, 9, 39, 99];
     for (var i = 0; i < pb.length; i++) pb[i].classList.toggle('on', ids[i] === A.ratio);
   }
@@ -346,7 +346,7 @@
 
   /* ---------- Section B ---------- */
   var B = { delta: 3, sd: 10, n: 467, alpha: 0.025, m: 1, looks: '1' };
-  var bPlot = Lab.Plot($('bPlot'), { xlim: [-4, 12], ylim: [0, 0.45], xlabel: 'How far the result is from zero (in standard errors)', ylabel: 'Density', label: 'Two bell curves: no effect in orange, real effect in teal, with the decision bar', h: 340 });
+  var bPlot = Lab.Plot($('bPlot'), { xlim: [-4, 12], ylim: [0, 0.45], xlabel: 'How far the result is from zero (in standard errors)', ylabel: 'How likely', label: 'Two bell curves: no effect in orange, real effect in teal, with the decision bar', h: 340 });
   var gx = Lab.linspace(-4, 12, 161);
   function renderB(ms) {
     var aEff = B.alpha / B.m, d = design(aEff, B.looks), th = Math.sqrt(B.n) * B.delta / (2 * B.sd), zc = d.zb[d.zb.length - 1];
@@ -357,26 +357,26 @@
     var tx = gx.filter(function (x) { return x >= zc; }); tx.unshift(zc);
     bPlot.line('nullTail', tx, tx.map(function (x) { return Lab.normalPdf(x, 0, 1); }), { stroke: 'none', fill: ORANGE, opacity: 0.55 }, 0);
     bPlot.line('altTail', tx, tx.map(function (x) { return Lab.normalPdf(x, th, 1); }), { stroke: 'none', fill: TEAL, opacity: 0.4 }, 0);
-    bPlot.vline('bar', zc, 'bar z = ' + f2(zc), { color: NAVY, dash: '5 4' }, ms);
-    bPlot.legend([{ label: 'No real effect', color: ORANGE, kind: 'line' }, { label: 'Real effect', color: TEAL, kind: 'line' }, { label: 'False alarms (orange area)', color: ORANGE, kind: 'box' }, { label: 'Power (teal area)', color: TEAL, kind: 'box' }]);
+    bPlot.vline('bar', zc, 'Bar to win: ' + f2(zc), { color: NAVY, dash: '5 4' }, ms);
+    bPlot.legend([{ label: 'No real effect', color: ORANGE, kind: 'line' }, { label: 'Real effect', color: TEAL, kind: 'line' }, { label: 'False approvals (orange area)', color: ORANGE, kind: 'box' }, { label: 'Power (teal area)', color: TEAL, kind: 'box' }]);
     $('bNOut').textContent = B.n; $('bMOut').textContent = B.m;
     var ratio = N90 / N0;
     $('bChips').innerHTML =
       '<span class="chip warm">Alpha per test <b>' + fmtA(aEff) + '</b></span>' +
-      '<span class="chip warm">vs standard design <b>' + (ratio >= 1.0 ? '+' : '') + Lab.pct(ratio - 1, 0) + '</b></span>';
+      '<span class="chip warm">Extra patients needed: <b>' + (ratio >= 1.0 ? '+' : '') + Lab.pct(ratio - 1, 0) + '</b></span>';
     var mx = Math.max(N90, N0, B.n);
     function row(l, cls, w, v) { return '<div class="brow"><span>' + l + '</span><span class="tr"><span class="fl ' + cls + '" style="display:block;width:' + (100 * w).toFixed(1) + '%"></span></span><span class="v">' + v + '</span></div>'; }
     $('bBars').innerHTML =
       row('Power now', 'teal', pw, Lab.pct(pw, 0)) +
       row('Power, standard design', 'grey', pw0, Lab.pct(pw0, 0)) +
-      row('Patients for 90%, now', 'warm', N90 / mx, Math.round(N90)) +
-      row('Patients for 90%, standard', 'grey', N0 / mx, Math.round(N0)) +
-      row('Patients you have', 'navy', B.n / mx, B.n);
+      row('Patients needed for 90% power', 'warm', N90 / mx, Math.round(N90)) +
+      row('Patients needed, standard design', 'grey', N0 / mx, Math.round(N0)) +
+      row('Patients in trial', 'navy', B.n / mx, B.n);
     var multi = d.ts.length > 1;
-    $('bNote').innerHTML = 'Standard design: alpha 0.025, one test, one look. Effect ' + B.delta + ', SD ' + B.sd + ', normal approximation, equal arms. ' + (multi ? 'The picture shows the final look only; power and patients count all ' + d.ts.length + ' looks. Bar at each look (standard errors): ' + d.zb.map(f2).join(', ') + '.' : '');
+    $('bNote').innerHTML = 'Standard design: alpha 2.5%, one endpoint, one look. Effect ' + B.delta + ', SD ' + B.sd + '. ' + (multi ? 'Picture: last look only. Bars at each look: ' + d.zb.map(f2).join(', ') + '.' : '');
     markB();
   }
-  var ALPHAS = [0.05, 0.025, 0.001], LOOKS = ['1', '2', '3', '4', '5', 'book'], LLAB = ['1 (none)', '2', '3', '4', '5', 'Book: 4 uneven'];
+  var ALPHAS = [0.05, 0.025, 0.001], LOOKS = ['1', '2', '3', '4', '5', 'book'], LLAB = ['1 (end only)', '2', '3', '4', '5', '4 (at 40, 60, 80, 100%)'];
   ALPHAS.forEach(function (a) { btn($('bAlpha'), String(a), '', function () { B.alpha = a; renderB(500); }); });
   LOOKS.forEach(function (l, i) { btn($('bLooks'), LLAB[i], '', function () { B.looks = l; renderB(500); }); });
   function markB() {
@@ -386,17 +386,17 @@
   $('bN').addEventListener('input', function () { B.n = +this.value; renderB(0); });
   $('bM').addEventListener('input', function () { B.m = +this.value; renderB(0); });
   var BP = [
-    { label: 'Typical trial', set: { delta: 3, sd: 10, n: 467, alpha: 0.025, m: 1, looks: '1' }, note: 'Effect 3, SD 10, 90% power, one-sided 0.025 (clinical trials book): about 467 patients.' },
-    { label: 'Four peeks', set: { delta: 3, sd: 10, n: 467, alpha: 0.025, m: 1, looks: 'book' }, note: 'Same design, looks at 40, 60, 80 and 100% of patients: the book gets about 478.' },
-    { label: 'Five endpoints', set: { delta: 3, sd: 10, n: 467, alpha: 0.025, m: 5, looks: '1' }, note: 'Same design, five endpoints with Bonferroni.' },
-    { label: 'Rare disease (illustrative)', set: { delta: 5, sd: 10, n: 40, alpha: 0.025, m: 1, looks: '1' }, note: 'Illustrative: 40 patients, effect 5, SD 10. Not a real trial.' }
+    { label: 'Typical trial', set: { delta: 3, sd: 10, n: 467, alpha: 0.025, m: 1, looks: '1' }, note: 'Drug helps by 3 points, patients vary by about 10 (SD): 467 patients give 90% power.' },
+    { label: 'Four peeks', set: { delta: 3, sd: 10, n: 467, alpha: 0.025, m: 1, looks: 'book' }, note: 'Same design, looks at 40, 60, 80 and 100% of patients: four looks need about 478 patients.' },
+    { label: 'Five endpoints', set: { delta: 3, sd: 10, n: 467, alpha: 0.025, m: 5, looks: '1' }, note: 'Same design, five endpoints, each tested at a fifth of 2.5%.' },
+    { label: 'Rare disease (illustrative)', set: { delta: 5, sd: 10, n: 40, alpha: 0.025, m: 1, looks: '1' }, note: 'Illustrative: 40 patients, drug helps 5 points, SD 10. Not a real trial.' }
   ];
   function setB(i, ms) { var p = BP[i]; Object.keys(p.set).forEach(function (k) { B[k] = p.set[k]; }); $('bPresetNote').textContent = p.note; mark($('bPresets'), i); renderB(ms); }
   BP.forEach(function (p, i) { btn($('bPresets'), p.label, '', function () { setB(i, 600); }); });
   // hero presets
   [['A typical trial: 467 patients', function () { setB(0, 600); $('labB').scrollIntoView({ behavior: 'smooth' }); }],
    ['Rare disease: 40 patients', function () { setB(3, 600); $('labB').scrollIntoView({ behavior: 'smooth' }); }],
-   ['Mistakes cost 39 : 1', function () { A.ratio = 39; $('aRatio').value = 39; renderA(600); $('secA').scrollIntoView({ behavior: 'smooth' }); }]
+   ['False approval 39 times worse', function () { A.ratio = 39; $('aRatio').value = 39; renderA(600); $('secA').scrollIntoView({ behavior: 'smooth' }); }]
   ].forEach(function (e) { btn($('examples'), e[0], '', e[1]); });
 
   /* ---------- Truth versus one trial ---------- */
@@ -419,10 +419,10 @@
     $('tRows').innerHTML =
       '<div class="igrp"><div class="lab2">Observed: old drug, ' + c.kc + ' of 100 better</div><div class="igrid">' + tIcons(c.kc) + '</div></div>' +
       '<div class="igrp"><div class="lab2">Observed: new drug, ' + c.kt + ' of 100 better</div><div class="igrid">' + tIcons(c.kt) + '</div></div>';
-    $('tChips').innerHTML = '<span class="chip warm">Gap this trial <b>' + (c.gap > 0 ? '+' : '') + c.gap + '</b> points</span>' +
-      '<span class="chip">Gap before <b>' + (TR.last ? (TR.last.gap > 0 ? '+' : '') + TR.last.gap : 'none yet') + '</b></span>' +
+    $('tChips').innerHTML = '<span class="chip warm">Gap this trial: <b>' + (c.gap > 0 ? '+' : '') + c.gap + '</b> points (new minus old)</span>' +
+      '<span class="chip">Last trial&rsquo;s gap: <b>' + (TR.last ? (TR.last.gap > 0 ? '+' : '') + TR.last.gap : 'none yet') + '</b></span>' +
       '<span class="chip">New drug looked better in <b>' + TR.better + ' of ' + TR.trials + '</b> trials</span>';
-    $('tNote').textContent = 'True gap: ' + Math.round((TR.p - 0.30) * 100) + ' points. Each press deals 200 new patients from the true rates, so the observed gap wanders around the true one.';
+    $('tNote').textContent = 'True gap: ' + Math.round((TR.p - 0.30) * 100) + ' points. Each new trial has 200 new patients, so luck moves the gap around it.';
     mark($('tBtns'), TP.indexOf(TR.p));
   }
   TP.forEach(function (p) { btn($('tBtns'), p === 0.30 ? 'New drug does nothing (30%)' : 'New drug truly ' + Math.round(p * 100) + '%', '', function () { TR.p = p; TR.trials = 0; TR.better = 0; TR.last = null; tDeal(); tRender(); }); });
@@ -443,9 +443,9 @@
   $('c3').innerHTML = '<path d="M110 70V20M70 24h80" stroke="' + NAVY + '" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M92 70h36" stroke="' + NAVY + '" stroke-width="3"/><path d="M70 24l-18 28h36zM150 24l-18 28h36z" fill="none" stroke="' + NAVY + '" stroke-width="2"/><path d="M52 52a18 6 0 0 0 36 0z" fill="' + TEAL + '"/><path d="M132 52a18 6 0 0 0 36 0z" fill="' + ORANGE + '"/><text x="70" y="12" text-anchor="middle" font-size="10" fill="' + NAVY + '">benefit</text><text x="150" y="12" text-anchor="middle" font-size="10" fill="' + NAVY + '">risk</text>';
 
   /* ---------- Section D ---------- */
-  var METHODS = ['Rewards benefit only', 'Also penalizes false alarms', 'Stops early if a win looks likely', 'Strict early bars, 5 looks', 'No early looks, 100 per arm'];
-  var MSHORT = ['Benefit only', 'Penalizes false', 'Early stop', '5 strict looks', 'Fixed 100'];
-  var GAINL = ['no gain (30% to 30%)', '30% to 35%', '30% to 45%', '30% to 55%'];
+  var METHODS = ['No penalty for false approvals', 'Penalty for false approvals', 'Stops early if a win looks likely', 'Strict early bars, 5 looks', 'No early looks, 100 per arm'];
+  var MSHORT = ['No penalty', 'With penalty', 'Early stop', '5 strict looks', 'Fixed 100'];
+  var GAINL = ['New drug 30% (no gain)', 'New drug 35% (old 30%)', 'New drug 45% (old 30%)', 'New drug 55% (old 30%)'];
   var DELTAS = [0, 0.05, 0.15, 0.25];
   var TABLE = {
     0: [[0.513, 25.7], [0.026, 35.6], [0.038, 42.7], [0.033, 99.5], [0.028, 100]],
@@ -453,13 +453,13 @@
     0.15: [[0.912, 19.9], [0.541, 63.9], [0.582, 63.2], [0.608, 85.7], [0.602, 100]],
     0.25: [[0.976, 14.4], [0.911, 54.3], [0.928, 48.2], [0.957, 64.8], [0.957, 100]]
   };
-  var FRONT = { // cost c -> [average patients, chance of picking the treatment] per gain (5,000 pretend trials per cell)
+  var FRONT = { // cost c -> [average patients, chance of picking the treatment] per gain (5,000 simulated trials per cell)
     0: [[66.4, 0.019], [62.0, 0.026], [57.4, 0.024], [52.2, 0.025], [43.8, 0.025], [34.7, 0.022], [25.0, 0.024]],
     0.05: [[77.9, 0.105], [74.6, 0.119], [70.2, 0.104], [66.1, 0.113], [57.4, 0.103], [46.8, 0.098], [33.0, 0.090]],
     0.15: [[89.4, 0.594], [86.5, 0.600], [83.8, 0.579], [80.5, 0.585], [73.7, 0.562], [62.9, 0.524], [47.1, 0.444]],
     0.25: [[76.0, 0.948], [72.9, 0.950], [70.2, 0.951], [67.2, 0.952], [61.2, 0.935], [53.6, 0.905], [43.4, 0.808]]
   };
-  var CLAB = ['1e-6', '2.5e-6', '5e-6', '1e-5', '2.5e-5', '5e-5 (used in the table)', '1e-4'];
+  var CLAB = ['0.000001', '0.0000025', '0.000005', '0.00001', '0.000025', '0.00005 (used in the bars)', '0.0001'];
   var D = { d: 0, c: 5 };
   var fPlot = Lab.Plot($('fPlot'), { xlim: [0, 110], ylim: [0, 1], xlabel: 'Average patients per arm', ylabel: 'Power', label: 'Power against average patients for seven costs per patient pair, with other methods marked', h: 340 });
   var fSvg = $('fPlot'), fg = document.createElementNS('http://www.w3.org/2000/svg', 'g'); fSvg.appendChild(fg);
@@ -473,17 +473,17 @@
       nb += '<div class="mrow"><span>' + METHODS[i] + '</span><span class="tr"><span class="fl" style="display:block;width:' + r[1] + '%;background:' + GREY + '"></span></span><span class="v">' + r[1].toFixed(1) + '</span></div>';
     });
     $('dBarsP').innerHTML = pb; $('dBarsN').innerHTML = nb;
-    $('dNote').innerHTML = isNull ? 'The drug does nothing, so every bar is a false alarm. The rule that rewards benefit only picks the drug about half the time, because nothing penalizes a false alarm.' : 'The drug really works (' + GAINL[D.d] + '), so each bar is power.';
+    $('dNote').innerHTML = isNull ? 'The drug does nothing, so every bar is a false approval. With no penalty, the rule picks it about half the time.' : 'The new drug truly helps, so each bar is power.';
     // frontier
     var ymax = key === 0 ? 0.6 : key === 0.05 ? 0.8 : 1;
-    fPlot.setYlim(0, ymax); fPlot.setLabels('Average patients per arm', isNull ? 'False-alarm chance' : 'Power');
+    fPlot.setYlim(0, ymax); fPlot.setLabels('Average patients per arm', isNull ? 'False approval chance' : 'Power');
     while (fg.firstChild) fg.removeChild(fg.firstChild);
-    $('fTitle').textContent = isNull ? 'False alarms against patients' : 'Power frontier: cheaper patients, more power';
+    $('fTitle').textContent = isNull ? 'False approvals against patients' : 'Power by patient cost (dashed line)';
     var refs = [[0, 'U'], [2, 'P'], [3, 'O'], [4, 'F']];
     refs.forEach(function (r) {
       var v = rows[r[0]], x = fPlot.sx(v[1]), y = fPlot.sy(v[0]);
       svgEl('rect', { x: x - 6, y: y - 6, width: 12, height: 12, fill: NAVY, opacity: 0.8 });
-      var side = r[1] === 'O' ? -1 : r[1] === 'F' ? 1 : 0, t = svgEl('text', { x: x + side * 10, y: side ? y + 4 : y - 10, 'text-anchor': side < 0 ? 'end' : side > 0 ? 'start' : 'middle', 'font-size': 12, 'font-weight': 600, fill: NAVY }); t.textContent = r[1];
+      var side = r[1] === 'O' ? -1 : r[1] === 'F' ? 1 : 0, t = svgEl('text', { x: x + side * 10, y: side ? y + 4 : y - 10, 'text-anchor': side < 0 ? 'end' : side > 0 ? 'start' : 'middle', 'font-size': 12, 'font-weight': 600, fill: NAVY }); t.textContent = MSHORT[r[0]];
     });
     var pts = FRONT[key], path = 'M' + pts.map(function (p) { return fPlot.sx(p[0]).toFixed(1) + ',' + fPlot.sy(p[1]).toFixed(1); }).join('L');
     svgEl('path', { d: path, fill: 'none', stroke: TEAL, 'stroke-width': 2, 'stroke-dasharray': '4 3' });
@@ -492,7 +492,7 @@
     });
     $('fCOut').textContent = CLAB[D.c];
     var p = pts[D.c];
-    $('fChips').innerHTML = '<span class="chip warm">Average patients <b>' + p[0].toFixed(1) + '</b> per arm</span><span class="chip">' + (isNull ? 'False-alarm chance' : 'Power') + ' <b>' + f3(p[1]) + '</b></span><span class="chip" style="font-size:.78rem">Squares: U benefit only, P early stop, O 5 strict looks, F fixed</span>';
+    $('fChips').innerHTML = '<span class="chip warm">Average patients <b>' + p[0].toFixed(1) + '</b> per arm</span><span class="chip">' + (isNull ? 'False approval chance' : 'Power') + ' <b>' + f3(p[1]) + '</b></span><span class="chip" style="font-size:.78rem">Squares: the other four rules</span>';
     var tb = $('dTabs').querySelectorAll('.btn'); for (var i = 0; i < tb.length; i++) tb[i].classList.toggle('on', i === D.d);
   }
   DELTAS.forEach(function (d, i) { btn($('dTabs'), GAINL[i], '', function () { D.d = i; renderD(); }); });
@@ -512,77 +512,77 @@
   // 1 threshold
   Lab.QuestionCard(Q, {
     tag: 'Predict 1', score: score, type: 'choice',
-    q: 'A false approval is 39 times worse than a missed drug. Approve only if the chance the drug works is above what?',
-    options: [{ value: '0.5', label: '0.5' }, { value: '0.9', label: '0.9' }, { value: '0.975', label: '0.975' }, { value: '0.39', label: '0.39' }],
+    q: 'A false approval is 39 times worse than a missed drug. Approve only if we are sure the drug works above what chance?',
+    options: [{ value: '0.5', label: '50%' }, { value: '0.9', label: '90%' }, { value: '0.975', label: '97.5%' }, { value: '0.39', label: '39%' }],
     answer: function () { return String(parseFloat((39 / 40).toPrecision(3))); },
-    explain: function () { return 'gamma = 39 / (39 + 1) = ' + f3(39 / 40) + '. Bigger cost ratios push the bar toward 1.'; },
-    revealPlot: function (box) { miniBars(box, 'Threshold gamma by cost ratio', [1, 9, 39, 99].map(function (r) { return { l: r + ' : 1', v: r / (r + 1), c: r === 39 ? ORANGE : TEAL }; }), 1, f3); }
+    explain: function () { return '39 / (39 + 1) = 97.5%. Bigger cost ratios push the bar toward 100%.'; },
+    revealPlot: function (box) { miniBars(box, 'Sureness needed, by cost ratio', [1, 9, 39, 99].map(function (r) { return { l: r + ' : 1', v: r / (r + 1), c: r === 39 ? ORANGE : TEAL }; }), 1, fp1); }
   });
   // 2 Bonferroni
   Lab.QuestionCard(Q, {
     tag: 'Predict 2', score: score, type: 'choice',
-    q: 'You test 5 endpoints with Bonferroni, overall alpha 0.025. What alpha does each endpoint get?',
-    options: [{ value: '0.05', label: '0.05' }, { value: '0.025', label: '0.025' }, { value: '0.0125', label: '0.0125' }, { value: '0.005', label: '0.005' }],
+    q: 'You test 5 endpoints and split the 2.5% evenly. What does each get?',
+    options: [{ value: '0.05', label: '5%' }, { value: '0.025', label: '2.5%' }, { value: '0.0125', label: '1.25%' }, { value: '0.005', label: '0.5%' }],
     answer: function () { return String(parseFloat((0.025 / 5).toPrecision(3))); },
     explain: function () {
       var p5 = Phi(th0 - Qn(1 - 0.005)), n5 = nOf(Qn(1 - 0.005) + Qn(0.9), 3, 10);
-      return '0.025 / 5 = 0.005. Power in the book design (467 patients) falls from ' + Lab.pct(Phi(th0 - Qn(0.975)), 0) + ' to ' + Lab.pct(p5, 0) + ', and getting 90% back needs about ' + Math.round(n5) + ' patients.';
+      return '2.5% / 5 = 0.5%. With 467 patients, power falls from ' + Lab.pct(Phi(th0 - Qn(0.975)), 0) + ' to ' + Lab.pct(p5, 0) + '; about ' + Math.round(n5) + ' patients restore 90%.';
     },
     revealPlot: function (box) {
       var p1 = Phi(th0 - Qn(0.975)), p5 = Phi(th0 - Qn(0.995)), n5 = nOf(Qn(0.995) + Qn(0.9), 3, 10);
-      miniBars(box, 'Power at 467 patients', [{ l: '1 endpoint', v: p1, c: TEAL }, { l: '5 endpoints', v: p5, c: ORANGE }], 1, f2);
+      miniBars(box, 'Power at 467 patients', [{ l: '1 endpoint', v: p1, c: TEAL }, { l: '5 endpoints', v: p5, c: ORANGE }], 1, fp0);
       miniBars(box, 'Patients for 90% power', [{ l: '1 endpoint', v: nOf(Qn(0.975) + Qn(0.9), 3, 10), c: TEAL }, { l: '5 endpoints', v: n5, c: ORANGE }], 700, function (v) { return Math.round(v); });
     }
   });
   // 3 utility only
   Lab.QuestionCard(Q, {
     tag: 'Predict 3', score: score, type: 'choice',
-    q: 'A rule that only rewards benefit has no penalty for false alarms. The drug does nothing. How often does it pick the drug?',
+    q: 'A rule has no penalty for false approvals. The drug does nothing. How often does it pick the drug?',
     options: [{ value: '3', label: 'About 3% of trials' }, { value: '15', label: 'About 15%' }, { value: '50', label: 'About 50%' }, { value: '90', label: 'About 90%' }],
     answer: function () { return TABLE[0][0][0] > 0.4 && TABLE[0][0][0] < 0.6 ? '50' : '15'; },
-    explain: function () { return 'It picks the drug in ' + Lab.pct(TABLE[0][0][0], 1) + ' of pretend null trials: a coin flip. A penalty for false alarms brings it to ' + f3(TABLE[0][1][0]) + '.'; },
-    revealPlot: function (box) { miniBars(box, 'Chance of picking a useless drug', METHODS.map(function (m, i) { return { l: MSHORT[i], v: TABLE[0][i][0], c: i === 0 ? BAD : TEAL }; }), 0.6, f3); }
+    explain: function () { return 'It picks the useless drug about half the time (' + Lab.pct(TABLE[0][0][0], 0) + '). A penalty cuts that to ' + Lab.pct(TABLE[0][1][0], 1) + '.'; },
+    revealPlot: function (box) { miniBars(box, 'Chance of picking a useless drug', METHODS.map(function (m, i) { return { l: MSHORT[i], v: TABLE[0][i][0], c: i === 0 ? BAD : TEAL }; }), 0.6, fp1); }
   });
   // 4 cost of sampling
   Lab.QuestionCard(Q, {
     tag: 'Predict 4', score: score, type: 'choice',
-    q: 'Make each patient pair 100 times cheaper (from 1e-4 to 1e-6, the ends of the cost slider). More or fewer patients? What happens to power when the new drug raises 30% to 55%?',
+    q: 'Patients become 100 times cheaper. Does the rule use more or fewer patients, and does power rise or fall (new drug 30% to 55%)?',
     options: [{ value: 'more', label: 'More patients, more power' }, { value: 'fewer', label: 'Fewer patients, more power' }, { value: 'less', label: 'More patients, less power' }, { value: 'same', label: 'No change' }],
     answer: function () { return FRONT[0][0][0] > FRONT[0][6][0] && FRONT[0.25][0][1] > FRONT[0.25][6][1] ? 'more' : 'fewer'; },
-    explain: function () { return 'With no effect, patients go from ' + FRONT[0][6][0].toFixed(1) + ' to ' + FRONT[0][0][0].toFixed(1) + ' per arm, and power for 30% to 55% from ' + f3(FRONT[0.25][6][1]) + ' to ' + f3(FRONT[0.25][0][1]) + ' (pretend trials).'; },
+    explain: function () { return 'Patients per arm: ' + Math.round(FRONT[0][6][0]) + ' to ' + Math.round(FRONT[0][0][0]) + '. Power (30% to 55%): ' + Lab.pct(FRONT[0.25][6][1], 0) + ' to ' + Lab.pct(FRONT[0.25][0][1], 0) + '.'; },
     revealPlot: function (box) {
-      miniBars(box, 'Patients per arm, no effect', [{ l: 'c = 1e-4', v: FRONT[0][6][0], c: GREY }, { l: 'c = 1e-6', v: FRONT[0][0][0], c: TEAL }], 80, function (v) { return v.toFixed(1); });
-      miniBars(box, 'Power, 30% to 55%', [{ l: 'c = 1e-4', v: FRONT[0.25][6][1], c: GREY }, { l: 'c = 1e-6', v: FRONT[0.25][0][1], c: TEAL }], 1, f3);
+      miniBars(box, 'Patients per arm', [{ l: 'Costly patients', v: FRONT[0][6][0], c: GREY }, { l: 'Cheap patients', v: FRONT[0][0][0], c: TEAL }], 80, function (v) { return Math.round(v); });
+      miniBars(box, 'Power, 30% to 55%', [{ l: 'Costly patients', v: FRONT[0.25][6][1], c: GREY }, { l: 'Cheap patients', v: FRONT[0.25][0][1], c: TEAL }], 1, fp0);
     }
   });
   // 5 skeptical prior
   var PRI = { flat: [0.026, 0.896], skep: [0.020, 0.867] };
   Lab.QuestionCard(Q, {
     tag: 'Predict 5', score: score, type: 'choice',
-    q: 'Start both arms with a doubtful guess (as if 3 of 10 patients improved) instead of no guess. What happens to false positives and to power when 30% rises to 55%?',
-    options: [{ value: 'a', label: 'Fewer false positives, more power' }, { value: 'b', label: 'Fewer false positives, less power' }, { value: 'c', label: 'More false positives, more power' }, { value: 'd', label: 'No change' }],
+    q: 'Before the trial, assume the new drug is no better (as if 3 of 10 improved on each arm). What happens to false approvals and power (new drug 30% to 55%)?',
+    options: [{ value: 'a', label: 'Fewer false approvals, more power' }, { value: 'b', label: 'Fewer false approvals, less power' }, { value: 'c', label: 'More false approvals, more power' }, { value: 'd', label: 'No change' }],
     answer: function () { return PRI.skep[0] < PRI.flat[0] && PRI.skep[1] < PRI.flat[1] ? 'b' : 'a'; },
-    explain: function () { return 'False positives ' + f3(PRI.flat[0]) + ' to ' + f3(PRI.skep[0]) + ', power ' + f3(PRI.flat[1]) + ' to ' + f3(PRI.skep[1]) + ' (pretend trials, tuned cost). In this one test the doubtful start cost a little power.'; },
+    explain: function () { return 'False approvals ' + Lab.pct(PRI.flat[0], 1) + ' to ' + Lab.pct(PRI.skep[0], 1) + '; power ' + Lab.pct(PRI.flat[1], 0) + ' to ' + Lab.pct(PRI.skep[1], 0) + '.'; },
     revealPlot: function (box) {
-      miniBars(box, 'False-positive chance', [{ l: 'No start guess', v: PRI.flat[0], c: GREY }, { l: 'Doubtful guess', v: PRI.skep[0], c: ORANGE }], 0.05, f3);
-      miniBars(box, 'Power, 30% to 55%', [{ l: 'No start guess', v: PRI.flat[1], c: GREY }, { l: 'Doubtful guess', v: PRI.skep[1], c: ORANGE }], 1, f3);
+      miniBars(box, 'False-approval chance', [{ l: 'No assumption', v: PRI.flat[0], c: GREY }, { l: 'Doubtful start', v: PRI.skep[0], c: ORANGE }], 0.05, fp1);
+      miniBars(box, 'Power, 30% to 55%', [{ l: 'No assumption', v: PRI.flat[1], c: GREY }, { l: 'Doubtful start', v: PRI.skep[1], c: ORANGE }], 1, fp0);
     }
   });
   // 6 Bayesian escape
   Lab.QuestionCard(Q, {
     tag: 'Predict 6', score: score, type: 'choice',
-    q: 'Does a Bayesian design escape the false-alarm (Type I) checks at FDA?',
-    options: [{ value: 'yes', label: 'Yes, Bayes needs no error rates' }, { value: 'no', label: 'Usually no: show its false-alarm rate, with exceptions' }],
+    q: 'Does a Bayesian design escape the false approval checks at FDA?',
+    options: [{ value: 'yes', label: 'Yes, Bayes needs no error rates' }, { value: 'no', label: 'Usually no: show its false approval rate, with exceptions' }],
     answer: 'no',
-    explain: function () { return 'FDA\'s default is 0.025 one-sided, but says it "may not be applicable or appropriate, such as in the case where there is borrowing of information"; then FDA and the sponsor can agree another criterion. A posterior bar of 0.90 alone gives a ' + Lab.pct(1 - Phi(Qn(0.9)), 0) + ' false-alarm rate in one test with no starting guess (computed), so the bar needs checking.'; },
-    revealPlot: function (box) { miniBars(box, 'False alarms by posterior bar', [0.9, 0.95, 0.975].map(function (g) { return { l: 'bar ' + g, v: 1 - Phi(Qn(g)), c: g === 0.975 ? TEAL : ORANGE }; }), 0.12, f3); }
+    explain: function () { return 'Default 2.5% one-sided; FDA may accept another bar if earlier data are borrowed. "Approve if 90% sure" alone gives ' + Lab.pct(1 - Phi(Qn(0.9)), 0) + ' false approvals.'; },
+    revealPlot: function (box) { miniBars(box, 'False approvals by sureness bar', [0.9, 0.95, 0.975].map(function (g) { return { l: Math.round(g * 1000) / 10 + '% sure', v: 1 - Phi(Qn(g)), c: g === 0.975 ? TEAL : ORANGE }; }), 0.12, fp1); }
   });
   // 7 rare disease power
   Lab.QuestionCard(Q, {
     tag: 'Predict 7', score: score, type: 'slider', min: 0, max: 1, step: 0.01, start: 0.5, tol: 0.1, fmt: function (v) { return Lab.pct(v, 0); },
-    q: 'Illustrative rare disease trial: 40 patients, effect 5, SD 10, alpha 0.025 one-sided. Drag to the power.',
+    q: 'Rare disease: 40 patients, drug helps 5 points, SD 10. Guess the power.',
     answer: function () { return Phi(Math.sqrt(40) * 5 / 20 - Qn(0.975)); },
-    explain: function () { return 'Power is only ' + Lab.pct(Phi(Math.sqrt(40) * 5 / 20 - Qn(0.975)), 0) + '. A stricter alpha makes it worse.'; },
+    explain: function () { return 'Power is only ' + Lab.pct(Phi(Math.sqrt(40) * 5 / 20 - Qn(0.975)), 0) + '. A stricter bar makes it worse.'; },
     revealPlot: function (box) { var t = Math.sqrt(40) * 5 / 20; miniBars(box, 'Power at 40 patients', [0.05, 0.025, 0.001].map(function (a) { return { l: 'alpha ' + a, v: Phi(t - Qn(1 - a)), c: a === 0.025 ? ORANGE : TEAL }; }), 1, f2); }
   });
 

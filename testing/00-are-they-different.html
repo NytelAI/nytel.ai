@@ -62,6 +62,11 @@
 .cluster .cl { font-size: .85rem; font-weight: 600; margin-bottom: .25rem; }
 .pcol { display: flex; flex-direction: column; gap: 2px; flex: none; }
 .pcol .tile.fade { opacity: .28; }
+.pcol.focus { outline: 2px solid var(--navy); outline-offset: 2px; border-radius: 4px; }
+.cwrap { display: flex; gap: 6px; align-items: flex-start; }
+.rlab { display: flex; flex-direction: column; gap: 2px; font-size: .7rem; color: var(--text-tertiary); text-align: right; }
+.rlab span { height: 22px; line-height: 22px; white-space: nowrap; }
+.rlab.dense span { height: 15px; line-height: 15px; font-size: .6rem; }
 .pcol .tile.seen { box-shadow: 0 0 0 1px var(--navy); }
 .striphead { font-size: .85rem; color: var(--text-secondary); margin: .6rem 0 0; }
 .coin { position: absolute; right: 12px; top: 8px; width: 26px; height: 26px; border-radius: 50%; background: #F3D9A4; border: 2px solid #B8861F; color: #6b4a08; font: 600 12px/22px var(--sans); text-align: center; opacity: 0; pointer-events: none; }
@@ -116,39 +121,39 @@
 <section class="hero">
   <div class="kicker">Module 0</div>
   <h1>Are they different?</h1>
-  <p class="hook">Are these dots random or patterned? Is the gap between two rows real, or just luck?</p>
+  <p class="hook">Does the drug group really differ from the placebo group, or is it luck?</p>
 </section>
 
 <section class="section" id="arnold">
   <h2>Too even to be random? (Arnold's test)</h2>
-  <p>Put the dots on a circle and look at the gaps. People who fake randomness spread dots too evenly, while real random dots leave some big gaps and some small ones.</p>
+  <p>Each dot is the day one of 15 patients enrolled, on a 100-day clock. Real random days leave big and small gaps; made-up days are too even.</p>
   <div class="block">
     <div class="arcs" id="arSets"></div>
-    <p class="legend">Each circle has 15 dots. One was made by a computer at random. Which one?</p>
+    <p class="legend">One clock has truly random days. Which?</p>
     <div class="pillrow"><button class="btn" id="arNew" type="button">New random set</button></div>
     <div id="arOut" aria-live="polite" hidden>
       <div class="verdict" id="arVerdict"></div>
-      <p class="note">Look at the gaps: the formula sets spread their dots more evenly than chance would.</p>
+      <p class="note">The rule-made sets are too evenly spaced.</p>
     </div>
   </div>
   <div class="block">
     <h3>Your turn: can you make up random numbers?</h3>
-    <p>Click 15 places on the circle, as randomly as you can.</p>
-    <div class="arcs"><svg id="arMine" class="circ" tabindex="0" role="img" aria-label="Empty circle: click to place dots"></svg></div>
+    <p>Click 15 enrollment days on the clock, as randomly as you can.</p>
+    <div class="arcs"><svg id="arMine" class="circ" tabindex="0" role="img" aria-label="Empty 100-day clock: click to place patient enrollment days"></svg></div>
     <div class="pillrow">
-      <button class="btn" id="arRand" type="button">Place a dot at a random spot</button>
+      <button class="btn" id="arRand" type="button">Enroll a patient on a random day</button>
       <button class="btn" id="arReset" type="button">Clear</button>
     </div>
-    <p class="note">Your gap score is about 2 for dots that look random, and closer to 1 when the dots are spread too evenly.</p>
+    <p class="note">We score your gaps: about 2 looks random, near 1 is too even.</p>
     <div id="arMineOut" aria-live="polite" hidden>
       <div class="chips" id="arMineChip"></div>
     </div>
     <details class="code"><summary>Optional: how the gap score works (you can skip this)</summary>
       <div style="padding:0 1rem 1rem">
-        <p>Walk around the circle and measure each gap between neighboring dots, as a share of the whole circle. Square each gap, add them up, and multiply by the number of dots: \(s = T \sum (\text{gap}/L)^2\), with \(T = 15\) dots.</p>
-        <p>Perfectly even dots have every gap equal to 1/15, so \(s = 1\) (Arnold's "barracks"). All dots in one clump leave one gap equal to the whole circle, so \(s = 15\).</p>
-        <p>Random dots score \(2T/(T+1) = 1.875\) on average, Arnold's "freedom-loving value", and most land between 1.4 and 2.6. "Random sets spread as evenly as yours" is the share of 10,000 computer-random sets with a score at or below yours.</p>
-        <div class="plotbox"><svg id="plotMine"></svg><p class="note" style="margin:.5rem 0 0">Gap scores of 10,000 computer-random sets of 15 dots. Your score is marked once you place 15 dots.</p></div>
+        <p>Walk around the circle and measure each gap between neighboring enrollment days, as a share of the whole clock. Square each gap, add them up, and multiply by the number of patients: \(s = T \sum (\text{gap}/L)^2\), with \(T = 15\) patients and \(L = 100\) days.</p>
+        <p>Perfectly even days have every gap equal to 1/15, so \(s = 1\). All patients enrolled on one day leave one gap equal to the whole clock, so \(s = 15\).</p>
+        <p>Random enrollment days score \(2T/(T+1) = 1.875\) on average, and most land between 1.4 and 2.6.</p>
+        <div class="plotbox"><svg id="plotMine"></svg><p class="note" style="margin:.5rem 0 0">Scores of 10,000 random sets. Yours is marked.</p></div>
       </div>
     </details>
   </div>
@@ -158,10 +163,10 @@
 
 <section class="section" id="game">
   <h2>Same or different?</h2>
-  <p>Each round the page secretly picks two chances of improving (like 40% and 70%), the same half the time. It gives every patient two hidden outcomes, and a coin decides which one the trial sees.</p>
-  <div class="labgrid" id="lab" aria-label="Same or different game">
+  <p>Each round is a small trial of a drug against a placebo (a dummy pill). The drug's true response rate (the share of all patients it would help) is hidden; in half the trials it equals the placebo's.</p>
+  <div class="labgrid" id="lab" aria-label="Same or different trials">
     <div class="panel">
-      <h3>1. Patients per row</h3>
+      <h3>1. Patients per group</h3>
       <div class="row" id="nBtns" role="group" aria-label="Sample size"></div>
       <h3>2. Your call</h3>
       <div class="row">
@@ -172,13 +177,14 @@
     </div>
     <div>
       <div class="plotbox" id="gBox">
-        <span class="coin" aria-hidden="true">H</span>
         <div class="rowwrap"><div class="rl"><span id="lblA">Drug</span><b id="cntA"></b></div><div id="gA" role="img"></div></div>
         <div class="rowwrap"><div class="rl"><span id="lblB">Placebo</span><b id="cntB"></b></div><div id="gB" role="img"></div></div>
-        <p class="legend"><svg class="pp yes" viewBox="0 0 16 20" aria-hidden="true"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> filled = improved &nbsp; <svg class="pp no" viewBox="0 0 16 20" aria-hidden="true"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> outline = did not. Placebo = a dummy pill.</p>
+        <p class="legend"><svg class="pp yes" viewBox="0 0 16 20" aria-hidden="true"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> filled = improved &nbsp; <svg class="pp no" viewBox="0 0 16 20" aria-hidden="true"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> outline = did not.</p>
         <div id="gOut" aria-live="polite" hidden>
           <div class="verdict" id="gVerdict"></div>
-          <p class="striphead" id="gStripHead">Faded cells are counterfactuals: what would have happened to the same patient under the other choice. A trial never sees them.</p>
+          <p class="legend" id="gStripLegend"><span class="pi"><svg class="pp yes" viewBox="0 0 16 20" aria-hidden="true"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg></span> bright = what the trial recorded &nbsp; <span class="pi fade"><svg class="pp yes" viewBox="0 0 16 20" aria-hidden="true"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg></span> pale = what would have happened on the other treatment</p>
+          <p class="striphead" id="gStripHead"></p>
+          <p class="striphead" id="gStripHead2"></p>
           <div class="strips" id="gStrips" role="img"></div>
           <p class="legend" id="gStripNote"></p>
           <svg id="plotG"></svg>
@@ -191,19 +197,18 @@
 
 <section class="section" id="why-coin">
   <h2>Why the coin?</h2>
-  <p>You met counterfactuals in the game: every patient has two possible outcomes, and a trial sees only one. Who decides which one the trial sees?</p>
-  <p>Each column below is one of 40 patients: the top person is the outcome on the drug, the bottom person is the outcome off it.</p>
-  <p>The small bar under them is hidden health, which a real trial cannot see.</p>
+  <p>Each patient has a result on the drug and a result on placebo, but the trial sees only one. Who decides which?</p>
+  <p>Each column is one of 40 patients: top icon = result on the drug, bottom = on placebo.</p>
+  <p>The colored bar is each patient's health at the start: orange sicker, teal healthier.</p>
   <div class="row" id="cfMode" role="group" aria-label="Who decides">
     <button class="btn prior" type="button" data-m="choose">Patients choose</button>
     <button class="btn" type="button" data-m="coin">Coin decides</button>
   </div>
-  <div class="field"><label for="cfEff">The drug truly adds: <b id="cfEffv"></b></label></div>
+  <div class="field"><label for="cfEff">Drug raises each patient's chance of improving by: <b id="cfEffv"></b></label></div>
   <div class="field"><input id="cfEff" type="range" min="0" max="20" step="1" value="10"></div>
-  <div class="row"><button class="btn primary" id="cfAgain" type="button">New assignment, same patients</button><button class="btn" id="cfNew" type="button">New patients</button><button class="btn primary" id="cfRun" type="button">Run 500 times</button></div>
-  <div class="legend"><span><svg class="pp" viewBox="0 0 16 20" aria-hidden="true" style="fill:#2D8B8B"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> recovered</span><span><svg class="pp" viewBox="0 0 16 20" aria-hidden="true" style="fill:none;stroke:#9AA3AE;stroke-width:1.3"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> not recovered</span><span><svg class="pp" viewBox="0 0 16 20" aria-hidden="true" style="fill:#2D8B8B;opacity:.25"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> faded = counterfactual (the trial never sees it)</span><span><i style="background:#E07A3F;border-radius:2px"></i>sicker mark</span><span><i style="background:#2D8B8B;border-radius:2px"></i>healthier mark</span></div>
+  <div class="row"><button class="btn primary" id="cfAgain" type="button">New assignment, same patients</button><button class="btn" id="cfNew" type="button">New patients</button><button class="btn primary" id="cfRun" type="button">Repeat this trial 500 times</button></div>
+  <div class="legend"><span><svg class="pp" viewBox="0 0 16 20" aria-hidden="true" style="fill:#2D8B8B"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> improved</span><span><svg class="pp" viewBox="0 0 16 20" aria-hidden="true" style="fill:none;stroke:#9AA3AE;stroke-width:1.3"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> did not improve</span><span><svg class="pp" viewBox="0 0 16 20" aria-hidden="true" style="fill:#2D8B8B;opacity:.25"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> faded = not seen by the trial</span></div>
   <div class="deal" id="cfDeal" role="img" aria-label="Forty patients sorted into a drug block and a placebo block"></div>
-  <p class="mini cap" style="border:0;margin:.2rem 0 .6rem;text-align:center">Shade shows hidden health: orange sicker, teal healthier.</p>
   <svg id="cfIcons" style="max-width:600px;margin:0 auto" role="img" aria-label="Forty patients, each shown twice as a person icon: outcome on the drug and outcome off the drug"></svg>
   <div class="chips" aria-live="polite" id="cfChips"></div>
   <p class="note" id="cfNote"></p>
@@ -212,7 +217,6 @@
   <svg id="sbBars" viewBox="0 0 540 250" style="max-width:600px;margin:0 auto" role="img" aria-label="Three bars: drug group observed, the same drug group had it skipped the drug, placebo group observed"></svg>
   <div class="chips" aria-live="polite" id="sbChips"></div>
   <p class="note" id="sbNote"></p>
-  <p class="src" id="sbMath">In symbols: observed gap E[Y|D=1] &minus; E[Y|D=0] = effect on the treated + selection bias, E[Y&#8320;|D=1] &minus; E[Y&#8320;|D=0]. See Angrist and Pischke (2009).</p>
   <h3 style="margin-top:1.2rem">Do the groups match?</h3>
   <p>A fair comparison needs groups alike before the drug, including in what nobody measured.</p>
   <table class="bal" id="balTab"><caption class="src" style="text-align:left;caption-side:top">Average per group</caption><thead><tr><th scope="col">Trait</th><th scope="col">Drug</th><th scope="col">Placebo</th><th scope="col">Match?</th></tr></thead><tbody id="balBody"></tbody></table>
@@ -220,13 +224,11 @@
   <p class="note" id="balNote"></p>
   <div id="cfHist"></div>
   <div class="qcards" id="cfCards"></div>
-  <p class="src">Hormone therapy and the Women's Health Initiative: Rossouw et al., JAMA 2002;288:321-333, as cited in Clinical Trials in Practice (Sokolova and Sokolov, 2026).</p>
 </section>
 
 <section class="section" id="shuffle">
   <h2>The randomization test</h2>
-  <p>In a trial, a coin flip decides who gets the drug. Re-randomizing asks: what if the coins had landed the other way?</p>
-  <p>Deal everyone back into two rows at random, keeping the row sizes. How often does chance alone make a gap this big?</p>
+  <p>In a trial, a coin flip decides who gets the drug. Suppose the drug does nothing, so each patient's result stays fixed. Re-randomizing flips the coins again and asks how big a gap luck makes.</p>
   <div class="pillrow" id="exbtns" role="group" aria-label="Load an example"><span class="lbl">Load an example:</span></div>
   <p class="note" id="srcLine"></p>
   <div class="block">
@@ -236,7 +238,7 @@
       <button class="btn primary" id="b1" type="button">Re-randomize once</button>
       <button class="btn primary" id="b1000" type="button">Re-randomize 1,000 times</button>
       <button class="btn" id="bReset" type="button">Reset</button>
-      <button class="btn" id="bGame" type="button">Use my game round</button>
+      <button class="btn" id="bGame" type="button">Use your last trial above</button>
     </div>
     <h3 style="margin-top:.8rem" id="shufTitle">After re-randomizing</h3>
     <div id="shufBox" style="min-height:60px"><p class="note">Press "Re-randomize once".</p></div>
@@ -254,7 +256,7 @@
 
 <section class="section" id="examplesec">
   <h2>Examples</h2>
-  <p>Each card re-randomizes 2,000 times on the computer. Orange bars are gaps at least as big as the real one.</p>
+  <p>Each card re-randomizes 2,000 times in simulation. Orange bars are gaps at least as big as the real one.</p>
   <div class="qcards" id="excards"></div>
 </section>
 
@@ -265,9 +267,9 @@
   <ul>
     <li>Chance makes differences too.</li>
     <li>A test asks: is the gap bigger than chance usually makes?</li>
-    <li>Small samples fool everyone. Big samples let real gaps stand out.</li>
+    <li>Small trials fool everyone. Big trials let real gaps stand out.</li>
   </ul>
-  <div class="namebox"><p>This is why trials randomize: the coin flip itself tells us what gaps chance makes. That share of re-dealings with a gap at least this big is called the p-value.</p></div>
+  <div class="namebox"><p>This is why trials randomize: the coin flip itself tells us what gaps chance makes. The share of re-randomizations with a gap at least as big as the real one is the p-value.</p></div>
 </section>
 </main>
 
@@ -358,32 +360,44 @@
     tiles($('gA'), r.a, '✓', '✕', nm[0] + ': ' + sum(r.a) + ' of ' + r.a.length + ' worked');
     tiles($('gB'), r.b, '✓', '✕', nm[1] + ': ' + sum(r.b) + ' of ' + r.b.length + ' worked');
   }
-  // Ground truth: one column per patient, top cell = on drug, bottom = on placebo. The cell the trial saw is bright.
+  // Ground truth: one column per patient, top icon = on drug, bottom icon = on placebo. The icon the trial saw is bright.
   function drawStrips(r) {
     var box = $('gStrips'), n = r.a.length, cls = n > 32 ? 'dense' : '';
     box.innerHTML = '';
+    var order = r.iD.concat(r.iP), diff = order.filter(function (j) { return r.dr[j] !== r.pl[j]; }), foc = diff.length ? diff[Math.floor(rng() * diff.length)] : order[Math.floor(rng() * order.length)];
     function cluster(title, ids, drugSeen) {
-      var c = el('div', 'cluster'), row = el('div', 'trow ' + cls);
+      var c = el('div', 'cluster'), wrap = el('div', 'cwrap'), lab = el('div', 'rlab ' + cls), row = el('div', 'trow ' + cls);
       c.appendChild(el('div', 'cl', title));
+      lab.appendChild(el('span', '', 'on drug')); lab.appendChild(el('span', '', 'on placebo'));
+      wrap.appendChild(lab);
       ids.forEach(function (j) {
-        var col = el('div', 'pcol'), t1 = r.dr[j], t2 = r.pl[j];
+        var col = el('div', 'pcol' + (j === foc ? ' focus' : '')), t1 = r.dr[j], t2 = r.pl[j];
         [[t1, drugSeen], [t2, !drugSeen]].forEach(function (x) {
           var t = el('span', 'pi' + (x[1] ? '' : ' fade')); t.innerHTML = ico(x[0], false); t.setAttribute('aria-hidden', 'true'); col.appendChild(t);
         });
         row.appendChild(col);
       });
-      c.appendChild(row); box.appendChild(c);
+      wrap.appendChild(row); c.appendChild(wrap); box.appendChild(c);
     }
-    cluster('Coin sent to Drug (top cell seen)', r.iD, true);
-    cluster('Coin sent to Placebo (bottom cell seen)', r.iP, false);
+    cluster('Coin sent to Drug (top icon recorded)', r.iD, true);
+    cluster('Coin sent to Placebo (bottom icon recorded)', r.iP, false);
+    var fn = order.indexOf(foc) + 1, onDrug = r.iD.indexOf(foc) >= 0, seenV = onDrug ? r.dr[foc] : r.pl[foc], otherV = onDrug ? r.pl[foc] : r.dr[foc];
+    if (diff.length) {
+      $('gStripHead').textContent = 'Patient ' + fn + ' (marked) got ' + (onDrug ? 'the drug' : 'placebo') + ' and ' + (seenV ? 'improved' : 'did not improve') + '; on ' + (onDrug ? 'placebo' : 'the drug') + ' they would ' + (otherV ? 'have.' : 'not have.');
+      $('gStripHead2').textContent = 'The trial never sees the pale icon.';
+    } else {
+      box.querySelectorAll('.pcol.focus').forEach(function (c) { c.classList.remove('focus'); });
+      $('gStripHead').textContent = r.q.same ? 'Here the drug does nothing: every patient would do the same on either treatment.' : 'Every patient would have had the same result on either treatment.';
+      $('gStripHead2').textContent = 'The trial never sees the pale icons.';
+    }
     var td = sum(r.dr), tp = sum(r.pl), N = 2 * n;
     box.setAttribute('aria-label', 'Ground truth for ' + N + ' patients, each with an outcome on the drug and on placebo. On the drug ' + td + ' of ' + N + ' improve, on placebo ' + tp + ' of ' + N + '.');
-    $('gStripNote').textContent = 'Top cell = on drug, bottom cell = on placebo. If all ' + N + ' got the drug, ' + td + ' would improve. If all got placebo, ' + tp + ' would.' + (r.q.same ? ' The drug changes nobody, so both cells always match.' : '');
+    $('gStripNote').textContent = 'If all ' + N + ' got the drug, ' + td + ' would improve; on placebo, ' + tp + '.' + (r.q.same ? ' The drug changes nobody, so both icons always match.' : '');
   }
   function readout() {
     var s = G.stats[G.n], tot = 0;
     NS.forEach(function (n) { tot += G.stats[n].t; });
-    $('gChips').innerHTML = chip('Your accuracy at n = ' + G.n, s.t ? s.r + ' of ' + s.t + ' (' + pct(s.r / s.t) + ')' : '–', true) + chip('Rounds played', tot);
+    $('gChips').innerHTML = chip('Your right calls (' + G.n + ' per group)', s.t ? s.r + ' of ' + s.t + ' (' + pct(s.r / s.t) + ')' : '–', true) + chip('Trials judged', tot);
   }
   function gGuess(sayDiff) {
     if (G.done) return; G.done = true;
@@ -391,29 +405,29 @@
     s.t++; if (ok) s.r++;
     $('gSame').disabled = true; $('gDiff').disabled = true; $('gNext').disabled = false;
     var ka = sum(r.a), kb = sum(r.b), n = r.a.length, gap = Math.abs(ka - kb) / n;
-    var seen = 'The rows showed ' + ka + ' of ' + n + ' and ' + kb + ' of ' + n + '.';
-    var truth = q.same ? 'Both had the same true rate, ' + pct(q.pa) + '.' : 'True rates: ' + nm[0] + ' ' + pct(q.pa) + ', ' + nm[1] + ' ' + pct(q.pb) + '.';
+    var seen = 'The groups showed ' + ka + ' of ' + n + ' and ' + kb + ' of ' + n + '.';
+    var truth = q.same ? 'The drug and the placebo had the same true response rate, ' + pct(q.pa) + '.' : 'True response rates: ' + nm[0] + ' ' + pct(q.pa) + ', ' + nm[1] + ' ' + pct(q.pb) + '.';
     var fair = !ok && ((!q.same && gap < 0.15) || (q.same && gap >= 0.15));
     var v = $('gVerdict'); v.className = 'verdict ' + (ok ? 'ok' : fair ? '' : 'no');
     var msg;
     if (ok) msg = 'Right. ' + truth;
-    else if (fair && !q.same) msg = 'Fair call. ' + truth + ' ' + seen + ' With only ' + n + ' per row, a real difference can hide.';
-    else if (fair) msg = 'Fair call. ' + truth + ' ' + seen + ' Luck alone made that gap.';
+    else if (fair && !q.same) msg = 'Wrong, but understandable. ' + truth + ' ' + seen + ' With only ' + n + ' per group, a real difference can hide.';
+    else if (fair) msg = 'Wrong, but understandable. ' + truth + ' ' + seen + ' Luck alone made that gap.';
     else msg = 'Not this time. ' + truth + ' ' + seen;
     v.textContent = msg;
     $('gOut').hidden = false;
-    var P = Lab.Plot($('plotG'), { xlim: [0, 2], ylim: [0, 1], h: 230, xticks: [{ x: 0.5, label: nm[0] }, { x: 1.5, label: nm[1] }], yfmt: function (x) { return Math.round(x * 100) + '%'; }, ylabel: 'Success rate', label: 'True and observed success rates of the two rows' });
+    var P = Lab.Plot($('plotG'), { xlim: [0, 2], ylim: [0, 1], h: 230, xticks: [{ x: 0.5, label: nm[0] }, { x: 1.5, label: nm[1] }], yfmt: function (x) { return Math.round(x * 100) + '%'; }, ylabel: 'Improved (%)', label: 'True and observed success rates of the two rows' });
     P.bars('a', [q.pa], 0.1, 0.48, { fill: TEAL, opacity: 0.9 }, 600);
     P.bars('as', [ka / n], 0.52, 0.9, { fill: TEAL, opacity: 0.35 }, 600);
     P.bars('b', [q.pb], 1.1, 1.48, { fill: OR, opacity: 0.9 }, 600);
     P.bars('bs', [kb / n], 1.52, 1.9, { fill: OR, opacity: 0.35 }, 600);
     drawStrips(r);
-    P.legend([{ label: 'True rate (dark)', color: '#555', kind: 'box' }, { label: 'What the row showed (light)', color: '#bbb', kind: 'box' }]);
+    P.legend([{ label: 'True rate (dark)', color: '#555', kind: 'box' }, { label: 'This trial (light)', color: '#bbb', kind: 'box' }]);
     readout();
     $('gNext').focus();
   }
   NS.forEach(function (n) {
-    var b = el('button', 'btn', 'n = ' + n); b.type = 'button'; b.setAttribute('aria-pressed', n === G.n ? 'true' : 'false');
+    var b = el('button', 'btn', String(n)); b.type = 'button'; b.setAttribute('aria-pressed', n === G.n ? 'true' : 'false');
     b.addEventListener('click', function () {
       G.n = n; document.querySelectorAll('#nBtns .btn').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
       newRound();
@@ -430,7 +444,7 @@
   function P(o) { o.nA = o.nA || o.n; o.nB = o.nB || o.n; o.m = o.m || o.nA; return o; }
   // Number of successes among n trials, counting by geometric jumps (fast when p is small).
   function geoBinom(r, n, p) { var k = 0, pos = -1, lg = Math.log(1 - p); for (;;) { pos += 1 + Math.floor(Math.log(1 - r()) / lg); if (pos >= n) return k; k++; } }
-  // Optional preset fields: unit (gap scale, default 100 = points), bw (bin width in gap units), gunit (gap label), deathsOnly (deal only the deaths).
+  // Optional preset fields: unit (gap scale, default 100 = points), bw (bin width in gap units), gunit (gap label), deathsOnly (re-randomize only the deaths).
   function bwOf(pre) { return pre.bw || 100 / pre.m; }
   function gapVal(pre, a, b) { return Math.abs(a / pre.nA - b / pre.nB) * (pre.unit || 100); }
   function gunit(pre) { return pre.gunit || ' points'; }
@@ -469,30 +483,30 @@
   function rowsText(pre) { if (pre.deathsOnly) return pre.k[0] + ' vs ' + pre.k[1] + ' deaths'; return pre.k[0] + '/' + nf(pre.nA) + ' vs ' + pre.k[1] + '/' + nf(pre.nB); }
 
   /* ---------- 3. Randomization test ---------- */
-  var SRC_ULCER = 'Ulcer surgery deaths, Novick and Grizzle (1965), as in Polson and Sokolov (2026), <a href="https://vsokolov.org/html/_book/06-hyp.html">chapter 6</a>. Best against worst of four arms, chosen after looking, so read it with care. More in <a href="05-ulcer-trial.html">module 5</a>.';
-  var SRC_ECMO = 'Newborn ECMO trial, Bartlett et al. (1985), as retold in <a href="https://arxiv.org/abs/2602.09208">Sokolova, Sokolov and Polson (2026)</a>. Assignment was adaptive, not a fair coin, so this re-dealing is only an illustration.';
-  var SRC_PAN = 'PANORAMIC trial of molnupiravir for COVID-19, Butler et al. (2023), Lancet: 105 of 12,529 vs 98 of 12,525 hospitalized or died within 28 days. Rows show 100 patients per group; the test uses everyone.';
-  var SRC_REC = 'RECOVERY trial of dexamethasone for patients in hospital with COVID-19, RECOVERY Collaborative Group (2021), NEJM: 482 of 2,104 vs 1,110 of 4,321 died within 28 days. Rows show 100 patients per group; the test uses everyone.';
-  var SRC_VIOXX = 'APPROVe trial of rofecoxib (Vioxx) against placebo, Bresalier et al. (2005), NEJM 352:1092-1102, <a href="https://doi.org/10.1056/NEJMoa050493">doi:10.1056/NEJMoa050493</a>: 46 of 1,287 vs 26 of 1,299 had a confirmed heart attack, stroke or other clot-related event. A randomized trial against placebo; it led to Vioxx being withdrawn in 2004.';
+  var SRC_ULCER = 'Ulcer surgery deaths, Novick and Grizzle (1965), as in Polson and Sokolov (2026), <a href="https://vsokolov.org/html/_book/06-hyp.html">chapter 6</a>. Best and worst of four treatments, picked after seeing results, so this overstates the evidence. More in <a href="05-ulcer-trial.html">module 5</a>.';
+  var SRC_ECMO = 'Newborn ECMO trial, Bartlett et al. (1985), as retold in <a href="https://arxiv.org/abs/2602.09208">Sokolova, Sokolov and Polson (2026)</a>. The coin favored whichever treatment was winning, so this is only an illustration.';
+  var SRC_PAN = 'Butler et al. (2023), Lancet.';
+  var SRC_REC = 'RECOVERY (2021), NEJM.';
+  var SRC_VIOXX = 'Bresalier et al. (2005), NEJM. Led to Vioxx\'s withdrawal in 2004.';
   var SRC_VIAGRA = 'Polson and Sokolov, <a href="https://vsokolov.org/html/_book/05-ab.html">Bayes, AI and Deep Learning, chapter 5</a>. The 77 heart-related deaths were reported to FDA in 1998, among more than 6 million prescriptions (trade press report of FDA data; reports do not prove the drug caused them). The comparison group of 1.5 million men is made up, as in the book. Nobody was randomized, so even a real gap could come from who chose to take Viagra.';
   var PRE = [
-    P({ id: 'drug10', label: 'Small drug trial (made up)', names: ['Drug', 'Placebo'], n: 10, k: [7, 4], yes: '✓', no: '✕', what: 'improved', src: 'Made-up numbers.' }),
-    P({ id: 'drug100', label: 'Bigger drug trial (made up)', names: ['Drug', 'Placebo'], n: 100, k: [70, 40], yes: '✓', no: '✕', what: 'improved', src: 'Made-up numbers: same rates as the small trial, ten times the people.' }),
-    P({ id: 'ulcer', label: 'Ulcer surgery (real)', names: ['Treatment A', 'Treatment B'], n: 100, k: [7, 1], yes: '!', no: '·', what: 'died (fewer is better)', real: true, src: SRC_ULCER }),
+    P({ id: 'drug10', label: 'Small drug trial (made up)', names: ['Drug', 'Placebo'], n: 10, k: [7, 4], yes: '✓', no: '✕', what: 'improved', src: '' }),
+    P({ id: 'drug100', label: 'Bigger drug trial (made up)', names: ['Drug', 'Placebo'], n: 100, k: [70, 40], yes: '✓', no: '✕', what: 'improved', src: 'Same rates as the small trial, ten times the people.' }),
+    P({ id: 'ulcer', label: 'Ulcer surgery (real)', names: ['Treatment A', 'Treatment B'], n: 100, k: [7, 1], yes: '!', no: '·', what: 'died; fewer is better', real: true, src: SRC_ULCER }),
     P({ id: 'ecmo', label: 'ECMO newborns (real)', names: ['ECMO', 'Standard care'], nA: 11, nB: 1, m: 11, k: [11, 0], yes: '✓', no: '✕', what: 'survived', real: true, src: SRC_ECMO }),
-    P({ id: 'panoramic', label: 'PANORAMIC (real)', names: ['Molnupiravir', 'Usual care'], nA: 12529, nB: 12525, k: [105, 98], big: true, binom: true, yes: '!', no: '·', what: 'hospitalized or died (fewer is better)', real: true, src: SRC_PAN }),
-    P({ id: 'recovery', label: 'RECOVERY dexamethasone (real)', names: ['Dexamethasone', 'Usual care'], nA: 2104, nB: 4321, k: [482, 1110], big: true, binom: true, yes: '!', no: '·', what: 'died (fewer is better)', real: true, src: SRC_REC }),
-    P({ id: 'vioxx', label: 'Vioxx, APPROVe (real)', names: ['Vioxx (rofecoxib)', 'Placebo'], nA: 1287, nB: 1299, m: 1287, k: [46, 26], big: true, binom: true, yes: '!', no: '·', what: 'heart attack, stroke or other clot-related event (fewer is better)', real: true, src: SRC_VIOXX }),
-    P({ id: 'viagra', label: 'Viagra (book example, comparison made up)', names: ['Viagra users', 'Comparison men'], nA: 6000000, nB: 1500000, m: 60, bw: 5 / 6, hlen: 18, unit: 1e6, gunit: ' deaths per million men', xlabel: 'gap (per million men)', xtitle: 'Gap in deaths per million men', k: [77, 11], deathsOnly: true, yes: '!', no: '·', what: 'coronary deaths (fewer is better)', real: false, src: SRC_VIAGRA }),
-    P({ id: 'coins', label: 'Two coins (made up)', names: ['Coin A', 'Coin B'], n: 20, k: [11, 8], yes: 'H', no: 'T', what: 'heads', src: 'Made-up numbers.' }),
-    P({ id: 'ft', label: 'Free throws (made up)', names: ['Maya', 'Leo'], n: 20, k: [14, 11], yes: '✓', no: '✕', what: 'shots made', src: 'Made-up numbers.' })
+    P({ id: 'panoramic', label: 'PANORAMIC (real)', names: ['Molnupiravir', 'Usual care'], nA: 12529, nB: 12525, k: [105, 98], big: true, binom: true, yes: '!', no: '·', what: 'hospitalized or died; fewer is better', real: true, src: SRC_PAN }),
+    P({ id: 'recovery', label: 'RECOVERY dexamethasone (real)', names: ['Dexamethasone', 'Usual care'], nA: 2104, nB: 4321, k: [482, 1110], big: true, binom: true, yes: '!', no: '·', what: 'died; fewer is better', real: true, src: SRC_REC }),
+    P({ id: 'vioxx', label: 'Vioxx, APPROVe (real)', names: ['Vioxx (rofecoxib)', 'Placebo'], nA: 1287, nB: 1299, m: 1287, k: [46, 26], big: true, binom: true, yes: '!', no: '·', what: 'heart attack, stroke or other clot-related event; fewer is better', real: true, src: SRC_VIOXX }),
+    P({ id: 'viagra', label: 'Viagra (book example, comparison made up)', names: ['Viagra users', 'Comparison men'], nA: 6000000, nB: 1500000, m: 60, bw: 5 / 6, hlen: 18, unit: 1e6, gunit: ' deaths per million men', xlabel: 'gap (per million men)', xtitle: 'Gap in deaths per million men', k: [77, 11], deathsOnly: true, yes: '!', no: '·', what: 'coronary deaths; fewer is better', real: false, src: SRC_VIAGRA }),
+    P({ id: 'coins', label: 'Two small trials (made up)', names: ['Trial A', 'Trial B'], n: 20, k: [11, 8], yes: '✓', no: '✕', what: 'responded', src: '' }),
+    P({ id: 'ft', label: 'Drug A vs drug B (made up)', names: ['Drug A', 'Drug B'], n: 20, k: [14, 11], yes: '✓', no: '✕', what: 'responded', src: '' })
   ];
   var S3 = { pre: PRE[0], hist: null, N: 0, last: null, pool: null, busy: false, P: null };
   function loadS3(pre) {
     S3.pre = pre; S3.hist = new Array(pre.m + 1).fill(0); S3.N = 0; S3.last = null; S3.busy = false;
     S3.pool = pre.binom ? null : makePool(pre);
-    $('s3title').textContent = 'Observed: ' + pre.names[0] + ' vs ' + pre.names[1] + (pre.real ? ' (real data)' : pre.id === 'game' ? ' (your game round)' : ' (made-up numbers)');
-    $('srcLine').innerHTML = pre.src === 'Made-up numbers.' ? '' : (pre.src || '');
+    $('s3title').textContent = 'Observed: ' + pre.names[0] + ' vs ' + pre.names[1] + (pre.real ? ' (real data)' : pre.id === 'game' ? ' (your trial)' : ' (made-up numbers)');
+    $('srcLine').innerHTML = pre.src || '';
     var ob = $('obsBox'); ob.innerHTML = '';
     [0, 1].forEach(function (j) {
       var n = j ? pre.nB : pre.nA, k = pre.k[j];
@@ -500,31 +514,32 @@
       else if (pre.big) addRow(ob, pre.names[j], nf(k) + ' of ' + nf(n), arrOf(100, Math.round(100 * k / n)), pre.yes, pre.no);
       else addRow(ob, pre.names[j], k + ' of ' + n, arrOf(n, k), pre.yes, pre.no);
     });
-    var lg = el('p', 'legend'); var dd = pre.yes === '!'; lg.innerHTML = ico(1, dd) + ' ' + (dd ? 'orange = ' + pre.what.replace(' (fewer is better)', '') + ', outline = did not' : 'filled = ' + pre.what + ', outline = did not') + '.' + (pre.deathsOnly ? ' Each row shows deaths per million men (15 icons); the test uses all the deaths.' : pre.big ? ' Each row shows 100 patients (per 100 patients); the test uses everyone.' : ''); ob.appendChild(lg);
+    var lg = el('p', 'legend'); var dd = pre.yes === '!'; lg.innerHTML = ico(1, dd) + ' ' + (dd ? 'orange = ' + pre.what.replace('; fewer is better', '') + ', outline = did not' : 'filled = ' + pre.what + ', outline = did not') + '.' + (pre.deathsOnly ? ' Each row shows deaths per million men (15 icons); the test uses all the deaths.' : pre.big ? ' Each row shows 100 icons; the test uses everyone.' : ''); ob.appendChild(lg);
     $('shufBox').innerHTML = '<p class="note">Press "Re-randomize once".</p>'; $('shufTitle').textContent = 'After re-randomizing';
     var X = permXlim(pre.m, obsBin(pre), pre);
     S3.P = Lab.Plot($('plot3'), { xlim: [X.lo, X.hi], ylim: [0, 20], h: 320, xlabel: pre.xtitle || 'Gap between the two rows (percentage points)', ylabel: 'Share of re-randomizations (%)', label: 'Histogram of gaps from re-randomized rows, with the observed gap marked' });
-    S3.P.legend([{ label: 'Gaps after re-randomizing', color: TEAL, kind: 'box' }, { label: 'At least as big as yours', color: OR, kind: 'box' }, { label: 'Your gap', color: NAVY, kind: 'dash' }]);
+    S3.P.legend([{ label: 'Gaps after re-randomizing', color: TEAL, kind: 'box' }, { label: 'At least as big as the real gap', color: OR, kind: 'box' }, { label: 'Real gap', color: NAVY, kind: 'dash' }]);
     update3(0);
   }
   function update3(ms) {
     var pre = S3.pre, m = pre.m, d = obsBin(pre), g = gapPts(pre);
-    drawPerm(S3.P, S3.hist, S3.N, m, d, ms, 'yours', pre);
+    drawPerm(S3.P, S3.hist, S3.N, m, d, ms, 'real', pre);
     var tc = tailCount(S3.hist, d);
-    $('chips3').innerHTML = chip('Your gap', fmtGap(+g.toFixed(2)) + gunit(pre) + ' (' + rowsText(pre) + ')', true) +
+    $('chips3').innerHTML = chip('Real gap', fmtGap(+g.toFixed(2)) + gunit(pre) + ' (' + rowsText(pre) + ')', true) +
       chip('Last gap', S3.last == null ? '–' : fmtGap(+(pre.deathsOnly ? gapVal(pre, LASTK[0], LASTK[1]) : S3.last * bwOf(pre)).toFixed(2)) + gunit(pre)) + chip('Re-randomizations', nf(S3.N)) +
-      chip('At least as big as yours', S3.N ? nf(tc) + ' of ' + nf(S3.N) + ' (' + pct(tc / S3.N, S3.N >= 1000 ? 1 : 0) + ')' : '–');
+      chip('At least as big as the real gap', S3.N ? nf(tc) + ' of ' + nf(S3.N) + ' (' + pct(tc / S3.N, S3.N >= 1000 ? 1 : 0) + ')' : '–');
     var note = '';
     if (S3.N >= 200) {
       var sh = tc / S3.N;
-      note += sh > 0.2 ? 'Luck alone makes a gap this big often. Your gap proves little.' : sh < 0.05 ? 'Luck alone rarely makes a gap this big (under 1 in 20, a common cutoff).' : 'Luck makes a gap this big now and then. Not a clear call.';
+      note += sh > 0.2 ? 'Luck alone makes a gap this big often. Your gap proves little.' : sh < 0.05 ? 'Luck alone rarely makes a gap this big (under 1 in 20).' : 'Luck makes a gap this big now and then. Not a clear call.';
     } else note += 'Re-randomize many times to see the pattern.';
     $('note3').innerHTML = note;
   }
   function setBusy(b) { S3.busy = b; ['b1', 'b1000', 'bReset', 'bGame'].forEach(function (id) { $(id).disabled = b; }); }
-  function showDealt(pre) {
-    var box = $('shufBox'), ka = LASTK[0], kb = LASTK[1];
-    box.innerHTML = ''; $('shufTitle').textContent = 'After re-randomizing: dealt back at random';
+  function showDealt(pre, kk) {
+    kk = kk || LASTK;
+    var box = $('shufBox'), ka = kk[0], kb = kk[1];
+    box.innerHTML = ''; $('shufTitle').textContent = 'After re-randomizing';
     if (pre.deathsOnly) {
       addRow(box, pre.names[0], ka + ' deaths: ' + (ka * 1e6 / pre.nA).toFixed(1) + ' per million', arrOf(15, Math.round(ka * 1e6 / pre.nA)), pre.yes, pre.no);
       addRow(box, pre.names[1], kb + ' deaths: ' + (kb * 1e6 / pre.nB).toFixed(1) + ' per million', arrOf(15, Math.round(kb * 1e6 / pre.nB)), pre.yes, pre.no);
@@ -536,7 +551,7 @@
       addRow(box, pre.names[1], kb + ' of ' + pre.nB, S3.pool.slice(pre.nA), pre.yes, pre.no);
     }
     var g = gapVal(pre, ka, kb);
-    box.appendChild(el('p', 'verdict', 'New gap: ' + fmtGap(+g.toFixed(2)) + gunit(pre) + (ka / pre.nA === kb / pre.nB ? '' : ka / pre.nA > kb / pre.nB ? ', ' + pre.names[0] + ' ahead' : ', ' + pre.names[1] + ' ahead') + '. A gap either way counts (yours was ' + fmtGap(+gapPts(pre).toFixed(2)) + ').'));
+    box.appendChild(el('p', 'verdict', 'New gap: ' + fmtGap(+g.toFixed(2)) + gunit(pre) + (ka / pre.nA === kb / pre.nB ? '' : ka / pre.nA > kb / pre.nB ? ' (' + pre.names[0] + ' ahead)' : ' (' + pre.names[1] + ' ahead)') + '. Either direction counts. Real gap: ' + fmtGap(+gapPts(pre).toFixed(2)) + gunit(pre) + '.'));
   }
   function shuffleOnce() {
     if (S3.busy) return; var pre = S3.pre, d;
@@ -544,8 +559,8 @@
     setBusy(true);
     var box = $('shufBox'); box.innerHTML = ''; $('shufTitle').textContent = 'Pooling everyone into one pile';
     var tl = el('div'); box.appendChild(tl); tiles(tl, S3.pool.slice(), pre.yes, pre.no, 'Everyone pooled in one row');
-    d = drawGap(pre, S3.pool);
-    setTimeout(function () { S3.hist[d]++; S3.N++; S3.last = d; showDealt(pre); update3(0); setBusy(false); }, 800);
+    d = drawGap(pre, S3.pool); var kk = LASTK.slice();
+    setTimeout(function () { S3.hist[d]++; S3.N++; S3.last = d; showDealt(pre, kk); update3(0); setBusy(false); }, 800);
   }
   function shuffleMany() {
     if (S3.busy) return; var pre = S3.pre, i, d;
@@ -557,7 +572,7 @@
   $('bReset').addEventListener('click', function () { loadS3(S3.pre); });
   $('bGame').addEventListener('click', function () {
     var r = G.round, nm = gNames(), n = r.a.length;
-    loadS3(P({ id: 'game', label: 'My round', names: nm.slice(), n: n, k: [sum(r.a), sum(r.b)], yes: '✓', no: '✕', what: 'improved', src: 'Your game round.' }));
+    loadS3(P({ id: 'game', label: 'My trial', names: nm.slice(), n: n, k: [sum(r.a), sum(r.b)], yes: '✓', no: '✕', what: 'improved', src: 'Your trial.' }));
     markOn('');
   });
 
@@ -576,8 +591,8 @@
     var p = pre.deathsOnly ? el('p', '', pre.names[0] + ' ' + pre.k[0] + ' deaths among ' + nf(pre.nA) + ' men vs ' + pre.names[1] + ' ' + pre.k[1] + ' among ' + nf(pre.nB) + '. Gap ' + fmtGap(+gapPts(pre).toFixed(2)) + gunit(pre) + '.') : el('p', '', pre.names[0] + ' ' + nf(pre.k[0]) + ' of ' + nf(pre.nA) + ' vs ' + pre.names[1] + ' ' + nf(pre.k[1]) + ' of ' + nf(pre.nB) + ' (' + pre.what + '). Gap ' + fmtGap(+gapPts(pre).toFixed(2)) + ' points.');
     p.style.marginTop = '.5rem'; c.appendChild(p);
     var mb = el('div', 'minibox'); c.appendChild(mb); permMini(mb, st, pre.m, d, pre);
-    var ch = el('div', 'chips'); ch.innerHTML = chip('Re-randomizations at least as big', pct(st.share, 1), true); c.appendChild(ch);
-    var src = el('p', 'note'); src.style.marginTop = '.5rem'; src.innerHTML = pre.src; c.appendChild(src);
+    var ch = el('div', 'chips'); ch.innerHTML = chip('Re-randomizations at least as big', fmtShare(st.share), true); c.appendChild(ch);
+    if (pre.src) { var src = el('p', 'note'); src.style.marginTop = '.5rem'; src.innerHTML = pre.src; c.appendChild(src); }
     $('excards').appendChild(c);
   });
 
@@ -591,11 +606,11 @@
 
   Lab.QuestionCard(Q, {
     tag: 'Predict 1', score: score, type: 'choice',
-    q: 'Drug 7 of 10 vs placebo 4 of 10, a gap of 30 percentage points (70% vs 40%). If we re-randomize the patients, would chance make a gap this big often or rarely?',
+    q: 'Drug 7 of 10 vs placebo 4 of 10, a gap of 30 percentage points (70% vs 40%). If the drug did nothing, how often would re-randomizing give a gap this big?',
     options: BANDS,
     answer: function () { return band(stat('c1', 10, 7, 4).share); },
     revealPlot: function (b) { permMini(b, stat('c1', 10, 7, 4), 10, 3); },
-    explain: function () { var s = stat('c1', 10, 7, 4); return s.tail + ' of 4,000 computer re-randomizations (' + pct(s.share, 1) + ') made a gap of 30 points or more. Small groups wobble a lot.'; }
+    explain: function () { var s = stat('c1', 10, 7, 4); return 'About 37% of re-randomizations gave 30 points or more. Small groups wobble a lot.'; }
   });
   Lab.QuestionCard(Q, {
     tag: 'Predict 2', score: score, type: 'choice',
@@ -603,49 +618,49 @@
     options: BANDS,
     answer: function () { return band(stat('c2', 100, 70, 40).share); },
     revealPlot: function (b) { permMini(b, stat('c2', 100, 70, 40), 100, 30); },
-    explain: function () { var s = stat('c2', 100, 70, 40); return s.tail + ' of 4,000 computer re-randomizations reached a gap of 30 points. Same gap, far more evidence.'; }
+    explain: function () { var s = stat('c2', 100, 70, 40); return s.tail + ' of 4,000 simulated re-randomizations reached a gap of 30 points. Same gap, far more evidence.'; }
   });
   function pmfDiff(n, d) { var s = 0, x; for (x = 0; x <= n; x++) s += Lab.binomPmf(x, n, 0.5) * Lab.binomPmf(x - d, n, 0.5); return s; }
   function pmfPlot(b, n, dmax, isTail, lab) {
-    var P = Lab.miniPlot(b, { xlim: [-dmax - 0.5, dmax + 0.5], ylim: [0, 1], xlabel: lab, ylabel: '% of pairs', label: 'Chance of each difference between two fair coins; the highlighted bars answer the question' }), h = [], t = [], d, v, top = 1;
+    var P = Lab.miniPlot(b, { xlim: [-dmax - 0.5, dmax + 0.5], ylim: [0, 1], xlabel: lab, ylabel: '% of pairs', label: 'Chance of each difference between two drugs with the same true response rate; the highlighted bars answer the question' }), h = [], t = [], d, v, top = 1;
     for (d = -dmax; d <= dmax; d++) { v = 100 * pmfDiff(n, d); h.push(isTail(d) ? 0 : v); t.push(isTail(d) ? v : 0); if (v > top) top = v; }
     P.setYlim(0, nice(top)); P.bars('all', h, -dmax - 0.5, dmax + 0.5, { fill: TEAL, opacity: 0.8 }, 600); P.bars('tail', t, -dmax - 0.5, dmax + 0.5, { fill: OR, opacity: 0.95 }, 600);
   }
   function p5() { var s = 0, d; for (d = -20; d <= 20; d++) if (Math.abs(d) >= 5) s += pmfDiff(20, d); return s; }
   Lab.QuestionCard(Q, {
     tag: 'Predict 3', score: score, type: 'choice',
-    q: 'Two fair coins, 20 flips each. How often do their heads counts differ by 5 or more?',
+    q: 'Two drugs that each help 50% of patients, 20 patients each. How often do their responder counts differ by 5 or more?',
     options: [{ value: 0, label: 'About 2% of the time' }, { value: 1, label: 'About 15% of the time' }, { value: 2, label: 'About 40% of the time' }, { value: 3, label: 'About 70% of the time' }],
     answer: function () { return nearest(p5(), [0.02, 0.15, 0.4, 0.7]); },
-    revealPlot: function (b) { pmfPlot(b, 20, 12, function (d) { return Math.abs(d) >= 5; }, 'heads A minus heads B'); },
-    explain: function () { return 'Computed exactly: ' + pct(p5(), 1) + '. Identical coins still differ by 5 or more about once in 6 or 7 pairs.'; }
+    revealPlot: function (b) { pmfPlot(b, 20, 12, function (d) { return Math.abs(d) >= 5; }, 'responders A minus responders B'); },
+    explain: function () { return 'Computed exactly: ' + pct(p5(), 1) + '. Identical drugs still differ by 5 or more about once in 6 or 7 pairs of trials.'; }
   });
   Lab.QuestionCard(Q, {
     tag: 'Predict 4', score: score, type: 'choice',
-    q: 'ECMO trial: 11 of 11 newborns on ECMO survived, 0 of 1 on standard care. Deal the 12 babies back at random into rows of 11 and 1. How often is the gap that big (100 points)?',
+    q: 'ECMO trial: 11 of 11 newborns on ECMO survived, 0 of 1 on standard care. Re-randomize the 12 babies into rows of 11 and 1. How often is the gap that big (100 points)?',
     options: [{ value: 0, label: 'About 1 time in 100' }, { value: 1, label: 'About 1 time in 10' }, { value: 2, label: 'About 1 time in 3' }, { value: 3, label: 'About 1 time in 2' }],
     answer: function () { return nearest(1 / 12, [0.01, 0.1, 1 / 3, 0.5]); },
     revealPlot: function (b) { permMini(b, permStat(PRE[3], 4000), PRE[3].m, obsBin(PRE[3])); },
-    explain: function () { var s = permStat(PRE[3], 4000); return 'Exactly 1 time in 12, because the one baby who died must land in the row of 1 (' + pct(1 / 12, 1) + '; the computer got ' + pct(s.share, 1) + '). A tiny trial can look dramatic and still be weak evidence.'; }
+    explain: function () { var s = permStat(PRE[3], 4000); return 'Exactly 1 time in 12, because the one baby who died must land in the row of 1. A tiny trial can look dramatic and still be weak evidence.'; }
   });
   Lab.QuestionCard(Q, {
     tag: 'Predict 5', score: score, type: 'choice',
-    q: 'The same fair coin, 50 flips each time, two runs. Do the two heads counts match exactly?',
+    q: 'A drug that helps 50% of patients, two trials of 50. Do the two responder counts match exactly?',
     options: [{ value: 0, label: 'Often (about 1 time in 3)' }, { value: 1, label: 'Sometimes (about 1 in 10)' }, { value: 2, label: 'Rarely (about 1 in 25)' }, { value: 3, label: 'Almost never' }],
     answer: function () { return nearest(pmfDiff(50, 0), [1 / 3, 0.1, 0.04, 0.0001]); },
-    revealPlot: function (b) { pmfPlot(b, 50, 20, function (d) { return d === 0; }, 'heads A minus heads B'); },
-    explain: function () { return 'Computed exactly: ' + pct(pmfDiff(50, 0), 1) + ' match. With more flips the counts spread out, so an exact tie is not common and a gap of a few heads is normal.'; }
+    revealPlot: function (b) { pmfPlot(b, 50, 20, function (d) { return d === 0; }, 'responders A minus responders B'); },
+    explain: function () { return 'Computed exactly: ' + pct(pmfDiff(50, 0), 1) + ' match. With more patients the counts spread out, so an exact tie is not common and a gap of a few responders is normal.'; }
   });
 
   var cfc = {};
   function cfStat() { if (!cfc.s) { var pre = mk(10, 5, 5), h = permHist(pre, 4000); cfc.s = { hist: h, N: 4000, share: tailShare(h, 4000, 4), tail: tailCount(h, 4) }; } return cfc.s; }
   Lab.QuestionCard(Q, {
     tag: 'Predict 6', score: score, type: 'choice',
-    q: 'The drug does nothing. Can the two rows still differ? Take 20 patients, 10 of whom improve whether or not they get the drug, and let a coin split them into rows of 10. How often do the rows differ by 4 or more improved patients?',
+    q: 'The drug does nothing: 10 of 20 patients improve either way. A coin splits them 10 and 10. How often do the groups differ by 4 or more improved patients?',
     options: BANDS,
     answer: function () { return band(cfStat().share); },
     revealPlot: function (b) { permMini(b, cfStat(), 10, 4); },
-    explain: function () { var s = cfStat(); return 'Yes. Both outcomes are the same for every patient, so only who landed where changes. ' + s.tail + ' of 4,000 re-dealings of this group (' + pct(s.share, 1) + ') gave a gap of 4 or more patients (40 points), with no drug effect at all.'; }
+    explain: function () { var s = cfStat(); return s.tail + ' of 4,000 re-randomizations of this group (' + pct(s.share, 1) + ') gave a gap of 4 or more patients (40 points), with no drug effect at all.'; }
   });
 
   Lab.CodeBox($('code'), {
@@ -656,7 +671,7 @@
       'seen = gap(pool)\n' +
       'gaps = [gap(rng.permutation(pool)) for _ in range(10_000)]\n' +
       'print(np.mean(np.array(gaps) >= seen))   # share of re-randomizations at least as big\n' +
-      '# Arnold gap score (15 points on a circle of length 100)\n' +
+      '# Arnold gap score (15 enrollment days on a 100-day clock)\n' +
       'def gap_score(x, L=100):\n' +
       '    g = np.diff(np.append(np.sort(x % L), np.min(x % L) + L))\n' +
       '    return len(x) * np.sum((g / L) ** 2)   # 1 = even, about 2 = random',
@@ -718,7 +733,7 @@
 
   var AR = { sets: [], pick: -1, shade: 0 };
   function newArnold() {
-    var raw, tries = 0, rs; raw = [{ k: '3^i mod 100', pts: pw(3, AL), rnd: false }, { k: '37·i mod 100', pts: mult(37), rnd: false }, { k: 'computer-random', pts: randSet(), rnd: true }];
+    var raw, tries = 0, rs; raw = [{ k: '3^i mod 100', pts: pw(3, AL), rnd: false }, { k: '37·i mod 100', pts: mult(37), rnd: false }, { k: 'simulated random', pts: randSet(), rnd: true }];
     while (tries++ < 50) { rs = raw[2]; if (gscore(rs.pts) > 1.55 && gscore(rs.pts) < 2.3) break; rs.pts = randSet(); }
     shuffle(raw); AR.sets = raw; AR.pick = -1; AR.shade = 0;
     $('arOut').hidden = true;
@@ -726,7 +741,7 @@
     raw.forEach(function (s, i) {
       s.score = gscore(s.pts);
       var cell = el('div', 'cell'), svg = document.createElementNS(NSVG, 'svg'), b = el('button', 'btn', 'Set ' + (i + 1) + ' is random');
-      svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', 'Set ' + (i + 1) + ': 15 dots on a circle');
+      svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', 'Set ' + (i + 1) + ': 15 patient enrollment days on a 100-day clock');
       cell.appendChild(el('div', 'rl', 'Set ' + (i + 1))); cell.appendChild(svg); cell.appendChild(b); box.appendChild(cell);
       s.svg = svg; drawCircle(svg, s.pts, false);
       b.addEventListener('click', function () { arReveal(i); });
@@ -737,7 +752,7 @@
     var ok = AR.sets[i].rnd;
     $('arOut').hidden = false;
     $('arVerdict').className = 'verdict ' + (ok ? 'ok' : 'no');
-    $('arVerdict').textContent = ok ? 'Right. Set ' + (i + 1) + ' is the computer-random one.' : 'Not quite. Set ' + (i + 1) + ' was made by a formula (' + AR.sets[i].k + ').';
+    $('arVerdict').textContent = ok ? 'Right. Set ' + (i + 1) + ' is the simulated random one.' : 'Not quite. Set ' + (i + 1) + ' was made by a fixed rule, not chance.';
     AR.sets.forEach(function (s) { drawCircle(s.svg, s.pts, true); });
   }
   $('arNew').addEventListener('click', newArnold);
@@ -749,12 +764,12 @@
     if (MINE.length >= AT) {
       var s = gscore(MINE); drawCircle($('arMine'), MINE, true);
       $('arMineOut').hidden = false;
-      $('arMineChip').innerHTML = chip('Your gap score', s.toFixed(2), true) + chip('Random sets spread as evenly as yours', fmtShare(shareLE(s))) + '<p class="note">' + (shareLE(s) < 0.05 ? 'Too even to look random: real random dots almost never spread out this neatly.' : shareLE(s) > 0.95 ? 'Very clumpy: real random dots rarely bunch up this much.' : 'Looks random: plenty of random sets are spread like this.') + '</p>';
+      $('arMineChip').innerHTML = chip('Your gap score', s.toFixed(2), true) + chip('Share of random sets this even', fmtShare(shareLE(s))) + '<p class="note">' + (shareLE(s) < 0.05 ? 'Too even to look random: real random enrollment days almost never spread out this neatly.' : shareLE(s) > 0.95 ? 'Very clumpy: real random enrollment days rarely bunch up this much.' : 'Looks random: plenty of random sets are spread like this.') + '</p>';
       mineHist(s);
     } else { $('arMineOut').hidden = true; mineHist(null); }
   }
   function mineHist(s) {
-    var P = Lab.Plot($('plotMine'), { xlim: [ARHIST.lo, ARHIST.hi], ylim: [0, 10], xlabel: 'gap score s', ylabel: '% of random sets', label: 'Histogram of gap scores of computer-random sets, with your score marked when complete' });
+    var P = Lab.Plot($('plotMine'), { xlim: [ARHIST.lo, ARHIST.hi], ylim: [0, 10], xlabel: 'gap score s', ylabel: '% of random sets', label: 'Histogram of gap scores of simulated random sets, with your score marked when complete' });
     drawHist(P, s == null ? 0 : s, s == null ? [] : [{ x: s, l: 'you' }]);
   }
   function mineAdd(p) { if (MINE.length < AT) { MINE.push(p); mineDraw(); } }
@@ -833,13 +848,13 @@
       var col = 'rgb(' + c1.map(function (v, j) { return Math.round(v + (c2[j] - v) * q); }).join(',') + ')';
       person(x, y, o.y1, t[i]); person(x, y + 25, o.y0, !t[i]);
       E('rect', { x: x + 1, y: y + 52, width: 16, height: 4, rx: 2, fill: col }, svg);
-      E('text', { x: x + 9, y: y + 70, 'text-anchor': 'middle' }, svg).textContent = t[i] ? 'D' : '-';
+      E('text', { x: x + 9, y: y + 70, 'text-anchor': 'middle' }, svg).textContent = t[i] ? 'D' : 'P';
     });
     var tru = cfTrue(pts, eff), est = cfEst(pts, t, eff), nD = t.filter(Boolean).length;
     var hD = Lab.mean(pts.filter(function (p, i) { return t[i]; }).map(function (p) { return p.h; })), hC = Lab.mean(pts.filter(function (p, i) { return !t[i]; }).map(function (p) { return p.h; }));
-    $('cfChips').innerHTML = chip('True effect (both outcomes)', signed(tru, 1) + ' pts') + chip("Trial's estimate", signed(est, 1) + ' pts', true) + chip('Took the drug', nD + ' of 40') + chip('Health, drug minus no drug', signed(hD - hC, 2));
-    $('cfNote').innerHTML = (CF.mode === 'choose' ? 'Patients chose, so D marks the healthier columns more often.' : 'A coin decided, so D is spread evenly over healthy and sick.') + ' The trial compares the bright top people (D) with the bright bottom people (-).';
-    $('cfEffv').textContent = signed(eff, 0) + ' points' + (eff === 0 ? ' (both outcomes always match)' : '');
+    $('cfChips').innerHTML = chip('Real effect in these 40', signed(tru, 1) + ' points') + chip("Trial's result", signed(est, 1) + ' points', true) + chip('Took the drug', nD + ' of 40');
+    $('cfNote').innerHTML = (CF.mode === 'choose' ? 'Patients chose, so the healthier ones took the drug.' : 'A coin decided, so D is spread evenly over healthy and sick.') + ' The trial compares bright top icons (D) with bright bottom icons (P).';
+    $('cfEffv').textContent = signed(eff, 0) + ' points' + (eff === 0 ? ' (changes no patient)' : '');
     document.querySelectorAll('#cfMode .btn').forEach(function (b) { b.classList.toggle('on', b.dataset.m === CF.mode); });
     dealStrip(anim); sbDraw(); balDraw();
   }
@@ -849,7 +864,7 @@
   function cfRunMany() {
     cfRan = true;
     var a = cfMany('choose', CF.eff, 500, CF.pts), b = cfMany('coin', CF.eff, 500, CF.pts), tru = cfTrue(CF.pts, CF.eff);
-    miniHist($('cfHist'), [{ vals: a.est, color: ORANGE, label: 'Patients choose' }, { vals: b.est, color: TEAL, label: 'Coin decides' }], -60, 60, 48, tru, '500 trials on these 40 patients. Dashed line = true effect ' + signed(tru, 1) + '. Average estimate: ' + signed(Lab.mean(a.est), 1) + ' (choose), ' + signed(Lab.mean(b.est), 1) + ' (coin).');
+    miniHist($('cfHist'), [{ vals: a.est, color: ORANGE, label: 'Patients choose' }, { vals: b.est, color: TEAL, label: 'Coin decides' }], -60, 60, 48, tru, '500 repeats. Dashed = real effect ' + signed(tru, 1) + '. Average: ' + signed(Lab.mean(a.est), 1) + ' (choose), ' + signed(Lab.mean(b.est), 1) + ' (coin).');
     $('cfHist').dataset.ran = '1';
   }
   document.querySelectorAll('#cfMode .btn').forEach(function (b) { b.addEventListener('click', function () { CF.mode = b.dataset.m; cfDeal(); }); });
@@ -915,13 +930,13 @@
     lab.forEach(function (o) { o.l.forEach(function (ln, j) { var tx = E('text', { x: 368, y: o.y + 12 + j * 14, 'class': j === 2 ? 'big' : '' }, svg); tx.textContent = ln; if (j === 2) tx.style.fill = o.col; }); });
     return n;
   }
-  function sbChipsHtml(n) { return chip('Observed gap', signed(n.gap, 1) + ' pts') + chip('= effect on the takers', signed(n.eff, 1), false) + chip('+ selection bias', signed(n.bias, 1), true); }
+  function sbChipsHtml(n) { return ''; }
   function sbDraw() {
     var st = sbStat(CF.pts, CF.t, CF.eff);
     if (!st) { $('sbChips').innerHTML = ''; $('sbNote').textContent = 'One group is empty. Press New assignment.'; return; }
     var n = sbSvg($('sbBars'), st);
     $('sbChips').innerHTML = sbChipsHtml(n);
-    $('sbNote').textContent = (CF.mode === 'choose' ? 'Patients chose: the drug group was healthier to begin with, so the bias bracket is tall.' : 'A coin decided: the groups started alike, so the bias bracket is small.') + ' Dashed bar = the same drug group, had it skipped the drug.';
+    $('sbNote').textContent = (CF.mode === 'choose' ? 'Patients chose: the drug group was healthier to begin with, so the bias bracket is tall.' : 'A coin decided, so any bias is luck and averages to zero over many trials.') + ' Dashed bar = the same drug group, had it skipped the drug.';
   }
 
   /* ---------- Balance table ---------- */
@@ -930,7 +945,7 @@
     var pts = CF.pts, t = CF.t, rows = [
       { n: 'Average age (years)', f: function (p) { return p.age; }, sd: 17.3, fmt: function (v) { return v.toFixed(1); } },
       { n: 'Average health score', f: function (p) { return 50 + 10 * p.h; }, sd: 10, fmt: function (v) { return v.toFixed(1); } },
-      { n: "Something we can't measure (sleep, 0 to 10)", f: function (p) { return 5 + 1.5 * p.z; }, sd: 1.5, fmt: function (v) { return v.toFixed(1); }, hid: true }
+      { n: "Not measured (sleep quality, 0 to 10)", f: function (p) { return 5 + 1.5 * p.z; }, sd: 1.5, fmt: function (v) { return v.toFixed(1); }, hid: true }
     ], html = '', hiddenSym = '';
     rows.forEach(function (r) {
       var a = [], b = [];
@@ -942,7 +957,7 @@
     });
     $('balBody').innerHTML = html;
     $('balRev').setAttribute('aria-pressed', CF.rev ? 'true' : 'false'); $('balRev').textContent = CF.rev ? 'Hide the hidden trait' : 'Reveal hidden trait';
-    $('balNote').textContent = !CF.rev ? 'A trial cannot see the last row. Reveal it to check.' : hiddenSym === '≠' ? 'Even the trait nobody measured differs. The drug gets the credit for it.' : 'Even the trait nobody measured matches. That is what a coin buys.';
+    $('balNote').textContent = !CF.rev ? 'A trial cannot see the last row. Reveal it to check.' : hiddenSym === '≠' ? 'Even the trait nobody measured differs. The drug gets the credit for it.' : 'Even the unmeasured trait matches: the coin balanced it.';
   }
   $('balRev').addEventListener('click', function () { CF.rev = !CF.rev; balDraw(); });
   CF.pts = cfCohort(cfRng, 40); CF.t = cfAssign(cfRng, CF.pts, CF.mode); cfDraw(false);
@@ -959,7 +974,7 @@
     onReveal: function () {
       var box = miniBox(cardEl.qc.el), svg = E('svg', { viewBox: '0 0 540 250', role: 'img', 'aria-label': 'Drug does nothing, patients choose: the drug group had already done better before any drug' }, box), n = sbSvg(svg, qc.s);
       svg.style.maxWidth = '600px';
-      var p = document.createElement('p'); p.className = 'cap'; p.textContent = 'Averages over 500 pretend trials, drug effect 0. Gap ' + signed(n.gap, 1) + ' = effect ' + signed(n.eff, 1) + ' + selection bias ' + signed(n.bias, 1) + '.'; box.appendChild(p);
+      var p = document.createElement('p'); p.className = 'cap'; p.textContent = 'Average of 500 trials: all of the gap is bias.'; box.appendChild(p);
     },
     explain: function () { return 'The drug group looks better only because healthier people picked it. Its own "had it skipped the drug" bar is just as tall.'; } };
   cfCard('qc', qc);
@@ -968,7 +983,7 @@
     options: [{ value: 'lower', label: 'Lower, as expected' }, { value: 'same', label: 'No change' }, { value: 'higher', label: 'Higher' }],
     answer: 'higher',
     onReveal: function () { miniBars(cardEl.q7.el, [{ label: 'Heart attacks', value: 29, color: ORANGE }, { label: 'Stroke', value: 41, color: ORANGE }], 50, null, function (v) { return '+' + v + '%'; }, 'Change in risk on hormones vs placebo, randomized Women\'s Health Initiative (Rossouw et al., JAMA 2002).', false); },
-    explain: function () { return 'Women who chose hormones were healthier already. Randomization removed that trap.'; } };
+    explain: function () { return 'Women who chose hormones were healthier already. The coin balanced health, and the harm showed.'; } };
   cfCard('q7', q7);
   })(score);
 

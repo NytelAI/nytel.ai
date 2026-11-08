@@ -67,7 +67,6 @@
   <div class="kicker">Module 10</div>
   <h1>Platform trials</h1>
   <p class="hook">Ten new drugs to test. Do you run ten trials, or one that keeps running?</p>
-  <div class="presets" id="examples"><span class="lbl">Try an example:</span></div>
 </section>
 
 <section class="section">
@@ -81,12 +80,13 @@
 
 <section class="section">
   <h2>Steer patients to the better drug</h2>
-  <p>Adaptive means more patients go to the arm that is doing better so far. Will more patients get the better drug?</p>
+  <p>Adaptive: more new patients go to the drug doing better so far. Will more patients get the better drug?</p>
 </section>
 
 <section id="lab" class="labgrid" aria-label="Platform allocation lab">
   <div class="panel">
     <h3>1. Scenario</h3>
+    <div class="presets" id="examples"><span class="lbl">Try an example:</span></div>
     <p class="note" id="scenNote"></p>
     <h3>2. Enroll patients</h3>
     <div class="field"><label for="nn">Patients: <b id="nnv">120</b></label></div>
@@ -94,13 +94,13 @@
     <div class="row"><button class="btn primary" id="runBtn" type="button">Run again</button></div>
     <h3>Option</h3>
     <label class="field"><input type="checkbox" id="prot"> Keep 20% of patients on control</label>
-    <p class="note">Real platforms do this to keep a fair comparison.</p>
+    <p class="note">Keeps enough control patients for a fair comparison.</p>
   </div>
   <div>
     <div class="plotbox" id="truthBox">
       <h3>Truth vs what the trial sees</h3>
-      <p class="note" style="margin:0 0 .4rem">Left: the true success rate, hidden from the trial. Right: what 60 patients actually showed, one person icon each (filled = success).</p>
-      <div class="field"><label><input type="checkbox" id="comego" checked> Drugs enter and leave in three time periods</label></div>
+      <p class="note" style="margin:0 0 .4rem">Left: the true response rate, hidden from the trial. Right: 60 patients, assigned by chance. Filled = responded.</p>
+      <div class="field" id="comegoBox"><label><input type="checkbox" id="comego" checked> Drugs enter and leave in three time periods</label></div>
       <div class="trcols"><span>Arm</span><span>True rate</span><span>Observed</span></div>
       <div id="truthRows"></div>
       <div class="chips" aria-live="polite" id="truthChips"></div>
@@ -109,7 +109,7 @@
     <div class="plotbox"><svg id="plot"></svg>
       <p class="note" id="plotNote" style="margin:.5rem 0 0"></p>
       <div class="chips" aria-live="polite" id="chips"></div>
-      <div class="dots" id="dots" aria-label="Each person icon is one pretend patient; filled means success"></div>
+      <div class="dots" id="dots" aria-label="Each person icon is one patient; filled means responded"></div>
     </div>
   </div>
 </section>
@@ -127,13 +127,13 @@
 
 <section class="section">
   <h2>Arms come and go</h2>
-  <p>Pick a drug. Its fair comparison is the control group that was <span class="tip" tabindex="0" data-tip="Control patients enrolled during the same months as the drug patients.">concurrent</span>.</p>
+  <p>Suppose the drug does nothing. Pick one and compare it only with control patients enrolled at the same time (dark orange).</p>
   <figure class="figure">
     <div class="row" id="armBtns"></div>
-    <div class="field" style="max-width:460px"><label for="dr">Success on standard care rises <b id="drv">2</b> percentage points a year</label><input id="dr" type="range" min="0" max="4" step="1" value="2"></div>
+    <div class="field" style="max-width:460px"><label for="dr">Response rate on standard care rises <b id="drv">2</b> percentage points a year</label><input id="dr" type="range" min="0" max="4" step="1" value="2"></div>
     <svg class="figsvg" id="tl" viewBox="0 0 640 210" role="img" aria-label="Timeline of arms entering and leaving a platform trial with a shared control"></svg>
     <div class="chips" id="tlChips"></div>
-    <figcaption>Years are made up for the picture. A fake gain is bias from a time trend, the kind module 6 explains in <a href="06-fair-comparisons.html">Hidden health</a>. The chips assume a drug that does nothing.</figcaption>
+    <figcaption>Care improves each year, so old controls make any drug look better (<a href="06-fair-comparisons.html">module 6</a>).</figcaption>
   </figure>
 </section>
 
@@ -150,26 +150,26 @@
     <div class="ispy" id="ispy" aria-label="23 circles, one per therapy"></div>
     <div class="row"><button class="btn" id="ispyBtn" type="button">Show the graduates</button></div>
     <div class="chips" id="ispyChips"></div>
-    <figcaption>23 therapies, 9 graduated, 4 later won FDA approval (star). Counts from the sources below.</figcaption>
+    <figcaption>Star = later approved by FDA.</figcaption>
   </figure>
   <p class="note">Source: <a href="https://arxiv.org/abs/2602.09208">Sokolova, Sokolov and Polson (2026)</a> and the platform trial chapters of <a href="https://vsokolov.org/clinos-book/">Clinical Trials in Practice</a>.</p>
 </section>
 
 <section class="example">
   <h2>Real example 2: STAMPEDE</h2>
-  <p>A UK prostate cancer platform with one control arm for 10 other arms. Abiraterone cut the death rate by about a third (a hazard ratio of 0.63 means 63 deaths for every 100 in the control group at any moment).</p>
+  <p>A UK prostate cancer platform with one control arm for 10 other arms. Abiraterone cut the death rate by about a third.</p>
   <figure class="figure">
     <svg class="figsvg" id="stamp" viewBox="0 0 640 300" role="img" aria-label="Patients per arm in STAMPEDE"></svg>
-    <figcaption>Patients per arm, 2005 to March 2023. The control arm (A) holds <b id="stShare"></b> of all patients.</figcaption>
+    <figcaption>Patients per arm, 2005 to March 2023. Control arm A: <b id="stShare"></b>.</figcaption>
   </figure>
-  <p class="note">Sources: STAMPEDE <a href="https://www.stampedetrial.org/centres/final-recruitment-figures/">final recruitment figures</a>; abiraterone result, James et al. (2017), as cited in <a href="https://vsokolov.org/books/clinical_trials_in_practice/">Clinical Trials in Practice</a>. Arms entered at different times, so the shares are not a fixed design ratio.</p>
+  <p class="note">Sources: STAMPEDE <a href="https://www.stampedetrial.org/centres/final-recruitment-figures/">final recruitment figures</a>; abiraterone result, James et al. (2017), as cited in <a href="https://vsokolov.org/books/clinical_trials_in_practice/">Clinical Trials in Practice</a>.</p>
 </section>
 
 <section class="reg">
   <h3>Regulator's corner</h3>
   <p>The FDA's draft guidance on master protocols (June 2026) says some master protocols may:</p>
   <blockquote>"improve efficiency by using a shared control arm in evaluating multiple drugs"</blockquote>
-  <p class="note"><a href="https://www.fda.gov/media/174976/download">FDA draft guidance, Master Protocols for Drug and Biological Product Development</a>. It is a draft and may change. In our lab: fewer control patients per drug.</p>
+  <p class="note"><a href="https://www.fda.gov/media/174976/download">FDA draft guidance, Master Protocols for Drug and Biological Product Development</a>. Draft. In the lab: fewer control patients per drug.</p>
 </section>
 
 <div id="code"></div>
@@ -178,7 +178,7 @@
   <h2>Takeaway</h2>
   <ul>
     <li>One shared control group saves patients: 480 instead of 800 for five drugs.</li>
-    <li>Steering patients toward winners helps patients, but single runs are noisy.</li>
+    <li>Steering patients to the better drug helps them, but one trial can steer the wrong way.</li>
     <li>Compare each drug with controls from the same time.</li>
   </ul>
 </section>
@@ -211,16 +211,16 @@
   var PANELS = {
     basket: '<svg viewBox="0 0 200 190">' + defs + '<text x="100" y="16" text-anchor="middle" font-weight="600">Basket</text>' + box(60, 28, 80, 28, 'One drug', '#E8F4F4') + arrow(80, 58, 35, 108) + arrow(100, 58, 100, 108) + arrow(120, 58, 165, 108) + box(5, 110, 62, 28, 'Lung', '#fff') + box(69, 110, 62, 28, 'Breast', '#fff') + box(133, 110, 62, 28, 'Colon', '#fff') + '<text x="100" y="170" text-anchor="middle">same gene change</text></svg>',
     umbrella: '<svg viewBox="0 0 200 190">' + defs + '<text x="100" y="16" text-anchor="middle" font-weight="600">Umbrella</text>' + box(5, 28, 62, 28, 'Drug 1', '#E8F4F4') + box(69, 28, 62, 28, 'Drug 2', '#E8F4F4') + box(133, 28, 62, 28, 'Drug 3', '#E8F4F4') + arrow(36, 58, 85, 108) + arrow(100, 58, 100, 108) + arrow(164, 58, 115, 108) + box(60, 110, 80, 28, 'One disease', '#fff') + '<text x="100" y="170" text-anchor="middle">matched by a tumor test</text></svg>',
-    platform: '<svg viewBox="0 0 200 190">' + defs + '<text x="100" y="16" text-anchor="middle" font-weight="600">Platform</text><rect x="10" y="30" width="180" height="22" rx="4" fill="#FDF0E8" stroke="#B8531A"/><text x="100" y="45" text-anchor="middle">shared control</text><rect x="10" y="62" width="70" height="16" rx="4" fill="#2D8B8B"/><rect x="50" y="86" width="90" height="16" rx="4" fill="#6B5B95"/><rect x="100" y="110" width="90" height="16" rx="4" fill="#0A1628"/><text x="100" y="150" text-anchor="middle">drugs enter and leave</text><text x="100" y="170" text-anchor="middle">time goes right</text></svg>'
+    platform: '<svg viewBox="0 0 200 190">' + defs + '<text x="100" y="16" text-anchor="middle" font-weight="600">Platform</text><rect x="10" y="30" width="180" height="22" rx="4" fill="#FDF0E8" stroke="#B8531A"/><text x="100" y="45" text-anchor="middle">shared control</text><rect x="10" y="62" width="70" height="16" rx="4" fill="#2D8B8B"/><rect x="50" y="86" width="90" height="16" rx="4" fill="#6B5B95"/><rect x="100" y="110" width="90" height="16" rx="4" fill="#0A1628"/><text x="100" y="150" text-anchor="middle">drugs enter and leave</text><text x="100" y="170" text-anchor="middle">time &rarr;</text></svg>'
   };
   Object.keys(PANELS).forEach(function (k) { var d = document.createElement('div'); d.className = 'pn3'; d.id = 'pn-' + k; d.innerHTML = PANELS[k]; $('fig3').appendChild(d); });
   function hlPanel(k) { Object.keys(PANELS).forEach(function (x) { $('pn-' + x).classList.toggle('hl', x === k); }); }
 
   /* ---------- Main lab: Thompson vs equal split ---------- */
   var PRES = [
-    { id: 'two', label: 'Old vs new drug', names: ['Old drug', 'New drug'], rates: [0.30, 0.45], ctl: true, note: 'Success rates 30% and 45%. Hidden from the trial.' },
-    { id: 'drills', label: 'Free-throw drills', names: ['Drill A', 'Drill B', 'Drill C'], rates: [0.55, 0.65, 0.80], ctl: false, note: 'Three practice drills: shots made 55%, 65%, 80% of the time. Hidden from the trial.' },
-    { id: 'star', label: 'One good drug of three', names: ['Control', 'Drug 1', 'Drug 2', 'Drug 3'], rates: [0.30, 0.30, 0.30, 0.50], ctl: true, note: 'Only Drug 3 is better (50% vs 30%). Hidden from the trial.' },
+    { id: 'two', label: 'Old vs new drug', names: ['Old drug', 'New drug'], rates: [0.30, 0.45], ctl: true, note: 'True response rates: old drug 30%, new drug 45%. The trial does not know them.' },
+    { id: 'drills', label: 'Three dose levels', names: ['Dose A', 'Dose B', 'Dose C'], rates: [0.55, 0.65, 0.80], ctl: false, note: 'Three dose levels: true response rates 55%, 65%, 80%. The trial does not know them.' },
+    { id: 'star', label: 'One good drug of three', names: ['Control', 'Drug 1', 'Drug 2', 'Drug 3'], rates: [0.30, 0.30, 0.30, 0.50], ctl: true, note: 'Only Drug 3 is better (50% vs 30%). The trial does not know this.' },
     { id: 'none', label: 'Nothing works', names: ['Control', 'Drug 1', 'Drug 2'], rates: [0.30, 0.30, 0.30], ctl: true, note: 'All arms are the same, 30%. Does the trial still pick favorites?' }
   ];
   var S = { p: PRES[0], seed: 7, n: 120 };
@@ -263,9 +263,9 @@
     var bestIdx = 0; p.rates.forEach(function (r, j2) { if (r > p.rates[bestIdx]) bestIdx = j2; });
     var allSame = p.rates.every(function (r) { return r === p.rates[0]; });
     var h = '';
-    h += chip('Patients helped (adaptive)', cT.total + ' of ' + N, false) + chip('Patients helped (equal split)', cE.total + ' of ' + N, true);
-    if (!allSame) h += chip(p.names[bestIdx] + ' gets (adaptive)', pc(cT.n[bestIdx] / N), false) + chip(p.names[bestIdx] + ' gets (equal split)', pc(cE.n[bestIdx] / N), true);
-    else h += chip('Largest share (adaptive)', pc(Math.max.apply(null, cT.n) / N), false);
+    h += chip('Responded, adaptive trial', cT.total + ' of ' + N, false) + chip('Responded, equal-split trial', cE.total + ' of ' + N, true);
+    if (!allSame) h += chip('Patients on ' + p.names[bestIdx].toLowerCase() + ', adaptive', pc(cT.n[bestIdx] / N), false) + chip('Patients on ' + p.names[bestIdx].toLowerCase() + ', equal split', pc(cE.n[bestIdx] / N), true);
+    else h += chip('Biggest arm, adaptive', pc(Math.max.apply(null, cT.n) / N) + ' of patients', false);
     $('chips').innerHTML = h;
     // dots
     var dh = '';
@@ -275,7 +275,7 @@
       dh += '<div class="dotrow"><span class="nm" style="color:' + COLS[j] + '">' + p.names[j] + ' (' + cT.n[j] + ')</span><span class="dd">' + dd + '</span></div>';
     }
     $('dots').innerHTML = dh;
-    $('plotNote').innerHTML = 'Each run is a computer-made trial. Adaptive: each patient goes to the arm whose curve gives the highest random draw (the curves are Beta curves, see <a href="01-prior-posterior.html">module 1</a>). Filled person = success, outline = not.';
+    $('plotNote').innerHTML = 'Each new patient is more likely to get the drug doing better so far.';
     $('scenNote').textContent = p.note;
     $('nnv').textContent = N;
     renderTruth();
@@ -294,15 +294,16 @@
     return { arms: arms, win: win };
   }
   function renderTruth() {
-    var p = S.p, comego = $('comego').checked, run = platformRun(p, S.seed, comego), k = p.rates.length, j, h = '', gaps = [];
+    var p = S.p, showCo = p.rates.length > 2 && p.ctl, comego = showCo && $('comego').checked, run = platformRun(p, S.seed, comego), k = p.rates.length, j, h = '', gaps = [];
+    $('comegoBox').style.display = showCo ? '' : 'none';
     if (TR.id !== p.id) { TR.id = p.id; TR.seed = S.seed; TR.cur = null; TR.prev = null; }
     var sm = function (a) { return a.reduce(function (x, y) { return x + y; }, 0); };
     for (j = 0; j < k; j++) {
-      var a = run.arms[j], tl = '', i, w = run.win(j), when = j === 0 ? 'shared by all' : (comego && k > 2 ? 'periods ' + (w[0] + 1) + (w[1] > w[0] ? ' to ' + (w[1] + 1) : '') : 'all periods');
+      var a = run.arms[j], tl = '', i, w = run.win(j), when = (j === 0 && p.ctl) ? 'shared by all' : (comego && k > 2 && j > 0 ? (w[1] > w[0] ? 'periods ' + (w[0] + 1) + ' to ' + (w[1] + 1) : 'period ' + (w[0] + 1)) : 'all periods');
       for (i = 0; i < a.length; i++) tl += '<svg class="pp ' + (a[i] ? 'yes' : 'no') + '" viewBox="0 0 16 20" aria-hidden="true"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg>';
       h += '<div class="trh"><div class="rl" style="color:' + COLS[j] + '">' + p.names[j] + (p.ctl || j > 0 ? '<b>' + when + '</b>' : '<b>' + when + '</b>') + '</div>' +
         '<div class="hb" role="img" aria-label="True rate ' + pc(p.rates[j]) + '"><i style="width:' + (p.rates[j] * 100) + '%;background:' + COLS[j] + '"></i><span>' + pc(p.rates[j]) + '</span></div>' +
-        '<div><div class="trow" aria-label="' + p.names[j] + ': ' + sm(a) + ' of ' + a.length + ' succeeded">' + tl + '</div><div style="margin-top:2px">' + sm(a) + ' of ' + a.length + ' = ' + (a.length ? pc(sm(a) / a.length) : 'none') + '</div></div></div>';
+        '<div><div class="trow" aria-label="' + p.names[j] + ': ' + sm(a) + ' of ' + a.length + ' responded">' + tl + '</div><div style="margin-top:2px">' + sm(a) + ' of ' + a.length + ' = ' + (a.length ? pc(sm(a) / a.length) : 'none') + '</div></div></div>';
       if (j > 0 && a.length && run.arms[0].length) gaps.push(100 * (sm(a) / a.length - sm(run.arms[0]) / run.arms[0].length));
     }
     $('truthRows').innerHTML = h;
@@ -311,10 +312,10 @@
     var c = '';
     for (j = 1; j < k; j++) {
       var tg = 100 * (p.rates[j] - p.rates[0]);
-      c += chip(p.names[j] + ' vs ' + p.names[0] + ': true gap', (tg >= 0 ? '+' : '') + tg.toFixed(0) + ' points') + chip('observed gap', (gaps[j - 1] >= 0 ? '+' : '') + gaps[j - 1].toFixed(0) + ' points', true) + (TR.prev && TR.prev[j - 1] != null ? chip('last run', (TR.prev[j - 1] >= 0 ? '+' : '') + TR.prev[j - 1].toFixed(0) + ' points') : '');
+      c += chip(p.names[j] + ' vs ' + p.names[0] + ': true difference', (tg >= 0 ? '+' : '') + tg.toFixed(0) + ' percentage points') + chip('trial saw', (gaps[j - 1] >= 0 ? '+' : '') + gaps[j - 1].toFixed(0), true) + (TR.prev && TR.prev[j - 1] != null ? chip('previous trial', (TR.prev[j - 1] >= 0 ? '+' : '') + TR.prev[j - 1].toFixed(0) + ' points') : '');
     }
     $('truthChips').innerHTML = c;
-    $('truthNote').innerHTML = 'Press "Run again" to deal new patients: the observed rows and gaps move, the truth does not.' + (k > 2 && comego ? ' Each drug is compared only with controls from its own periods.' : '');
+    $('truthNote').innerHTML = 'Run again: new patients, new results. The true rates stay the same.';
   }
   $('comego').addEventListener('change', renderTruth);
   function setN() { S.n = +$('nn').value; renderLab(); }
@@ -396,7 +397,7 @@
   // Q1
   Lab.QuestionCard(Q, {
     tag: 'Predict 1', score: score, type: 'choice',
-    q: '5 drugs, 80 patients per arm, 80 on control. How many patients in one platform with a shared control?',
+    q: '5 drugs, each tested on 80 patients against 80 control patients. How many patients if all 5 share one control group of 80?',
     options: [{ value: 800, label: '800' }, { value: 640, label: '640' }, { value: 480, label: '480' }, { value: 400, label: '400' }],
     answer: function () { return PER * 5 + PER; },
     onReveal: function () { $('kd').value = 5; drawShared(5); },
@@ -407,7 +408,7 @@
   function share(k) { return Math.sqrt(k) / (Math.sqrt(k) + k); }
   Lab.QuestionCard(Q, {
     tag: 'Predict 2', score: score, type: 'choice',
-    q: 'With 4 drug arms, the square-root rule makes control √4 = 2 times the size of each drug arm. What share of all patients goes to control?',
+    q: 'With 4 drugs, the control group gets 2 times as many patients as each drug. What share of all patients is control?',
     options: [{ value: 20, label: '20%' }, { value: 33, label: 'About 33%' }, { value: 50, label: '50%' }],
     answer: function () { return Math.abs(share(4) - 0.33) < 0.01 ? 33 : 20; },
     revealPlot: function (b) {
@@ -415,13 +416,13 @@
       P.bars('s', [2, 3, 4, 5].map(share), 2, 6, { fill: ORANGE, opacity: 0.5 }, 700);
       P.bars('h', [0, 0, share(4), 0], 2, 6, { fill: TEAL, opacity: 0.9 }, 700);
     },
-    explain: function () { return 'Control gets 2 times as many patients as each drug arm, so 2 of 6 = ' + pc(share(4), 1) + '. Not 20%, which would be equal arms. Even with the bigger control, 5 drugs need about ' + Math.round(PER * 5 + PER * Math.sqrt(5)) + ' patients, not 800.'; }
+    explain: function () { return 'Control gets 2 times as many patients as each drug, so 2 of 6 = ' + pc(share(4), 1) + '.'; }
   });
   // Q3
   var ecmoMC = (function () { var r = Lab.rng(99), c = 0, n = 20000; for (var i = 0; i < n; i++) if (Lab.beta(r, 12, 1) > Lab.beta(r, 1, 2)) c++; return c / n; })();
   Lab.QuestionCard(Q, {
     tag: 'Predict 3', score: score, type: 'choice',
-    q: 'ECMO (a heart-lung machine for very sick newborns) trial: 11 of 11 babies survived on ECMO, 0 of 1 on the other treatment. Suppose each baby goes to ECMO with the chance that ECMO is better (Thompson\'s rule, the adaptive rule from the lab above). Chance the next baby goes to ECMO?',
+    q: 'ECMO (a heart-lung machine for very sick newborns) trial: 11 of 11 babies survived on ECMO, 0 of 1 on the other treatment. The adaptive rule from the lab sends each baby to ECMO with the chance that ECMO is better. Chance the next baby goes to ECMO?',
     options: [{ value: 50, label: '50%' }, { value: 75, label: '75%' }, { value: 99, label: 'About 99%' }],
     answer: function () { return ecmoMC > 0.95 ? 99 : 75; },
     revealPlot: function (b) {
@@ -431,7 +432,7 @@
       P.line('e', xs, xs.map(function (x) { return Lab.betaPdf(x, 12, 1); }), { stroke: TEAL, width: 2 }, 600);
       P.legend([{ label: 'Other', color: ORANGE, kind: 'line' }, { label: 'ECMO', color: TEAL, kind: 'line' }]);
     },
-    explain: function () { return 'ECMO\'s curve sits almost entirely above the other one. Chance ECMO is better = ' + pc(ecmoMC, 1) + ' from 20,000 computer draws (exact value 90/91). Data: arXiv:2602.09208. The curves are Beta curves from <a href="01-prior-posterior.html">module 1</a>.'; }
+    explain: function () { return 'ECMO\'s curve sits almost entirely above the other one. Chance ECMO is better: ' + pc(ecmoMC, 0) + '.'; }
   });
   // Q4: eight runs
   var R4 = (function () {
@@ -445,7 +446,7 @@
   })();
   Lab.QuestionCard(Q, {
     tag: 'Predict 4', score: score, type: 'slider', min: 0, max: 8, step: 1, start: 4, tol: 1, fmt: function (v) { return v.toFixed(0) + ' of 8'; },
-    q: 'Adaptive trial, old drug 30%, new drug 45%. Eight runs of 200 patients. In how many runs does the new drug get more than half of the patients?',
+    q: 'Adaptive trial, old drug 30%, new drug 45%. Eight trials of 200 patients each. In how many does the new drug get more than half of the patients?',
     answer: function () { return R4.above; },
     revealPlot: function (b) {
       var P = Lab.miniPlot(b, { xlim: [0, 200], ylim: [0, 1], xlabel: 'patients', ylabel: 'share on new drug', label: 'Eight runs of the share of patients on the new drug', yfmt: function (v) { return Math.round(v * 100) + '%'; } });
@@ -453,7 +454,7 @@
       R4.paths.forEach(function (pp, i) { P.line('r' + i, xs, pp, { stroke: TEAL, width: 1.5 }, 600); });
       P.line('h', [0, 200], [0.5, 0.5], { stroke: GREY, dash: '4 3', width: 1.5 }, 0);
     },
-    explain: function () { return 'In ' + R4.above + ' of 8 pretend runs. Learning is not guaranteed in a fixed number of patients.'; }
+    explain: function () { return 'In ' + R4.above + ' of 8 trials. 200 patients are not always enough to find the better drug.'; }
   });
   // Q5: identical arms
   var R5 = (function () {
@@ -466,15 +467,15 @@
   })();
   Lab.QuestionCard(Q, {
     tag: 'Predict 5', score: score, type: 'choice',
-    q: 'Two arms are identical (30% each). Adaptive trial, 100 patients, run 400 times. What happens to the share on arm B?',
-    options: [{ value: 'tight', label: 'Always near 50%' }, { value: 'wide', label: 'Averages 50%, but many runs are far off' }, { value: 'b', label: 'Arm B wins most runs' }],
+    q: 'Two arms are identical (30% each). Adaptive trial, 100 patients, repeated 400 times. What happens to the share on arm B?',
+    options: [{ value: 'tight', label: 'Always near 50%' }, { value: 'wide', label: 'Averages 50%, but many trials are far off' }, { value: 'b', label: 'Arm B wins most runs' }],
     answer: 'wide',
     revealPlot: function (b) {
-      var P = Lab.miniPlot(b, { xlim: [0, 1], ylim: [0, Math.ceil(Math.max.apply(null, R5.bins) * 20) / 20], xlabel: 'share on arm B', ylabel: 'runs', label: 'Histogram of the share on arm B over 400 pretend runs', yfmt: function (v) { return Math.round(v * 100) + '%'; } });
+      var P = Lab.miniPlot(b, { xlim: [0, 1], ylim: [0, Math.ceil(Math.max.apply(null, R5.bins) * 20) / 20], xlabel: 'share on arm B', ylabel: 'runs', label: 'Histogram of the share on arm B over 400 simulated runs', yfmt: function (v) { return Math.round(v * 100) + '%'; } });
       P.bars('h', R5.bins, 0, 1, { fill: TEAL, opacity: 0.85 }, 700);
       P.vline('m', R5.avg, '', { color: NAVY, dash: '4 3' }, 0);
     },
-    explain: function () { return 'Average ' + pc(R5.avg, 0) + ', but ' + pc(R5.far, 0) + ' of the 400 pretend runs gave one arm over 65% of patients.'; }
+    explain: function () { return 'Average ' + pc(R5.avg, 0) + ', but in ' + Math.round(R5.far * 400) + ' of 400 trials one drug got over 65% of patients, even though both drugs work the same.'; }
   });
   // Q6: drift
   Lab.QuestionCard(Q, {
@@ -486,7 +487,7 @@
       var old = (0.30 + 0.32 + 0.34) / 3, now = (0.36 + 0.38 + 0.40) / 3;
       miniBars2(b, ['controls, yrs 1-3', 'drug, yrs 4-6'], old, now, [0, 0.5], function (v) { return Math.round(v * 100) + '%'; });
     },
-    explain: function () { return 'Old controls average 32%, patients in years 4 to 6 average 38%. A do-nothing drug looks 6 points better. Use concurrent controls.'; }
+    explain: function () { return 'Old controls average 32%, patients in years 4 to 6 average 38%. A do-nothing drug looks 6 points better. Compare with controls from the same years.'; }
   });
   // Q7, Q8: sorting
   function sortCard(tag, q, ans, expl) {
@@ -515,7 +516,7 @@
       svg += '<text x="80" y="' + (y + 14) + '" text-anchor="end">' + a[0] + '</text><rect x="90" y="' + y + '" width="' + w + '" height="18" rx="3" fill="' + (j === 0 ? ORANGE : TEAL) + '" /><text x="' + (96 + w) + '" y="' + (y + 14) + '">' + a[1].toLocaleString('en-US') + '</text>';
     });
     $('stamp').innerHTML = svg;
-    $('stShare').textContent = pc(4754 / tot, 1) + ' (' + tot.toLocaleString('en-US') + ' in all)';
+    $('stShare').textContent = '4,754 of ' + tot.toLocaleString('en-US') + ' patients (' + pc(4754 / tot) + ')';
   })();
 
   /* ---------- Code ---------- */

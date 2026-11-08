@@ -68,14 +68,14 @@
 
 <section class="fig" id="tvs" aria-label="True effect versus what the trial sees">
   <h3>The truth, and what the trial sees</h3>
-  <p class="note">Nobody can see the true cure rates. A trial sees only patients, a few more at each look.</p>
-  <div class="seg"><button class="btn on" type="button" id="tvW" data-v="1">The drug really works</button><button class="btn" type="button" id="tvN" data-v="0">The drug does nothing</button><button class="btn primary" type="button" id="tvDeal">Deal a new trial</button></div>
+  <p class="note">Nobody can see the true response rates. The trial sees only patients, a few more at each look.</p>
+  <div class="seg"><button class="btn on" type="button" id="tvW" data-v="1">The drug really works</button><button class="btn" type="button" id="tvN" data-v="0">The drug does nothing</button><button class="btn primary" type="button" id="tvDeal">Run a new trial</button></div>
   <div class="twocol" style="margin-top:.6rem">
     <div><h3>True (hidden)</h3><div id="tvTrue"></div></div>
-    <div><h3>Seen so far: 100 patients per group</h3><div class="note" style="margin:0">Placebo (a dummy pill)</div><div class="trow" id="tvP" role="img"></div><div class="note" style="margin:0">Drug</div><div class="trow" id="tvD" role="img"></div>
+    <div><h3>Seen so far</h3><div class="note" style="margin:0">Placebo (a dummy pill)</div><div class="trow" id="tvP" role="img"></div><div class="note" style="margin:0">Drug</div><div class="trow" id="tvD" role="img"></div>
       <p class="legend"><svg class="pp yes" viewBox="0 0 16 20" aria-hidden="true"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> filled = got better &nbsp; <svg class="pp no" viewBox="0 0 16 20" aria-hidden="true"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> outline = did not &nbsp; <svg class="pp unseen" viewBox="0 0 16 20" aria-hidden="true"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> faded = not yet enrolled</p></div>
   </div>
-  <table class="tvt" id="tvTab" aria-live="polite"><thead><tr><th>Look</th><th>Patients per group</th><th>Placebo better</th><th>Drug better</th><th>Gap</th><th><span class="tip" tabindex="0" data-tip="p: how often luck alone gives a gap this big or bigger (module 2). Two-sided: a gap in either direction counts.">p, two-sided</span></th></tr></thead><tbody></tbody></table>
+  <table class="tvt" id="tvTab" aria-live="polite"><thead><tr><th>Look</th><th>Patients per group</th><th>Got better: placebo</th><th>Got better: drug</th><th>Gap</th><th><span class="tip" tabindex="0" data-tip="p: how often luck alone gives a gap this big or bigger (module 2). Two-sided: a gap in either direction counts.">p, two-sided</span></th></tr></thead><tbody></tbody></table>
   <p class="note" id="tvVerdict" style="margin-top:.5rem"></p>
   <p class="cap" id="tvCap"></p>
 </section>
@@ -83,8 +83,7 @@
 <section class="fig" aria-label="Timeline of a trial with four looks">
   <h3>A trial with planned looks</h3>
   <svg id="fig1" viewBox="0 0 760 250" role="img" aria-label="Timeline: patients join, four planned looks at 40, 60, 80 and 100 percent, each with the p-value needed to stop"></svg>
-  <p class="cap">At each look, an independent group called a <span class="tip" tabindex="0" data-tip="Data safety monitoring board: independent experts who see the unblinded data and may recommend to stop.">DSMB</span> checks the data. Each p is <span class="tip" tabindex="0" data-tip="Two-sided: a gap in either direction counts, drug better or drug worse.">two-sided</span>. <i>Clinical Trials in Practice</i> works out this design.</p>
-  <p class="cap"><b>O&rsquo;Brien-Fleming</b>: a very strict bar early, near the usual bar at the end. <b>Pocock</b>: about the same raised bar at every look.</p>
+  <p class="cap">At each look an independent safety board (<span class="tip" tabindex="0" data-tip="Data safety monitoring board: independent experts who see the unblinded data and may recommend to stop.">DSMB</span>) checks the data.</p>
 </section>
 
 <section id="lab" class="labgrid" aria-label="Interim looks lab">
@@ -93,7 +92,6 @@
     <div class="seg" id="kBtns"></div>
     <h3>2. Which rule?</h3>
     <div class="seg" id="ruleBtns"></div>
-    <p class="note" id="ruleNote" style="margin-top:.5rem"></p>
     <h3>3. Does the drug work?</h3>
     <div class="seg" id="effBtns"></div>
     <h3>Run</h3>
@@ -101,19 +99,19 @@
       <button class="btn primary" id="run1" type="button">Run 1 trial</button>
       <button class="btn primary" id="run100" type="button">Run 100 trials</button>
     </div>
-    <p class="note">Each trial has 100 pretend patients, with new random data each time.</p>
+    <p class="note">Each trial: 100 patients.</p>
   </div>
   <div>
     <div class="plotbox"><svg id="plot"></svg>
       <div class="keys" id="keys"></div>
-      <p class="note" style="margin:.4rem 0 0"><b>z</b> is how far the gap between drug and placebo is from zero, in noise units. About 2 is unusual (<a href="02-p-values.html">module 2</a>).</p>
+      <p class="note" style="margin:.4rem 0 0"><b>z</b>: how big the gap is compared with luck. Above 2 rarely happens by luck (<a href="02-p-values.html">module 2</a>).</p>
       <div class="chips" aria-live="polite" id="chips"></div>
       <p class="note" id="plotNote" style="margin:.5rem 0 0"></p>
     </div>
     <div class="fig" style="margin-bottom:0">
-      <h3 id="iconTitle">100 pretend trials, one dot each</h3>
-      <div class="icons" id="icons" aria-label="Icon array of 100 pretend trials"></div>
-      <div class="keys"><span><span class="sw" style="background:#E07A3F"></span><span id="winKey">Stopped on a significant gap</span></span><span><span class="sw" style="background:#DCE3EA"></span>Never stopped</span></div>
+      <h3 id="iconTitle">100 simulated trials, one dot each</h3>
+      <div class="icons" id="icons" aria-label="Icon array of 100 simulated trials"></div>
+      <div class="keys"><span><span class="sw" style="background:#E07A3F"></span><span id="winKey">Stopped</span></span><span><span class="sw" style="background:#DCE3EA"></span>Never stopped</span></div>
     </div>
   </div>
 </section>
@@ -121,8 +119,8 @@
 <section class="fig" aria-label="False alarm chance by number of looks">
   <h3>Chance that a useless drug gives a false alarm</h3>
   <svg id="fig2" viewBox="0 0 640 260" role="img" aria-label="Bars: false alarm chance grows with the number of looks if every look uses p below 0.05, and stays at 5 percent with Pocock or O'Brien-Fleming"></svg>
-  <div class="keys"><span><span class="sw" style="background:#E07A3F"></span>Every look at p &lt; 0.05 (usual bar)</span><span><span class="sw" style="background:#2D8B8B"></span>Raised bars (Pocock or O'Brien-Fleming)</span></div>
-  <p class="cap">A false alarm is a significant gap in either direction. Computed exactly on this page for equally spaced looks. <i>Clinical Trials in Practice</i> says one extra look already gives roughly 8%.</p>
+  <div class="keys"><span><span class="sw" style="background:#E07A3F"></span>Every look at p &lt; 0.05 (usual bar)</span><span><span class="sw" style="background:#2D8B8B"></span>Stricter bars (Pocock or O'Brien-Fleming)</span></div>
+  <p class="cap">False alarm: the trial stops though the drug does nothing.</p>
 </section>
 
 <section class="section">
@@ -135,22 +133,22 @@
   <h2>Real trials that stopped early</h2>
   <div class="fig" style="margin-top:.5rem">
     <svg id="fig3" viewBox="0 0 640 150" role="img" aria-label="Bars: CALGB 49907 stopped at 633 of 1800 patients, ASTIN at 966 of 1300"></svg>
-    <p class="cap">Bars show patients enrolled when each trial stopped, out of the planned maximum.</p>
   </div>
   <ul>
-    <li><b>CALGB 49907</b>: a cancer trial, stopped at 633 of 1,800 planned patients.</li>
-    <li><b>ASTIN</b> (stroke drug, 15 doses and placebo): stopped for <span class="tip" tabindex="0" data-tip="Futility: very little chance the trial will end with a win, so continuing is not worth it.">futility</span> at 966 of 1,300.</li>
-    <li><b>DAWN</b> (clot removal 6 to 24 hours after stroke): stopped at 206 patients, when the chance the drug was better, given the data so far (<a href="01-prior-posterior.html">module 1</a>), passed 0.999.</li>
+    <li><b>CALGB 49907</b> (cancer trial): stopped early.</li>
+    <li><b>ASTIN</b> (stroke drug): stopped for <span class="tip" tabindex="0" data-tip="Futility: very little chance the trial will end with a win, so continuing is not worth it.">futility</span>, meaning it was clearly not going to work.</li>
+    <li><b>DAWN</b> (clot removal after stroke): stopped at 206 patients when the chance clot removal was better passed 99.9%.</li>
   </ul>
-  <p class="note">Sources: Sokolova and Sokolov (2026), <i>Clinical Trials in Practice</i>, which cites Krams et al. (2003, ASTIN) and <a href="https://doi.org/10.1056/NEJMoa1706442">Nogueira et al. (2018), NEJM, DAWN</a>. The book also works out the 40/60/80/100% design above (fixed trial about 467 patients).</p>
+  <p class="note">Sources: Sokolova and Sokolov (2026), <i>Clinical Trials in Practice</i>, which cites Krams et al. (2003, ASTIN) and <a href="https://doi.org/10.1056/NEJMoa1706442">Nogueira et al. (2018), NEJM, DAWN</a>.</p>
 </section>
 
 <div id="code"></div>
 
 <aside class="reg">
   <h3>Regulator's corner</h3>
-  <p>ICH E9 says what counts as a look, and that every look should be planned in advance and written in the protocol (the trial's written plan). ICH is the International Council for Harmonisation, the group of regulators and industry that writes shared trial rules. ICH E9 is its statistics guideline.</p>
+  <p>Trial rules (<span class="tip" tabindex="0" data-tip="International Council for Harmonisation: regulators and industry who write shared trial rules.">ICH</span> E9): plan every look in advance and write it in the protocol (the trial plan).</p>
   <blockquote>"any analysis intended to compare treatment arms with respect to efficacy or safety at any time prior to formal completion of a trial"</blockquote>
+  <p>In plain words: any look at whether the drug is working before the trial ends.</p>
   <p class="note">ICH E9, section 4.5. <a href="https://database.ich.org/sites/default/files/E9_Guideline.pdf">Official PDF</a>.</p>
 </aside>
 
@@ -158,7 +156,7 @@
   <h2>Takeaway</h2>
   <ul>
     <li>Every extra look is another chance for a false alarm.</li>
-    <li>Plan the looks first, and raise the bar so the total stays at 5%.</li>
+    <li>Plan the looks first, and use stricter bars so false alarms stay at 5%.</li>
     <li>Stopping early saves patients, but the early estimate tends to be too big.</li>
   </ul>
 </section>
@@ -169,7 +167,7 @@
   <ul>
     <li>Polson, N. and Sokolov, V. (2026). <a href="https://vsokolov.org/books/bayes_ai_deep_learning/">Bayes, AI and Deep Learning: Foundations of Data Science</a>. doi:10.5281/zenodo.23992805</li>
     <li>Sokolova, A. and Sokolov, V. (2026). <a href="https://vsokolov.org/books/clinical_trials_in_practice/">Clinical Trials in Practice: From Foundations to AI Agents</a>. doi:10.5281/zenodo.23933570</li>
-    <li>ICH E9 (1998), Statistical Principles for Clinical Trials. Rare-disease example: Polson and Sokolov (2026), <a href="https://vsokolov.org/html/_book/06-hyp.html">chapter on Bayesian hypothesis testing</a>.</li>
+    <li>ICH E9 (1998), Statistical Principles for Clinical Trials.</li>
   </ul>
   <strong>Further reading</strong>
   <ul>
@@ -254,7 +252,7 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
   }
   // Step lines of z boundaries. series [{d, color, dash, label}]
   function miniBounds(series, aria) {
-    var m = Mini([0, 1], [1.5, 4.5]), s = frame(m, [[0, '0%'], [0.25, '25%'], [0.5, '50%'], [0.75, '75%'], [1, '100%']], [[2, '2'], [3, '3'], [4, '4']], 'Share of patients so far', 'z needed to win');
+    var m = Mini([0, 1], [1.5, 4.5]), s = frame(m, [[0, '0%'], [0.25, '25%'], [0.5, '50%'], [0.75, '75%'], [1, '100%']], [[2, '2'], [3, '3'], [4, '4']], 'Share of patients so far', 'z needed to stop');
     series.forEach(function (se, si) {
       var d = se.d, path = '', prev = 0;
       d.fr.forEach(function (f, k) { var y = m.sy(Math.min(4.5, d.z[k])).toFixed(1); path += (k ? 'L' : 'M') + m.sx(prev).toFixed(1) + ',' + y + 'L' + m.sx(f).toFixed(1) + ',' + y; prev = f; });
@@ -274,11 +272,11 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
         var y = 50 + k * 82;
         s += '<circle cx="24" cy="' + (y + 10) + '" r="12" fill="#fff" stroke="#0A1628" stroke-width="2"/><text x="24" y="' + (y + 14) + '" text-anchor="middle" style="font-weight:700;fill:#0A1628">' + (k + 1) + '</text>';
         s += '<text x="46" y="' + (y + 14) + '" style="font-weight:600;fill:#0A1628">' + Math.round(f * 100) + '% of patients</text>';
-        [[o, 150, '#2D8B8B', 'Strict early'], [p, 255, '#1F6B6B', 'Same-ish']].forEach(function (r) {
+        [[o, 150, '#2D8B8B', 'Strict early'], [p, 255, '#1F6B6B', 'Even bar']].forEach(function (r) {
           s += '<rect x="' + (r[1] - 104) + '" y="' + (y + 24) + '" width="100" height="34" rx="8" fill="#fff" stroke="' + r[2] + '" stroke-width="2"/><text x="' + (r[1] - 54) + '" y="' + (y + 38) + '" text-anchor="middle" style="font-size:10px">' + r[3] + '</text><text x="' + (r[1] - 54) + '" y="' + (y + 52) + '" text-anchor="middle" style="font-family:IBM Plex Mono,monospace;font-weight:600;fill:#0A1628">' + fp(r[0].p2[k]) + '</text>';
         });
       });
-      s += '<text x="46" y="' + 372 + '" style="font-size:10px">Strict early = O’Brien-Fleming. Same-ish = Pocock.</text>';
+      s += '<text x="46" y="' + 372 + '" style="font-size:10px">Strict early = O’Brien-Fleming. Even bar = Pocock.</text>';
       $('fig1').innerHTML = s; return;
     }
     s += '<text x="60" y="22" style="font-weight:600;fill:#0A1628">Patients join the trial</text>';
@@ -291,7 +289,7 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
       s += '<circle cx="' + x + '" cy="38" r="12" fill="#fff" stroke="#0A1628" stroke-width="2"/><text x="' + x + '" y="42" text-anchor="middle" style="font-weight:700;fill:#0A1628">' + (k + 1) + '</text>';
       s += '<text x="' + x + '" y="100" text-anchor="middle">' + Math.round(f * 100) + '% of patients</text>';
     });
-    [['Strict early bar (O’Brien-Fleming): stop only if p is below', o, 150, '#2D8B8B'], ['About the same raised bar (Pocock): stop only if p is below', p, 215, '#1F6B6B']].forEach(function (r) {
+    [['Strict early bar (O’Brien-Fleming): stop only if p is below', o, 150, '#2D8B8B'], ['Pocock, a stricter bar, about equal at each look: stop only if p is below', p, 215, '#1F6B6B']].forEach(function (r) {
       s += '<text x="10" y="' + (r[2] - 20) + '" style="font-weight:600;fill:#0A1628">' + r[0] + '</text>';
       BOOK.forEach(function (f, k) {
         var x = X(f);
@@ -350,7 +348,7 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
     function deal() {
       timers.forEach(clearTimeout); timers = [];
       var t = draw(mode, rng2), ls = looks(t), st = firstStop(ls), tb = document.querySelector('#tvTab tbody');
-      $('tvTrue').innerHTML = bar('Placebo', RP, '#8795A8') + bar('Drug', RD[mode], TEAL) + '<p class="note" style="margin:.3rem 0 0">True share who get better. The true gap is ' + Math.round((RD[mode] - RP) * 100) + ' points.</p>';
+      $('tvTrue').innerHTML = bar('Placebo', RP, '#8795A8') + bar('Drug', RD[mode], TEAL) + '<p class="note" style="margin:.3rem 0 0">True response rates: ' + Math.round((RD[mode] - RP) * 100) + ' more per 100 improve on the drug.</p>';
       tb.innerHTML = ''; $('tvVerdict').textContent = ''; rows($('tvP'), t.a, 0); rows($('tvD'), t.b, 0);
       $('tvP').setAttribute('aria-label', 'Placebo group: ' + sumTo(t.a, N) + ' of ' + N + ' got better'); $('tvD').setAttribute('aria-label', 'Drug group: ' + sumTo(t.b, N) + ' of ' + N + ' got better');
       ls.forEach(function (l, k) {
@@ -358,13 +356,13 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
           rows($('tvP'), t.a, l.n); rows($('tvD'), t.b, l.n);
           var tr = document.createElement('tr'), gap = l.b - l.a, late = st >= 0 && k > st;
           tr.className = k === st ? 'stop' : late ? 'late' : '';
-          tr.innerHTML = '<td>' + (k + 1) + '</td><td>' + l.n + '</td><td>' + l.a + '%</td><td>' + l.b + '%</td><td>' + (gap > 0 ? '+' : '') + gap + ' points</td><td>' + fp(l.p) + (k === st ? ' stop' : late ? ' (already stopped)' : '') + '</td>';
+          tr.innerHTML = '<td>' + (k + 1) + '</td><td>' + l.n + '</td><td>' + l.a + ' of ' + l.n + '</td><td>' + l.b + ' of ' + l.n + '</td><td>' + (gap > 0 ? '+' : '') + gap + ' patients</td><td>' + fp(l.p) + (k === st ? ' stop' : late ? ' (already stopped)' : '') + '</td>';
           tb.appendChild(tr);
           if (k === ls.length - 1) {
-            var v = st < 0 ? 'The naive rule (stop if p is below 0.05) never stops here.' : 'The naive rule stops at look ' + (st + 1) + ' with a gap of ' + (ls[st].b - ls[st].a) + ' points.';
-            v += mode ? (st < 0 ? ' The drug works, but this trial missed it.' : ' A correct stop.') : (st < 0 ? ' Correct: nothing is there.' : ' But the drug does nothing, so this is a false stop.');
+            var v = st < 0 ? 'The naive rule (stop if p is below 0.05) never stops here.' : 'The naive rule stops at look ' + (st + 1) + ' with ' + (ls[st].b - ls[st].a) + ' more drug patients improved.';
+            v += mode ? (st < 0 ? ' The drug works, but this trial missed it.' : ' A correct stop.') : (st < 0 ? ' Correct: nothing is there.' : ' But the drug does nothing, so this is a false alarm: the trial stops anyway.');
             $('tvVerdict').textContent = v;
-            $('tvCap').textContent = 'Out of 1,000 pretend trials like this one (' + (mode ? 'a real effect' : 'no effect') + '), the naive rule stops in ' + pc(rate[mode], 0) + (mode ? ' (power by looking four times).' : ' (a false alarm; 5% is the goal).');
+            $('tvCap').textContent = 'In 1,000 such trials the naive rule ' + (mode ? 'stops in ' + pc(rate[mode], 0) + ' (it found the real effect).' : 'wrongly stops ' + pc(rate[mode], 0) + ' of the time (goal: 5%).');
           }
         }, 500 * (k + 1)));
       });
@@ -377,16 +375,14 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
 
   /* ---------- Main lab ---------- */
   var PRESETS = [
-    { id: 'coin', label: 'Coin, 10 peeks', K: 10, rule: 'naive', eff: 0, x: 'Share of flips so far', y: 'Evidence the coin is unfair (z)', what: 'flips', note: 'A fair coin. Any "unfair" verdict is a false alarm.' },
-    { id: 'ft', label: 'Free throws, 5 peeks', K: 5, rule: 'naive', eff: 0, x: 'Share of shots so far', y: 'Evidence one player is better (z)', what: 'shots', note: 'Two players with equal skill. Any "better" verdict is a false alarm.' },
+    { id: 'ft', label: 'Drug vs placebo, 5 looks', K: 5, rule: 'naive', eff: 0, x: 'Share of patients so far', y: 'Evidence the drug is better (z)', what: 'patients', note: 'The drug does nothing, so any stop is a false alarm.' },
     { id: 'obf', label: 'Trial: strict early bar', K: 'book', rule: 'obf', eff: 0, x: 'Share of patients so far', y: 'Evidence the drug works (z)', what: 'patients', note: 'A useless drug, 4 looks, a very strict bar early on (O’Brien-Fleming).' },
-    { id: 'poc', label: 'Trial: same bar each look', K: 'book', rule: 'poc', eff: 0, x: 'Share of patients so far', y: 'Evidence the drug works (z)', what: 'patients', note: 'A useless drug, 4 looks, about the same raised bar at every look (Pocock).' },
+    { id: 'poc', label: 'Trial: same bar each look', K: 'book', rule: 'poc', eff: 0, x: 'Share of patients so far', y: 'Evidence the drug works (z)', what: 'patients', note: 'A useless drug, 4 looks, about the same stricter bar at every look (Pocock).' },
     { id: 'work', label: 'Drug that works', K: 'book', rule: 'obf', eff: 1, x: 'Share of patients so far', y: 'Evidence the drug works (z)', what: 'patients', note: 'A real effect: how often, and how early, does the trial stop?' }
   ];
-  var KS = [[1, '1 (no peeking)'], [2, '2'], [5, '5'], [10, '10'], ['book', '4 (book design)']];
-  var RULES = [['naive', 'Usual bar (p < 0.05) each look'], ['poc', 'Same raised bar (Pocock)'], ['obf', 'Strict early bar (O’Brien-Fleming)']];
-  var RNOTE = { naive: 'No fix: the usual 0.05 bar at every look.', poc: 'Pocock-type: about the same raised bar at every look.', obf: 'O’Brien-Fleming: a very high bar early, near normal at the end.' };
-  var S = { K: 10, rule: 'naive', eff: 0, pre: PRESETS[0], runs: 0, wins: 0, pat: 0 };
+  var KS = [[1, '1 (no peeking)'], [2, '2'], [5, '5'], [10, '10'], ['book', '4 (design above)']];
+  var RULES = [['naive', 'Usual bar (p < 0.05) each look'], ['poc', 'Pocock: same stricter bar each look'], ['obf', 'O’Brien-Fleming: strict early bar']];
+  var S = { K: 5, rule: 'naive', eff: 0, pre: PRESETS[0], runs: 0, wins: 0, pat: 0 };
   var plot = Lab.Plot($('plot'), { xlim: [0, 1], ylim: [-5, 5], xlabel: 'Share of patients so far', ylabel: 'Evidence (z)', label: 'Random-walk paths of the z statistic with the stopping boundary', xfmt: function (v) { return Math.round(v * 100) + '%'; } });
   var svg = $('plot'), defs = svgEl('defs', {}, svg), ov = svgEl('g', {}, svg), pg = svgEl('g', {}, svg), clipN = 0;
   function frs() { return S.K === 'book' ? BOOK : eq(S.K); }
@@ -444,11 +440,11 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
 
   function chip(txt, val, warm) { return '<span class="chip' + (warm ? ' warm' : '') + '">' + txt + ' <b>' + val + '</b></span>'; }
   function renderChips() {
-    var d = dsg(), h = chip('Looks', d.fr.length) + chip('Bar at look 1', '|z| &gt; ' + d.z[0].toFixed(2) + ' (two-sided p &lt; ' + fp(d.p2[0]) + ')') +
-      chip(S.eff ? 'Chance to stop with a significant gap (exact)' : 'False alarm chance (exact)', pc(d.total), S.rule === 'naive' && d.fr.length > 1);
-    if (S.runs) h += chip('Stopped on a significant gap, your trials', S.wins + ' of ' + S.runs, true) + chip('Average ' + S.pre.what, (S.pat / S.runs).toFixed(0) + ' of ' + NPAT);
+    var d = dsg(), h = chip('Looks', d.fr.length) + chip('Bar at look 1: p below', fp(d.p2[0])) +
+      chip('False alarm chance if the drug did nothing', pc(d.total), S.rule === 'naive' && d.fr.length > 1);
+    if (S.runs) h += chip('Your trials that stopped', S.wins + ' of ' + S.runs, true) + chip('Average ' + S.pre.what, (S.pat / S.runs).toFixed(0) + ' of ' + NPAT);
     $('chips').innerHTML = h;
-    $('winKey').textContent = S.eff ? 'Stopped on a significant gap (correct)' : 'Stopped on a significant gap (false alarm)';
+    $('winKey').textContent = S.eff ? 'Stopped (correct)' : 'Stopped (false alarm)';
   }
   function setIcons(res) {
     var ic = $('icons').childNodes, i;
@@ -457,10 +453,9 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
   function record(tr) { S.runs++; if (tr.win) S.wins++; S.pat += tr.n; }
   function reset() {
     S.runs = 0; S.wins = 0; S.pat = 0; pg.innerHTML = ''; setIcons(null); drawBounds(); renderChips();
-    $('ruleNote').textContent = RNOTE[S.rule];
-    $('plotNote').innerHTML = esc(S.pre.note) + ' Computer paths: 100 ' + S.pre.what + ' per trial.';
+    $('plotNote').innerHTML = esc(S.pre.note);
     plot.setLabels(S.pre.x, S.pre.y);
-    $('iconTitle').textContent = '100 pretend trials, one dot each' + (S.eff ? ' (a real effect)' : ' (no real effect)');
+    $('iconTitle').textContent = '100 simulated trials, one dot each' + (S.eff ? ' (a real effect)' : ' (no real effect)');
     mark();
   }
   function mark() {
@@ -485,7 +480,7 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
     var res = [], i, tr; for (i = 0; i < 100; i++) { tr = trial(); record(tr); res.push(tr.win); }
     setIcons(res); renderChips();
   });
-  $('keys').innerHTML = '<span><span class="sw" style="background:#E07A3F"></span>Bar to stop and win</span><span><span class="sw" style="background:#1F6B6B"></span>One trial: <span class="tip" tabindex="0" data-tip="z: how many noise units the gap between drug and placebo is from zero. Bigger means stronger evidence.">z</span> so far (dots are looks)</span><span><span class="sw" style="background:#8795A8"></span>What would have happened if it kept going</span>';
+  $('keys').innerHTML = '<span><span class="sw" style="background:#E07A3F"></span>Bar to stop: drug works</span><span><span class="sw" style="background:#1F6B6B"></span>One trial: <span class="tip" tabindex="0" data-tip="z: how big the gap between drug and placebo is compared with luck. Bigger means stronger evidence.">z</span> so far (dots are looks)</span><span><span class="sw" style="background:#8795A8"></span>What would have happened if it kept going</span>';
 
   /* ---------- Question cards ---------- */
   var score = Lab.Score($('score')), Q = $('qcards');
@@ -497,25 +492,25 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
   var r5 = design(eq(5), 'naive').total, opts1 = [0.05, 0.09, 0.14, 0.25];
   c = Lab.QuestionCard(Q, {
     tag: 'Predict 1', score: score, type: 'choice',
-    q: 'A useless drug. You check 5 times, each time asking "is p below 0.05?". How often will you wrongly see a significant gap, drug better or worse?',
+    q: 'A useless drug. You look 5 times and stop if p is below 0.05. How often do you wrongly stop?',
     options: [{ value: 0, label: '5%' }, { value: 1, label: 'About 9%' }, { value: 2, label: 'About 14%' }, { value: 3, label: 'About 25%' }],
     answer: function () { return nearest(opts1, r5); },
     onReveal: function () {
       var g = [1, 2, 3, 5, 10, 20].map(function (K) { return { label: K + '', vals: [design(eq(K), 'naive').total] }; });
       h1.innerHTML = miniBars(g, [ORANGE], 0.3, function (v) { return v < 1 && v > 0 ? (v * 100).toFixed(v < 0.2 ? 1 : 0) + '%' : '0'; }, { ref: { v: 0.05, label: '5%' }, hl: 3, yl: 'False alarm chance', aria: 'False alarm chance by number of looks' });
     },
-    explain: function () { return 'Five looks give ' + pc(r5) + ', nearly three times the 5% you wanted (bars: 1, 2, 3, 5, 10, 20 looks).'; }
+    explain: function () { return 'Five looks give ' + pc(r5) + ', nearly three times the 5% you wanted.'; }
   }); h1 = host(c);
 
   // 2: OBF first look
   var o2 = design(eq(2), 'obf'), opts2 = [0.05, 0.01, 0.003];
   c = Lab.QuestionCard(Q, {
     tag: 'Predict 2', score: score, type: 'choice',
-    q: 'Two looks: halfway and at the end, with O’Brien-Fleming. About what p (two-sided) must you see at the halfway look to stop?',
+    q: 'Two looks: halfway and at the end, with O’Brien-Fleming. About what p must you see at the halfway look to stop?',
     options: [{ value: 0, label: 'p below 0.05' }, { value: 1, label: 'p below 0.01' }, { value: 2, label: 'p below 0.003' }],
     answer: function () { return nearest(opts2, o2.p2[0]); },
     onReveal: function () { h2.innerHTML = miniBounds([{ d: design(eq(2), 'naive'), color: GRAY, dash: 1, label: 'p < 0.05 each look' }, { d: o2, color: TEAL, label: 'O’Brien-Fleming' }], 'Boundaries for two looks'); },
-    explain: function () { return 'Halfway needs p below ' + fp(o2.p2[0]) + ' (z above ' + o2.z[0].toFixed(2) + '). The final look keeps z above ' + o2.z[1].toFixed(2) + ', almost the usual 1.96.'; }
+    explain: function () { return 'Halfway needs p below ' + o2.p2[0].toFixed(3) + '. The last look needs p below ' + o2.p2[1].toFixed(3) + ', almost the usual 0.05.'; }
   }); h2 = host(c);
 
   // 3: last look
@@ -526,21 +521,21 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
     options: [{ value: 'obf', label: 'O’Brien-Fleming' }, { value: 'poc', label: 'Pocock' }, { value: 'same', label: 'The same' }],
     answer: function () { return p3.z[3] > o3.z[3] ? 'poc' : 'obf'; },
     onReveal: function () { h3.innerHTML = miniBounds([{ d: p3, color: TDARK, label: 'Pocock' }, { d: o3, color: TEAL, label: 'O’Brien-Fleming' }], 'Boundaries for four looks'); },
-    explain: function () { return 'Last look: Pocock z above ' + p3.z[3].toFixed(2) + ', O’Brien-Fleming ' + o3.z[3].toFixed(2) + '. Pocock stops easily early and pays at the end.'; }
+    explain: function () { return 'Last look: Pocock needs p below ' + p3.p2[3].toFixed(3) + ', O’Brien-Fleming below ' + o3.p2[3].toFixed(3) + '. Pocock’s easier early bars cost it at the end.'; }
   }); h3 = host(c);
 
   // 4: p = 0.01 at look 1
   var ob = design(BOOK, 'obf'), pk = design(BOOK, 'poc');
   c = Lab.QuestionCard(Q, {
     tag: 'Predict 4', score: score, type: 'choice',
-    q: 'Book design, first look (40% of patients). You see two-sided p = 0.01. Which design stops?',
+    q: 'Four looks. At the first look (40% of patients) you see p = 0.01. Which design stops?',
     options: [{ value: 'both', label: 'Both' }, { value: 'poc', label: 'Only Pocock' }, { value: 'obf', label: 'Only O’Brien-Fleming' }, { value: 'none', label: 'Neither' }],
     answer: function () { var a = ob.p2[0] > 0.01, b = pk.p2[0] > 0.01; return a && b ? 'both' : b ? 'poc' : a ? 'obf' : 'none'; },
     onReveal: function () {
       var g = BOOK.map(function (f, k) { return { label: 'Look ' + (k + 1), vals: [ob.p2[k], pk.p2[k]] }; });
-      h4.innerHTML = miniBars(g, [TEAL, TDARK], 0.05, function (v) { return v === 0 ? '0' : v.toFixed(4).replace(/0+$/, '').replace(/\.$/, ''); }, { ref: { v: 0.01, label: 'your p = 0.01' }, yl: 'p needed to stop (two-sided)', aria: 'p thresholds for O’Brien-Fleming and Pocock at four looks' });
+      h4.innerHTML = miniBars(g, [TEAL, TDARK], 0.05, function (v) { return v === 0 ? '0' : v.toFixed(4).replace(/0+$/, '').replace(/\.$/, ''); }, { ref: { v: 0.01, label: 'your p = 0.01' }, yl: 'p needed to stop', aria: 'p thresholds for O’Brien-Fleming and Pocock at four looks' });
     },
-    explain: function () { return 'A look stops if your p is below its bar. At look 1 the bars are ' + fp(ob.p2[0]) + ' (O’Brien-Fleming, light teal) and ' + fp(pk.p2[0]) + ' (Pocock, dark teal).'; }
+    explain: function () { return 'At look 1, O’Brien-Fleming needs p below ' + fp(ob.p2[0]) + ' and Pocock below ' + fp(pk.p2[0]) + '. Only Pocock stops.'; }
   }); h4 = host(c);
 
   // 5: early stop overestimates
@@ -551,7 +546,7 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
   })();
   c = Lab.QuestionCard(Q, {
     tag: 'Predict 5', score: score, type: 'choice',
-    q: 'The drug truly helps a little (0.25 on this scale). A trial stops at look 1 because it crossed the bar. Is its estimate of the effect (the size of the gap) too big, too small, or right?',
+    q: 'The drug truly helps a little. A trial stops at look 1 because it crossed the bar. Is its estimate of the effect (the size of the gap) too big, too small, or right?',
     options: [{ value: 'big', label: 'Too big' }, { value: 'small', label: 'Too small' }, { value: 'right', label: 'About right' }],
     answer: function () { return sim5.meanSt > MU * 1.1 ? 'big' : sim5.meanSt < MU * 0.9 ? 'small' : 'right'; },
     onReveal: function () {
@@ -560,33 +555,33 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
       var bw = (m.sx(hi) - m.sx(lo)) / nb;
       ha.forEach(function (v, i) { s += '<rect x="' + (m.sx(lo) + i * bw + 0.5).toFixed(1) + '" y="' + m.sy(v).toFixed(1) + '" width="' + (bw - 1).toFixed(1) + '" height="' + (m.sy(0) - m.sy(v)).toFixed(1) + '" fill="#2D8B8B" opacity=".55"/>'; });
       hs.forEach(function (v, i) { s += '<rect x="' + (m.sx(lo) + i * bw + 0.5).toFixed(1) + '" y="' + m.sy(v).toFixed(1) + '" width="' + (bw - 1).toFixed(1) + '" height="' + (m.sy(0) - m.sy(v)).toFixed(1) + '" fill="#E07A3F" opacity=".8"/>'; });
-      s += '<line x1="' + m.sx(MU) + '" x2="' + m.sx(MU) + '" y1="' + MT + '" y2="' + (MH - MB) + '" stroke="#0A1628" stroke-width="2" stroke-dasharray="4 3"/><text x="' + (m.sx(MU) + 4) + '" y="' + (MT + 10) + '" style="font-weight:600;fill:#0A1628">true 0.25</text>';
+      s += '<line x1="' + m.sx(MU) + '" x2="' + m.sx(MU) + '" y1="' + MT + '" y2="' + (MH - MB) + '" stroke="#0A1628" stroke-width="2" stroke-dasharray="4 3"/><text x="' + (m.sx(MU) + 4) + '" y="' + (MT + 10) + '" style="font-weight:600;fill:#0A1628">truth</text>';
       s += '<text x="' + (ML + 6) + '" y="' + (MT + 28) + '" style="fill:#2D8B8B;font-weight:600">all trials</text><text x="' + (ML + 6) + '" y="' + (MT + 42) + '" style="fill:#B8531A;font-weight:600">stopped at look 1</text>';
       h5.innerHTML = '<svg viewBox="0 0 ' + MW + ' ' + MH + '" role="img" aria-label="Histograms of estimated effect, all trials and trials stopped at look 1">' + s + '</svg>';
     },
-    explain: function () { return 'Only ' + pc(sim5.share) + ' of 40,000 pretend trials stop at look 1. Their average estimate is ' + sim5.meanSt.toFixed(2) + ', against a true 0.25: lucky data cross the bar.'; }
+    explain: function () { return 'Trials that stop at look 1 guess the effect at more than twice the truth. Only lucky trials cross the early bar.'; }
   }); h5 = host(c);
 
   // 6: Bayesian rare-disease trial (book table)
   var BT = [['No effect', 0.095], ['Small', 0.281], ['Moderate', 0.543], ['Large', 0.807]];
   c = Lab.QuestionCard(Q, {
     tag: 'Predict 6', score: score, type: 'choice',
-    q: 'A small trial stops early if the chance the drug is better, given the data so far (the posterior idea from module 1), exceeds 95%. It checks at 3 looks. The drug does nothing. How often does it stop and win, counted over 1,000 pretend trials?',
+    q: 'A small trial stops if the chance the drug is better passes 95%. It looks 3 times. The drug does nothing. How often does it wrongly stop?',
     options: [{ value: 0, label: 'Under 1%' }, { value: 1, label: 'About 5%' }, { value: 2, label: 'About 10%' }, { value: 3, label: 'About 25%' }],
     answer: function () { return nearest([0.005, 0.05, 0.1, 0.25], BT[0][1]); },
-    onReveal: function () { h6.innerHTML = miniBars(BT.map(function (r) { return { label: r[0], vals: [r[1]] }; }), [TEAL], 1, function (v) { return (v * 100).toFixed(v < 0.1 ? 1 : 0) + '%'; }, { hl: 0, ref: { v: 0.05, label: '5%' }, yl: 'Stopped for efficacy', aria: 'Book table: probability of stopping for efficacy by true effect' }); },
-    explain: function () { return 'Book table (1,000 pretend trials each): 9.5% with no effect, nearly double 5%. Same problem, even when the rule is the chance the drug is better.'; }
+    onReveal: function () { h6.innerHTML = miniBars(BT.map(function (r) { return { label: r[0], vals: [r[1]] }; }), [TEAL], 1, function (v) { return (v * 100).toFixed(v < 0.1 ? 1 : 0) + '%'; }, { hl: 0, ref: { v: 0.05, label: '5%' }, yl: 'Stopped: drug works', aria: 'Book table: probability of stopping for efficacy by true effect' }); },
+    explain: function () { return '9.5% with no effect, nearly double the 5% goal.'; }
   }); h6 = host(c);
 
   // 7: sample size
   var FIX = 467, OBFN = 478, POCN = Math.round(FIX * 1.18);
   c = Lab.QuestionCard(Q, {
     tag: 'Predict 7', score: score, type: 'choice',
-    q: 'One final look needs 467 patients. A Pocock design with 4 looks can use up to about 18% more. Planning to look early costs extra patients, to keep the total false-alarm chance at 5% and the same power (the chance a trial finds a real effect, module 3). How many extra patients is that?',
+    q: 'One final look needs 467 patients. With 4 Pocock looks, at the same false alarm chance and the same chance of finding a real effect, how many extra patients might it need?',
     options: [{ value: 0, label: 'About 11' }, { value: 1, label: 'About 40' }, { value: 2, label: 'About 84' }, { value: 3, label: 'About 150' }],
     answer: function () { return nearest([11, 40, 84, 150], POCN - FIX); },
-    onReveal: function () { h7.innerHTML = miniBars([{ label: 'One look', vals: [FIX] }, { label: 'O’B-F', vals: [OBFN] }, { label: 'Pocock', vals: [POCN] }], [TEAL], 600, function (v) { return String(Math.round(v)); }, { yl: 'Largest sample (patients)', hl: 2, aria: 'Maximum sample size by design' }); },
-    explain: function () { return 'Pocock: about ' + POCN + ' patients, ' + (POCN - FIX) + ' more. O’Brien-Fleming: 478, only 11 more (book design, about 2% and 18%).'; }
+    onReveal: function () { h7.innerHTML = miniBars([{ label: 'One look', vals: [FIX] }, { label: 'O’Brien-Fleming', vals: [OBFN] }, { label: 'Pocock', vals: [POCN] }], [TEAL], 600, function (v) { return String(Math.round(v)); }, { yl: 'Most patients needed', hl: 2, aria: 'Maximum sample size by design' }); },
+    explain: function () { return 'Pocock: up to ' + POCN + ' (' + (POCN - FIX) + ' more). O’Brien-Fleming: ' + OBFN + ' (' + (OBFN - FIX) + ' more).'; }
   }); h7 = host(c);
 
   Lab.CodeBox($('code'), {
