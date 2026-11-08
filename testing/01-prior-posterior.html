@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="lab.css">
 <script>window.MathJax = { tex: { inlineMath: [['\\(', '\\)']] } };</script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
-<style>.setup{margin:.5rem 0 1rem;font-size:1.02rem}details.more summary{cursor:pointer;list-style:revert}details.more[open] summary{margin-bottom:.5rem}</style>
+<style>.setup{margin:.5rem 0 1rem;font-size:1.02rem}</style>
 <style>
   .sub { margin: 1.1rem 0 .3rem; font-size: 1.05rem; color: var(--navy); }
   .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; margin: .5rem 0 1rem; }
@@ -23,6 +23,16 @@
   .gcell p { margin: .2rem 0 0; font-size: .85rem; color: var(--text-secondary); }
   @media (max-width: 640px) { .gallery { grid-template-columns: repeat(2, 1fr); } }
   .tip { border-bottom: 1px dotted var(--navy); cursor: help; }
+  .bseq, .brow { display: flex; flex-wrap: wrap; gap: 4px; }
+  .bseq { margin: .4rem 0 .6rem; }
+  .bseq span, .brow span { width: 34px; height: 34px; border-radius: 8px; border: 2px solid var(--teal-dark); font-weight: 700; line-height: 30px; text-align: center; color: var(--teal-dark); background: var(--white); }
+  .bseq span.h, .brow span.h { background: var(--teal-dark); color: #fff; }
+  .brow span { width: 24px; height: 24px; line-height: 20px; font-size: .8rem; border-radius: 6px; }
+  .bgrid { display: flex; flex-wrap: wrap; gap: .5rem 1.1rem; margin: .5rem 0 1rem; }
+  .bsteps { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .6rem; margin: .5rem 0 1rem; }
+  .bstep { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: .6rem .7rem; font-size: .95rem; min-width: 0; }
+  .bstep b { display: block; font-family: var(--mono); color: var(--teal-dark); margin-top: .2rem; overflow-wrap: anywhere; }
+  .bstep.last { background: var(--teal-light); }
 </style>
 </head>
 <body class="lab">
@@ -70,13 +80,6 @@
       </div>
       <div class="row" style="margin-top:.4rem"><button class="btn" id="tomorrow" type="button">Use as new prior</button></div>
     </div>
-    <details class="grp more"><summary><h3 style="display:inline">More controls</h3></summary>
-      <div class="row" id="kbtns"></div>
-      <div class="field"><label for="inH" id="lblH">Heads</label><input id="inH" type="number" min="0" max="100000" value="7">
-        <label for="inT" id="lblT">Tails</label><input id="inT" type="number" min="0" max="100000" value="3"></div>
-      <div class="row"><button class="btn" id="setCounts" type="button">Use these counts</button><button class="btn" id="resetBtn" type="button">Clear data</button></div>
-      <label class="field"><input type="checkbox" id="showTrue"> Reveal the hidden coin</label>
-    </details>
   </div>
 
   <div class="tri">
@@ -111,6 +114,37 @@
   <h2>A shortcut: models</h2>
   <p>Bars work, but they are clumsy: one multiplication per bar. A smooth curve does the same job with two numbers.</p>
   <h3 class="sub">Where the curve comes from</h3>
+  <h3 class="sub">One specific sequence</h3>
+  <p>Toss a coin four times and get this.</p>
+  <div class="bseq" id="b1tiles" role="img" aria-label="Heads, heads, tails, heads"></div>
+  <div class="panel controls"><div class="field"><label for="b1th">Chance of heads, θ</label><input id="b1th" type="range" min="0.05" max="0.95" step="0.05" value="0.6"><output id="b1thO">0.60</output></div></div>
+  <div class="chips" aria-live="polite"><span class="chip warm" id="b1chip"></span></div>
+  <p>\[\theta\times\theta\times(1-\theta)\times\theta=\theta^{3}(1-\theta)\]</p>
+  <p>Any one sequence with \(h\) heads and \(t\) tails has chance \(\theta^{h}(1-\theta)^{t}\), whatever the order.</p>
+  <h3 class="sub">How many sequences have h heads?</h3>
+  <p>List them all. Pick the number of tosses and the number of heads.</p>
+  <div class="panel controls">
+    <div class="field"><label for="b2n">Tosses, n</label><input id="b2n" type="range" min="2" max="6" step="1" value="4"><output id="b2nO">4</output></div>
+    <div class="field"><label for="b2h">Heads, h</label><input id="b2h" type="range" min="0" max="4" step="1" value="2"><output id="b2hO">2</output></div>
+  </div>
+  <div class="chips" aria-live="polite"><span class="chip" id="b2chip"></span></div>
+  <div class="bgrid" id="b2rows"></div>
+  <h3 class="sub">Counting without listing</h3>
+  <p>Uses the n and h chosen above.</p>
+  <div class="bsteps" id="b3steps" aria-live="polite"></div>
+  <p>The count is called "n choose h":</p>
+  <p>\[\binom{n}{h}=\frac{n!}{h!\,t!}\]</p>
+  <h3 class="sub">Put together: the binomial</h3>
+  <p>Chance of \(h\) heads in \(n\) tosses:</p>
+  <p>\[\binom{n}{h}\,\theta^{h}(1-\theta)^{t}\]</p>
+  <div class="panel controls">
+    <div class="field"><label for="b4n">Tosses, n</label><input id="b4n" type="range" min="1" max="20" step="1" value="4"><output id="b4nO">4</output></div>
+    <div class="field"><label for="b4th">Chance of heads, θ</label><input id="b4th" type="range" min="0.05" max="0.95" step="0.05" value="0.6"><output id="b4thO">0.60</output></div>
+  </div>
+  <figure class="figure narrow" style="margin-top:.5rem"><svg id="b4"></svg><figcaption id="b4cap"></figcaption></figure>
+  <p>The count does not depend on θ, so it only scales the curve and never changes its shape. That is why the fit curve (and the posterior) is just \(\theta^{h}(1-\theta)^{t}\).</p>
+  <div class="qcards" id="bcards"></div>
+  <h3 class="sub">The same shape, for every bias</h3>
   <p>The fit bars for \(h\) heads and \(t\) tails follow one formula: \(\theta^{h}(1-\theta)^{t}\), where \(\theta\) is the bias.</p>
   <figure class="figure narrow" style="margin-top:.5rem"><svg id="m0"></svg><figcaption id="m0cap"></figcaption></figure>
   <h3 class="sub">Its name</h3>
@@ -257,7 +291,7 @@
     qp.bars('prior', prodStage ? p.map(function () { return 0; }) : p, lo, hi, { fill: ORANGE, opacity: 0.25 }, ms);
     qp.bars('b', prodStage ? prod : post, lo, hi, { fill: TEAL, opacity: 0.8 }, ms);
     if (S.cmp) qp.line('cmp', th, gridPost(SHAPES[S.cmp](th), th, S.h, S.t), { stroke: NAVY, width: 2.5, dash: '6 4' }, ms); else qp.remove('cmp');
-    if ($('showTrue').checked && !S.ex.real) qp.vline('true', S.theta, 'hidden ' + S.theta.toFixed(2), { color: NAVY, dash: '3 3' }, 0); else qp.remove('true');
+    qp.remove('true');
     var leg = prodStage ? [{ label: 'prior x fit', color: TEAL, kind: 'box' }] : [{ label: 'posterior', color: TEAL, kind: 'box' }, { label: 'prior (faint)', color: ORANGE, kind: 'box' }];
     if (S.cmp) leg.push({ label: 'other prior, same data', color: NAVY, kind: 'dash' });
     qp.legend(leg);
@@ -270,16 +304,12 @@
     $('chips').innerHTML = chip('Data', S.h + ' ' + S.ex.s + ', ' + S.t + ' ' + S.ex.f, true) + chip('Best guess for the bias', gmean(th, post).toFixed(2)) +
       chip('90% sure it is between', lo5.toFixed(2) + ' to ' + hi95.toFixed(2)) + chip('Chance the bias is above 0.5', above.toFixed(2));
     $('plotNote').innerHTML = (S.ex.real ? '<b>Real data.</b> ' : '') + K + ' possible biases. Every number is computed on this page.';
-    $('lblH').textContent = S.ex.Ls; $('lblT').textContent = S.ex.Lf;
     $('addA').textContent = '+ ' + S.ex.Ls; $('addB').textContent = '+ ' + S.ex.Lf;
     var tb = $('tosses'); tb.innerHTML = '';
     S.seq.slice(-40).forEach(function (x) { var e = document.createElement('span'); e.className = x ? 'h' : 't'; e.textContent = x ? S.ex.Ls[0] : S.ex.Lf[0]; tb.appendChild(e); });
     document.querySelectorAll('#priors .btn').forEach(function (b) { b.classList.toggle('on', b.dataset.id === S.shape); });
-    document.querySelectorAll('#kbtns .btn').forEach(function (b) { b.classList.toggle('on', +b.dataset.k === K); });
     document.querySelectorAll('[data-n],#addA,#addB').forEach(function (b) { b.disabled = !!S.ex.real; });
-    $('showTrue').disabled = !!S.ex.real;
-    $('tossNote').innerHTML = S.ex.real ? '<b>Real data.</b> Tossing is off. Enter counts instead.' : 'A hidden computer coin makes the tosses.';
-    if (S.ex.real) $('showTrue').checked = false;
+    $('tossNote').innerHTML = S.ex.real ? '<b>Real data.</b> Tossing is off: these are the trial\'s own counts.' : 'A hidden computer coin makes the tosses.';
     modelRefresh(0);
   }
   // Set the scene: o {K, shape or raw, h, t, cmp, ex}; stage resets to final.
@@ -307,10 +337,6 @@
     b.addEventListener('click', function () { S.shape = p.id; S.raw = SHAPES[p.id](grid(S.K)); S.stage = 'final'; S.cmp = null; render(600); });
     $('priors').appendChild(b);
   });
-  [11, 21, 101].forEach(function (k) {
-    var b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = k + ' bars'; b.dataset.k = k;
-    b.addEventListener('click', function () { setK(k); }); $('kbtns').appendChild(b);
-  });
   EXAMPLES.forEach(function (ex) {
     var b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = ex.label; b.dataset.id = ex.id;
     b.addEventListener('click', function () {
@@ -326,9 +352,6 @@
   $('multBtn').addEventListener('click', function () { S.stage = 'product'; render(900); $('hover').textContent = 'Each prior bar times its fit bar. Now rescale.'; });
   $('rescBtn').addEventListener('click', function () { S.stage = 'final'; render(1000); $('hover').textContent = 'Bars rescaled to add to 1: that is the posterior.'; });
   $('tomorrow').addEventListener('click', function () { S.raw = S.C.post.slice(); S.shape = null; S.h = 0; S.t = 0; S.seq = []; S.stage = 'final'; S.cmp = null; render(800); $('hover').textContent = 'Yesterday\'s posterior is now the prior. Add new tosses.'; });
-  $('setCounts').addEventListener('click', function () { S.h = Math.max(0, Math.floor(+$('inH').value || 0)); S.t = Math.max(0, Math.floor(+$('inT').value || 0)); S.seq = []; S.stage = 'final'; S.cmp = null; render(800); });
-  $('resetBtn').addEventListener('click', function () { S.h = 0; S.t = 0; S.seq = []; S.stage = 'final'; S.cmp = null; render(600); });
-  $('showTrue').addEventListener('change', function () { render(0); });
 
   // Hover arithmetic for the bar under the pointer, on all three panels.
   function idxAt(P, e) { var i = Math.round(P.invX(e.clientX) * (S.K - 1)); return Math.max(0, Math.min(S.K - 1, i)); }
@@ -544,6 +567,82 @@
     onReveal: function () { setM(20, 20, 0, 0); },
     revealPlot: function (b) { miniBeta(b, [{ a: 20, b: 20, label: 'Prior Beta(20, 20)', color: ORANGE, fill: ORANGE }, { a: 27, b: 23, label: 'After 7 and 3', color: TEAL }]); },
     explain: function () { return 'Beta(20, 20) reads as 19 heads and 19 tails already seen, 38 tosses. Seven real heads barely move it.'; }
+  });
+
+  /* ---------- binomial build-up ---------- */
+  function fact(k) { var r = 1; for (var i = 2; i <= k; i++) r *= i; return r; }
+  function tilesHTML(s) { return s.split('').map(function (c) { return '<span class="' + (c === 'H' ? 'h' : 't') + '">' + c + '</span>'; }).join(''); }
+  function arrangements(n, h) {
+    var out = [];
+    for (var m = (1 << n) - 1; m >= 0; m--) {
+      var c = 0, s = '';
+      for (var i = n - 1; i >= 0; i--) { var b = (m >> i) & 1; c += b; s += b ? 'H' : 'T'; }
+      if (c === h) out.push(s);
+    }
+    return out;
+  }
+  $('b1tiles').innerHTML = tilesHTML('HHTH');
+  function b1() {
+    var th = +$('b1th').value;
+    $('b1thO').textContent = th.toFixed(2);
+    var a = th.toFixed(2), b = (1 - th).toFixed(2);
+    $('b1chip').innerHTML = a + ' × ' + a + ' × ' + b + ' × ' + a + ' = <b>' + (th * th * (1 - th) * th).toFixed(4) + '</b>';
+  }
+  function b2() {
+    var n = +$('b2n').value, hs = $('b2h');
+    hs.max = n; if (+hs.value > n) hs.value = n;
+    var h = +hs.value, list = arrangements(n, h);
+    $('b2nO').textContent = n; $('b2hO').textContent = h;
+    $('b2chip').innerHTML = n + ' tosses, ' + h + ' heads: <b>' + list.length + '</b> sequences';
+    $('b2rows').innerHTML = list.map(function (s) { return '<div class="brow" role="img" aria-label="' + s.split('').join(' ') + '">' + tilesHTML(s) + '</div>'; }).join('');
+    b3(n, h, list.length);
+  }
+  function b3(n, h, listed) {
+    var t = n - h, seq = function (k) { var a = []; for (var i = k; i >= 1; i--) a.push(i); return a.length ? a.join(' × ') : '1'; };
+    var cnt = fact(n) / (fact(h) * fact(t));
+    $('b3steps').innerHTML =
+      '<div class="bstep">1. Order ' + n + ' different slots<b>' + n + '! = ' + seq(n) + ' = ' + fact(n) + '</b></div>' +
+      '<div class="bstep">2. The ' + h + ' heads look alike: divide by ' + h + '!<b>' + h + '! = ' + fact(h) + '</b></div>' +
+      '<div class="bstep">3. The ' + t + ' tails look alike: divide by ' + t + '!<b>' + t + '! = ' + fact(t) + '</b></div>' +
+      '<div class="bstep last">Count<b>' + fact(n) + ' / (' + fact(h) + ' × ' + fact(t) + ') = ' + cnt + '</b>' + (cnt === listed ? 'Matches the ' + listed + ' listed.' : '') + '</div>';
+  }
+  function choose(n, k) { return fact(n) / (fact(k) * fact(n - k)); }
+  var b4p = Lab.Plot($('b4'), { w: 520, h: 230, small: true, xlim: [-0.5, 4.5], ylim: [0, 1], xlabel: 'number of heads, h', ylabel: 'chance', label: 'Binomial chances' });
+  function b4() {
+    var n = +$('b4n').value, th = +$('b4th').value, y = [], k;
+    $('b4nO').textContent = n; $('b4thO').textContent = th.toFixed(2);
+    for (k = 0; k <= n; k++) y.push(Lab.binomPmf(k, n, th));
+    var top = nice(Math.max.apply(null, y) * 1.1), best = argmax(y);
+    b4p.setXlim(-0.5, n + 0.5); b4p.setYlim(0, top);
+    b4p.bars('b', y, -0.5, n + 0.5, { fill: TEAL, opacity: 0.85 }, 250);
+    $('b4cap').textContent = 'n = ' + n + ' tosses, chance of heads ' + th.toFixed(2) + '. Most likely: ' + best + ' heads, chance ' + y[best].toFixed(3) + '.';
+  }
+  ['b1th'].forEach(function (id) { $(id).addEventListener('input', b1); });
+  ['b2n', 'b2h'].forEach(function (id) { $(id).addEventListener('input', b2); });
+  ['b4n', 'b4th'].forEach(function (id) { $(id).addEventListener('input', b4); });
+  b1(); b2(); b4();
+  var BQ = $('bcards');
+  Lab.QuestionCard(BQ, {
+    tag: 'Counting', score: score, type: 'choice',
+    q: 'How many sequences of 5 tosses have exactly 2 heads?',
+    options: [{ value: 5, label: '5' }, { value: 10, label: '10' }, { value: 20, label: '20' }],
+    answer: 10,
+    revealPlot: function (b) { b.innerHTML = '<div class="bgrid" style="margin:.3rem 0">' + arrangements(5, 2).map(function (s) { return '<div class="brow" role="img" aria-label="' + s.split('').join(' ') + '">' + tilesHTML(s) + '</div>'; }).join('') + '</div>'; },
+    explain: function () { return '5! / (2! × 3!) = 120 / (2 × 6) = 10, and the ten rows above are all of them.'; }
+  });
+  Lab.QuestionCard(BQ, {
+    tag: 'Binomial', score: score, type: 'choice',
+    q: 'A fair coin, 10 tosses. Is exactly 5 heads more likely than 50%?',
+    options: [{ value: 'yes', label: 'Yes, more than 50%' }, { value: 'no', label: 'No, less than 50%' }],
+    answer: 'no',
+    revealPlot: function (b) {
+      var y = [], hi = [], k;
+      for (k = 0; k <= 10; k++) { y.push(Lab.binomPmf(k, 10, 0.5)); hi.push(k === 5 ? y[k] : 0); }
+      var P = Lab.miniPlot(b, { xlim: [-0.5, 10.5], ylim: [0, 0.3], xlabel: 'heads in 10 tosses', ylabel: 'chance', label: 'Binomial bars for 10 fair tosses' });
+      P.bars('a', y, -0.5, 10.5, { fill: SLATE, opacity: 0.5 }, 0);
+      P.bars('b', hi, -0.5, 10.5, { fill: ORANGE, opacity: 0.95 }, 0);
+    },
+    explain: function () { return 'Exactly 5 heads has chance 252 × 0.5^10 = ' + (100 * Lab.binomPmf(5, 10, 0.5)).toFixed(1) + '%. Eleven outcomes share the chance, so even the best one gets about a quarter.'; }
   });
 
   Lab.CodeBox($('code'), {
