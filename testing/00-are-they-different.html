@@ -78,7 +78,7 @@
 @keyframes dealA { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 @keyframes dealB { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .dealing .coin, .dealing #gA .pi, .dealing #gB .pi { animation: none; } }
-/* Why the coin? (scoped) */
+/* Randomization (scoped) */
 #why-coin .legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: .85rem; color: var(--text-secondary); margin: .3rem 0; }
 #why-coin .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; vertical-align: -1px; margin-right: .3rem; }
 #why-coin .legend .pp { display: inline-block; width: 18px; height: 22px; vertical-align: middle; }
@@ -192,7 +192,7 @@
 </section>
 
 <section class="section" id="why-coin">
-  <h2>Why the coin?</h2>
+  <h2>Randomization</h2>
   <p>Each patient has a result on the drug and a result on placebo, but the trial sees only one. Who decides which?</p>
   <p>Each column is one of 40 patients: top icon = result on the drug, bottom = on placebo.</p>
   <p>The colored bar is each patient's health at the start: orange sicker, teal healthier.</p>
@@ -759,7 +759,7 @@
 
   newArnold(); mineDraw();
 
-  /* ---------- Why the coin? (own scope) ---------- */
+  /* ---------- Randomization (own scope) ---------- */
   (function (score) {
   var ORANGE = '#E07A3F', TEAL = '#2D8B8B', NAVY = '#0A1628', NS = 'http://www.w3.org/2000/svg';
   function E(tag, attrs, parent) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
@@ -940,7 +940,7 @@
   CF.pts = cfCohort(cfRng, 40); CF.t = cfAssign(cfRng, CF.pts, CF.mode); cfDraw(false);
 
   function cfCard(key, o) { o.score = score; var c = Lab.QuestionCard($('cfCards'), o); cardEl[key] = c; return c; }
-  var qc = { tag: 'Predict: why the coin 1', type: 'choice',
+  var qc = { tag: 'Predict: randomization 1', type: 'choice',
     q: 'The drug does nothing: both outcomes match for every patient. Patients choose, and healthier people pick it. Does the trial show a benefit?',
     options: [{ value: 'up', label: 'Yes, the drug group looks better' }, { value: 'zero', label: 'No, the groups look the same' }, { value: 'down', label: 'It looks like it hurts' }],
     answer: function () {
@@ -955,7 +955,7 @@
     },
     explain: function () { return 'The drug group looks better only because healthier people picked it. Its own "had it skipped the drug" bar is just as tall.'; } };
   cfCard('qc', qc);
-  var q7 = { tag: 'Predict: why the coin 2', type: 'choice',
+  var q7 = { tag: 'Predict: randomization 2', type: 'choice',
     q: 'Many studies saw women on hormone therapy having fewer heart problems. Then a large randomized trial (WHI) tested it. What happened to the risk of heart attacks?',
     options: [{ value: 'lower', label: 'Lower, as expected' }, { value: 'same', label: 'No change' }, { value: 'higher', label: 'Higher' }],
     answer: 'higher',
