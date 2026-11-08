@@ -29,7 +29,7 @@
   .field.col { flex-direction: column; align-items: stretch; gap: .1rem; }
   .field.col label { display: flex; justify-content: space-between; }
   .ref { font-size: .9rem; }
-  #berger, #eolia { max-width: 640px; }
+  #eolia { max-width: 640px; }
   .field.col input[type=range] { width: 100%; flex: none; }
   @media (max-width: 800px) { .figgrid { grid-template-columns: 1fr; } }
 </style>
@@ -77,18 +77,6 @@
   <div class="qcards" id="qcards"></div>
 </section>
 
-<section class="fig" id="figPlan">
-  <h2>Same data, different plan</h2>
-  <p>You saw 9 responders and 3 non-responders. Did you plan to treat 12 patients, or to stop at the third non-responder?</p>
-  <div class="figgrid">
-    <div>
-      <div class="row"><button class="btn on" id="planA" type="button">Plan A: 12 patients</button><button class="btn" id="planB" type="button">Plan B: stop at 3rd non-responder</button></div>
-      <p class="note" style="margin-top:.6rem">Same data. Only the plan changes.</p>
-    </div>
-    <div><svg id="planPlot"></svg><div class="chips" id="planChips"></div></div>
-  </div>
-</section>
-
 <section class="fig" id="figPeek">
   <h2>Peeking at the data</h2>
   <p>The drug does nothing: patients respond 50% of the time. Compute p at each look and stop at the first p below 0.05 (<span class="tip" tabindex="0" data-tip="Far enough from 50:50 that p is below 0.05.">significant</span>).</p>
@@ -114,13 +102,6 @@
     </div>
     <div><svg id="dots" class="dots" role="img" aria-label="Dots for each test, orange when p is below 0.05"></svg><div class="chips" id="fishChips" aria-live="polite"></div></div>
   </div>
-</section>
-
-<section class="fig" id="figBerger">
-  <h2>p = 0.05 is not a 5% chance that the drug does nothing</h2>
-  <p>Orange: the p-value. Teal: the lowest possible chance that the drug does nothing, given that p.</p>
-  <svg id="berger" class="plot" role="img" aria-label="Grouped bars: p-value and the lowest possible chance the drug does nothing, for four p-values"></svg>
-  <p class="note">Assumes a 50:50 chance, before the trial, that the drug works. The real chance it does nothing is usually higher than teal. Source: <a href="https://vsokolov.org/html/_book/06-hyp.html">Bayes, AI and Deep Learning, chapter 6</a>.</p>
 </section>
 
 <section class="example">
@@ -389,23 +370,6 @@
     explain: function () { return '11 of 20: p = ' + pfmt(pSmall) + '. 110 of 200: p = ' + pfmt(pBig) + '. Luck gives 55% less easily in 200 patients than in 20.'; }
   });
 
-  /* =============== Figure: same data, different plan =============== */
-  var planMode = 'A', planPlot;
-  function drawPlan() {
-    var pm, x0 = 9, xl, p;
-    if (planMode === 'A') { pm = pmfArr(12, 0.5); xl = 'Responders in 12 patients (drug does nothing)'; p = p912; }
-    else { pm = []; for (var h = 0; h <= 20; h++) pm.push(nbPmf(h)); xl = 'Responders before the 3rd non-responder (drug does nothing)'; p = pNB; }
-    var n = pm.length - 1;
-    planPlot = Lab.Plot($('planPlot'), { w: PW, h: 260, xlim: [-0.5, n + 0.5], ylim: [0, 0.3], xlabel: xl, ylabel: 'Share of trials', yfmt: function (v) { return Math.round(v * 100) + '%'; }, label: 'Histogram under the chosen plan, tail from 9 responders shaded' });
-    planPlot.bars('b', pm, -0.5, n + 0.5, { fill: TEAL, opacity: 0.4 }, 0);
-    planPlot.bars('t', pm.map(function (v, i) { return i >= x0 ? v : 0; }), -0.5, n + 0.5, { fill: ORANGE, opacity: 0.9 }, 0);
-    planPlot.vline('y', 9, '9 responders', { color: NAVY, dash: '4 3' }, 0);
-    $('planChips').innerHTML = chip('p-value', pfmt(p), true) + chip('Significant?', p < 0.05 ? 'Yes' : 'No');
-    $('planA').classList.toggle('on', planMode === 'A'); $('planB').classList.toggle('on', planMode === 'B');
-  }
-  $('planA').addEventListener('click', function () { planMode = 'A'; drawPlan(); });
-  $('planB').addEventListener('click', function () { planMode = 'B'; drawPlan(); });
-
   /* =============== Figure: peeking =============== */
   var peekStep = 1, peekPlot;
   [['Once, at the end', 100], ['Every 10 patients', 10], ['Every patient', 1]].forEach(function (o) {
@@ -456,15 +420,6 @@
   $('sT').addEventListener('input', function () { $('oT').textContent = $('sT').value; fishRuns = 0; fishAny = 0; runFish(); });
   $('fishBtn').addEventListener('click', runFish);
 
-  /* =============== Figure: Berger bounds =============== */
-  (function () {
-    var ts = [1.645, 1.96, 2.576, 3.291], groups = ts.map(function (t) {
-      var p = 2 * (1 - Lab.normalCdf(t)), b = 1 / (1 + Math.exp(t * t / 2));
-      return { label: 'p = ' + p.toFixed(3), v: [p, b] };
-    });
-    groupBars($('berger'), groups, [{ name: 'p-value', color: ORANGE }, { name: 'Lowest chance null is true', color: TEAL }], 0.3, function (v) { return v < 0.1 ? (v * 100).toFixed(1) + '%' : (v * 100).toFixed(0) + '%'; }, '');
-  })();
-
   /* =============== Figure: EOLIA ruler =============== */
   (function () {
     var W = PW, H = 120, ml = 30, iw = W - 60, sx = function (v) { return ml + v / 0.2 * iw; }, h = '';
@@ -497,7 +452,7 @@
   setParams(12, 9, 0.5, false);
   $('story').textContent = EXAMPLES[0].story;
   document.querySelector('#examples .btn').classList.add('on');
-  drawPlan(); newStudy(); $('oT').textContent = $('sT').value; runFish();
+  newStudy(); $('oT').textContent = $('sT').value; runFish();
 })();
 </script>
 </body>

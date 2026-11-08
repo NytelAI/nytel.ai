@@ -129,14 +129,6 @@ table.t th:first-child, table.t td:first-child { text-align: left; }
   </div>
 </section>
 
-<section class="section">
-  <h2>What does a fixed $40 bar cost?</h2>
-  <p>Another paper simulates a trial where each wrong decision costs lives. Average extra deaths: 238 with the $40 bar, 118 with a $3.5 bar, 53 with the best rule.</p>
-  <div class="plotbox"><svg id="costplot"></svg>
-    <p class="note" style="margin:.5rem 0 0">A $3.5 bar allows 1 false alarm in 3.5 trials, so it gives up the 1 in 40 guarantee.</p>
-  </div>
-</section>
-
 <section class="reg">
   <h3>Regulator's corner</h3>
   <p>ICH E20 is a draft international rulebook for trials that change their plan midway. It says:</p>
@@ -191,7 +183,6 @@ table.t th:first-child, table.t td:first-child { text-align: left; }
     <li>Ville, J. (1939). Etude critique de la notion de collectif. Gauthier-Villars, Paris.</li>
     <li>Kolmogorov, A. N. (1933). Sulla determinazione empirica di una legge di distribuzione. Giornale dell'Istituto Italiano degli Attuari 4, 83-91.</li>
     <li>Sokolova, A. O. and Sokolov, V. (2026). E-values for adaptive clinical trials: anytime-valid monitoring in practice. <a href="https://arxiv.org/abs/2602.06379">arXiv:2602.06379</a> (betting wealth, Tables 2, 5, 7)</li>
-    <li>Polson, N. G. and Sokolov, V. (2026). Sequential and Large-Scale Decision-Making in Clinical Trials: E-Values versus Bayes Risk. Working draft (cost of the $40 bar).</li>
   </ul>
   <strong>Further reading</strong>
   <ul>
@@ -367,11 +358,6 @@ table.t th:first-child, table.t td:first-child { text-align: left; }
   nvp.bars('b', NV.map(function (d) { return Math.log10(d[1]); }), 0, 5, { fill: TEAL, opacity: 0.85 }, 0);
   nvp.line('t', [0, 5], [TH, TH], { stroke: ODARK, width: 2, dash: '6 4' }, 0);
   nvp.legend([{ label: 'Highest e-value', color: TEAL, kind: 'box' }, { label: '$40 line', color: ODARK, kind: 'dash' }]);
-
-  /* ---------- Cost of the fixed bar (Polson and Sokolov) ---------- */
-  var cp = Lab.Plot($('costplot'), { xlim: [0, 3], ylim: [0, 260], xticks: [{ x: 0.5, label: '$40 bar' }, { x: 1.5, label: '$3.5 bar' }, { x: 2.5, label: 'Best rule' }], xlabel: 'Rule', ylabel: 'Extra deaths (average)', yfmt: function (v) { return String(Math.round(v)); }, label: 'Expected excess deaths 237.6, 118.3 and 53.4' });
-  cp.bars('b', [237.6, 118.3, 53.4], 0, 3, { fill: ORANGE, opacity: 0.85 }, 0);
-  
 
   /* ---------- Question cards ---------- */
   var score = Lab.Score($('score')), Q = $('qcards');

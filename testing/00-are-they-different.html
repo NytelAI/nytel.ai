@@ -451,7 +451,7 @@
   function binBin(pre, a, b) { return pre.bw ? Math.min(pre.m, Math.round(gapVal(pre, a, b) / pre.bw)) : Math.round(Math.abs(a / pre.nA - b / pre.nB) * pre.m); }
   function obsBin(pre) { return binBin(pre, pre.k[0], pre.k[1]); }
   function gapPts(pre) { return gapVal(pre, pre.k[0], pre.k[1]); }
-  function makePool(pre) { return arrOf(pre.nA, pre.k[0]).concat(arrOf(pre.nB, pre.k[1])); }
+  function makePool(pre) { if (pre.nA + pre.nB > 5000) return null; return arrOf(pre.nA, pre.k[0]).concat(arrOf(pre.nB, pre.k[1])); }
   var LASTK = [0, 0];
   // One re-dealing: shuffle the pool, or (large groups) draw both counts from the pooled rate.
   function drawGap(pre, pool) {
@@ -461,7 +461,7 @@
     else { shuffle(pool); for (i = 0; i < pre.nA; i++) a += pool[i]; for (; i < pool.length; i++) b += pool[i]; }
     LASTK = [a, b]; return binBin(pre, a, b);
   }
-  function permHist(pre, N) { var pool = pre.binom ? null : makePool(pre), h = new Array(pre.m + 1).fill(0), i; for (i = 0; i < N; i++) h[drawGap(pre, pool)]++; return h; }
+  function permHist(pre, N) { var pool = (pre.binom || pre.deathsOnly) ? null : makePool(pre), h = new Array(pre.m + 1).fill(0), i; for (i = 0; i < N; i++) h[drawGap(pre, pool)]++; return h; }
   function tailShare(h, N, d) { var c = 0, i; for (i = d; i < h.length; i++) c += h[i]; return N ? c / N : 0; }
   function tailCount(h, d) { var c = 0, i; for (i = d; i < h.length; i++) c += h[i]; return c; }
   function permXlim(m, d, pre) { var D = Math.min(m, Math.max(d + 2, pre && pre.hlen ? pre.hlen : Math.ceil(2.5 * Math.sqrt(m / 2)))), w = pre ? bwOf(pre) : 100 / m; return { D: D, lo: -0.5 * w, hi: (D + 0.5) * w }; }
@@ -490,21 +490,17 @@
   var SRC_VIOXX = 'Bresalier et al. (2005), NEJM. Led to Vioxx\'s withdrawal in 2004.';
   var SRC_VIAGRA = 'Polson and Sokolov, <a href="https://vsokolov.org/html/_book/05-ab.html">Bayes, AI and Deep Learning, chapter 5</a>. The 77 heart-related deaths were reported to FDA in 1998, among more than 6 million prescriptions (trade press report of FDA data; reports do not prove the drug caused them). The comparison group of 1.5 million men is made up, as in the book. Nobody was randomized, so even a real gap could come from who chose to take Viagra.';
   var PRE = [
-    P({ id: 'drug10', label: 'Small drug trial (made up)', names: ['Drug', 'Placebo'], n: 10, k: [7, 4], yes: '✓', no: '✕', what: 'improved', src: '' }),
-    P({ id: 'drug100', label: 'Bigger drug trial (made up)', names: ['Drug', 'Placebo'], n: 100, k: [70, 40], yes: '✓', no: '✕', what: 'improved', src: 'Same rates as the small trial, ten times the people.' }),
     P({ id: 'ulcer', label: 'Ulcer surgery (real)', names: ['Treatment A', 'Treatment B'], n: 100, k: [7, 1], yes: '!', no: '·', what: 'died; fewer is better', real: true, src: SRC_ULCER }),
     P({ id: 'ecmo', label: 'ECMO newborns (real)', names: ['ECMO', 'Standard care'], nA: 11, nB: 1, m: 11, k: [11, 0], yes: '✓', no: '✕', what: 'survived', real: true, src: SRC_ECMO }),
     P({ id: 'panoramic', label: 'PANORAMIC (real)', names: ['Molnupiravir', 'Usual care'], nA: 12529, nB: 12525, k: [105, 98], big: true, binom: true, yes: '!', no: '·', what: 'hospitalized or died; fewer is better', real: true, src: SRC_PAN }),
     P({ id: 'recovery', label: 'RECOVERY dexamethasone (real)', names: ['Dexamethasone', 'Usual care'], nA: 2104, nB: 4321, k: [482, 1110], big: true, binom: true, yes: '!', no: '·', what: 'died; fewer is better', real: true, src: SRC_REC }),
     P({ id: 'vioxx', label: 'Vioxx, APPROVe (real)', names: ['Vioxx (rofecoxib)', 'Placebo'], nA: 1287, nB: 1299, m: 1287, k: [46, 26], big: true, binom: true, yes: '!', no: '·', what: 'heart attack, stroke or other clot-related event; fewer is better', real: true, src: SRC_VIOXX }),
     P({ id: 'viagra', label: 'Viagra (book example, comparison made up)', names: ['Viagra users', 'Comparison men'], nA: 6000000, nB: 1500000, m: 60, bw: 5 / 6, hlen: 18, unit: 1e6, gunit: ' deaths per million men', xlabel: 'gap (per million men)', xtitle: 'Gap in deaths per million men', k: [77, 11], deathsOnly: true, yes: '!', no: '·', what: 'coronary deaths; fewer is better', real: false, src: SRC_VIAGRA }),
-    P({ id: 'coins', label: 'Two small trials (made up)', names: ['Trial A', 'Trial B'], n: 20, k: [11, 8], yes: '✓', no: '✕', what: 'responded', src: '' }),
-    P({ id: 'ft', label: 'Drug A vs drug B (made up)', names: ['Drug A', 'Drug B'], n: 20, k: [14, 11], yes: '✓', no: '✕', what: 'responded', src: '' })
   ];
   var S3 = { pre: PRE[0], hist: null, N: 0, last: null, pool: null, busy: false, P: null };
   function loadS3(pre) {
     S3.pre = pre; S3.hist = new Array(pre.m + 1).fill(0); S3.N = 0; S3.last = null; S3.busy = false;
-    S3.pool = pre.binom ? null : makePool(pre);
+    S3.pool = (pre.binom || pre.deathsOnly) ? null : makePool(pre);
     $('s3title').textContent = 'Observed: ' + pre.names[0] + ' vs ' + pre.names[1] + (pre.real ? ' (real data)' : pre.id === 'game' ? ' (your trial)' : ' (made-up numbers)');
     $('srcLine').innerHTML = pre.src || '';
     var ob = $('obsBox'); ob.innerHTML = '';
@@ -555,7 +551,7 @@
   }
   function shuffleOnce() {
     if (S3.busy) return; var pre = S3.pre, d;
-    if (pre.binom) { d = drawGap(pre, null); S3.hist[d]++; S3.N++; S3.last = d; showDealt(pre); update3(0); return; }
+    if (pre.binom || pre.deathsOnly) { d = drawGap(pre, null); S3.hist[d]++; S3.N++; S3.last = d; showDealt(pre); update3(0); return; }
     setBusy(true);
     var box = $('shufBox'); box.innerHTML = ''; $('shufTitle').textContent = 'Pooling everyone into one pile';
     var tl = el('div'); box.appendChild(tl); tiles(tl, S3.pool.slice(), pre.yes, pre.no, 'Everyone pooled in one row');
@@ -584,6 +580,7 @@
       var b = el('button', 'btn exbtn', pre.label); b.type = 'button'; b.dataset.id = pre.id; b.addEventListener('click', function () { goTo(pre); });
       $(cid).appendChild(b);
     });
+    if (['ulcer', 'ecmo', 'recovery', 'vioxx'].indexOf(pre.id) < 0) return;
     var st = permStat(pre, 2000), d = obsBin(pre);
     var c = el('div', 'excard');
     c.innerHTML = '<h3></h3><span class="badge' + (pre.real ? ' real' : '') + '">' + (pre.real ? 'real data' : 'made up') + '</span>';
@@ -640,8 +637,8 @@
     q: 'ECMO trial: 11 of 11 newborns on ECMO survived, 0 of 1 on standard care. Re-randomize the 12 babies into rows of 11 and 1. How often is the gap that big (100 points)?',
     options: [{ value: 0, label: 'About 1 time in 100' }, { value: 1, label: 'About 1 time in 10' }, { value: 2, label: 'About 1 time in 3' }, { value: 3, label: 'About 1 time in 2' }],
     answer: function () { return nearest(1 / 12, [0.01, 0.1, 1 / 3, 0.5]); },
-    revealPlot: function (b) { permMini(b, permStat(PRE[3], 4000), PRE[3].m, obsBin(PRE[3])); },
-    explain: function () { var s = permStat(PRE[3], 4000); return 'Exactly 1 time in 12, because the one baby who died must land in the row of 1. A tiny trial can look dramatic and still be weak evidence.'; }
+    revealPlot: function (b) { permMini(b, permStat(PRE[1], 4000), PRE[1].m, obsBin(PRE[1])); },
+    explain: function () { var s = permStat(PRE[1], 4000); return 'Exactly 1 time in 12, because the one baby who died must land in the row of 1. A tiny trial can look dramatic and still be weak evidence.'; }
   });
   Lab.QuestionCard(Q, {
     tag: 'Predict 5', score: score, type: 'choice',
@@ -652,16 +649,6 @@
     explain: function () { return 'Computed exactly: ' + pct(pmfDiff(50, 0), 1) + ' match. With more patients the counts spread out, so an exact tie is not common and a gap of a few responders is normal.'; }
   });
 
-  var cfc = {};
-  function cfStat() { if (!cfc.s) { var pre = mk(10, 5, 5), h = permHist(pre, 4000); cfc.s = { hist: h, N: 4000, share: tailShare(h, 4000, 4), tail: tailCount(h, 4) }; } return cfc.s; }
-  Lab.QuestionCard(Q, {
-    tag: 'Predict 6', score: score, type: 'choice',
-    q: 'The drug does nothing: 10 of 20 patients improve either way. A coin splits them 10 and 10. How often do the groups differ by 4 or more improved patients?',
-    options: BANDS,
-    answer: function () { return band(cfStat().share); },
-    revealPlot: function (b) { permMini(b, cfStat(), 10, 4); },
-    explain: function () { var s = cfStat(); return s.tail + ' of 4,000 re-randomizations of this group (' + pct(s.share, 1) + ') gave a gap of 4 or more patients (40 points), with no drug effect at all.'; }
-  });
 
   Lab.CodeBox($('code'), {
     py: 'import numpy as np\n' +

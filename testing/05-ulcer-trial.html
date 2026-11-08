@@ -35,7 +35,6 @@ svg.fig text.dim { fill: rgba(10,22,40,.62); }
 .mini { margin-top: .8rem; border-top: 1px dashed var(--border-strong); padding-top: .6rem; }
 .mini svg { width: 100%; height: auto; display: block; }
 .mini .mnote { font-size: .85rem; margin: .3rem 0 0; }
-.flow { margin: 0 0 2rem; }
 .srcline { font-size: .9rem; }
 @media (max-width: 800px) { .figs { grid-template-columns: 1fr; } }
 </style>
@@ -89,11 +88,6 @@ svg.fig text.dim { fill: rgba(10,22,40,.62); }
   <h2>Predict, then check</h2>
   <div class="scorebar" id="score"></div>
   <div class="qcards" id="qcards"></div>
-</section>
-
-<section class="flow plotbox" aria-label="How a picked comparison goes wrong">
-  <h2 style="font-size:1.3rem">The trap in one picture</h2>
-  <svg class="fig" id="figFlow" viewBox="0 0 900 150" role="img" aria-label="Flow: four equal treatments, look at the data, pick best and worst, test that pair, get a false alarm too often"></svg>
 </section>
 
 <section class="example">
@@ -500,20 +494,6 @@ svg.fig text.dim { fill: rgba(10,22,40,.62); }
     },
     explain: function () { return 'p falls from ' + fp(CH.p) + ' to ' + fp(CH4.p) + '. A is almost surely worse. More patients settle what 100 could not.'; }
   });
-
-  /* ---------- flow figure ---------- */
-  (function () {
-    var svg = $('figFlow'), steps = [['4 equal', 'treatments'], ['Look at', 'the data'], ['Pick best', 'and worst'], ['Test that', 'pair at 0.05'], ['"Significant!"', 'too often']], i;
-    svg.innerHTML = '<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#0A1628"/></marker></defs>';
-    steps.forEach(function (s, k) {
-      var x = 10 + k * 178, last = k === 4;
-      mk('rect', { x: x, y: 30, width: 140, height: 64, rx: 12, fill: last ? '#FDF0E8' : '#E8F4F4', stroke: last ? '#B8531A' : '#1F6B6B', 'stroke-width': 1.5 }, svg);
-      txt(svg, x + 70, 58, s[0], { 'text-anchor': 'middle', 'font-weight': 600, 'font-size': 14 });
-      txt(svg, x + 70, 78, s[1], { 'text-anchor': 'middle', 'font-size': 14 });
-      if (k < 4) mk('line', { x1: x + 144, x2: x + 174, y1: 62, y2: 62, stroke: NAVY, 'stroke-width': 1.8, 'marker-end': 'url(#arr)' }, svg);
-    });
-    txt(svg, 450, 128, 'The test assumes you chose the pair before looking.', { 'text-anchor': 'middle', 'class': 'dim', 'font-size': 14 });
-  })();
 
   Lab.CodeBox($('code'), {
     py: 'from scipy import stats\n' +

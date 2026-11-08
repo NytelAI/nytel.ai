@@ -30,9 +30,6 @@
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .45; } }
   #award.pulse .dose, #award.pulse .ctrl { animation: pulse 1.2s ease-in-out 2; }
   .stepline { min-height: 2.6em; font-weight: 600; }
-  .runs { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .4rem; }
-  .legendrow { display: flex; flex-wrap: wrap; gap: .8rem; font-size: .85rem; margin: .4rem 0; }
-  .legendrow i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 4px; vertical-align: -1px; }
   #tv .trow { display: flex; flex-wrap: wrap; gap: 3px; align-items: center; min-height: 18px; }
   .pp { width: 12px; height: 15px; display: block; }
   .pp.yes { fill: #2D8B8B; stroke: none; }
@@ -124,25 +121,6 @@
       <div class="plotbox"><svg id="bplot"></svg><div class="chips" id="bchips" aria-live="polite"></div></div>
       <div class="plotbox" style="margin-top:.8rem"><svg id="rplot"></svg>
         <p class="note" style="margin:.4rem 0 0">Average error of the estimate. Lower is better.</p></div>
-    </div>
-  </div>
-</section>
-
-<section class="section">
-  <h2>Send more patients to the winner</h2>
-  <p>A trial can shift patients to the treatment that looks better. Each person icon is a patient, in order of arrival.</p>
-  <div class="labgrid">
-    <div class="panel">
-      <h3>Placebo 30%, drug 50%</h3>
-      <div class="row"><button class="btn primary" id="tsRun" type="button">Run one trial</button><button class="btn" id="tsMany" type="button">Run 10 more</button></div>
-      <p class="note">Same rule as above, called <span class="tip" tabindex="0" title="Give each arm a share equal to its chance of being the best arm.">Thompson sampling</span>.</p>
-    </div>
-    <div>
-      <div class="plotbox"><svg id="dots" viewBox="0 0 460 250" style="width:100%;height:auto" role="img" aria-label="200 person icons, one per patient; filled means improved; the bar under each icon shows the treatment"></svg>
-        <div class="legendrow"><span><i style="background:#E07A3F"></i>placebo</span><span><i style="background:#2D8B8B"></i>drug</span><span>filled person = improved, outline = did not; color bar = treatment received</span></div>
-        <div class="chips" id="tsChips" aria-live="polite"></div>
-        <div class="runs" id="tsRuns"></div>
-      </div>
     </div>
   </div>
 </section>
@@ -329,51 +307,6 @@
     $('bpre').appendChild(b);
   });
 
-  /* ============ Thompson sampling dots ============ */
-  var tsR = Lab.rng(2027), TSN = 200, runsLog = [];
-  function thompson(r, N, p0, p1) {
-    var s = [0, 0], f = [0, 0], arm = [], resp = [], i, a, y, d0, d1, n1 = 0, succ = 0;
-    for (i = 0; i < N; i++) {
-      d0 = Lab.beta(r, 1 + s[0], 1 + f[0]); d1 = Lab.beta(r, 1 + s[1], 1 + f[1]);
-      a = d1 > d0 ? 1 : 0; y = r() < (a ? p1 : p0) ? 1 : 0;
-      if (y) s[a]++; else f[a]++;
-      arm.push(a); resp.push(y); n1 += a; succ += y;
-    }
-    return { arm: arm, resp: resp, share: n1 / N, succ: succ };
-  }
-  var dotsSvg = $('dots');
-  function drawDots(run, upto) {
-    var h = '<symbol id="ppsym" viewBox="0 0 16 20"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></symbol>', i, cx, cy, col, st;
-    for (i = 0; i < TSN; i++) {
-      cx = 4 + (i % 20) * 22; cy = 2 + Math.floor(i / 20) * 24; col = run.arm[i] ? TEAL : ORANGE;
-      if (i >= upto) { h += '<use href="#ppsym" x="' + cx + '" y="' + cy + '" width="14" height="17.5" fill="none" stroke="#9AA3AE" stroke-width="1.3" opacity=".25"/>'; continue; }
-      st = run.resp[i] ? 'fill="#2D8B8B" stroke="none"' : 'fill="none" stroke="#9AA3AE" stroke-width="1.3"';
-      h += '<use href="#ppsym" x="' + cx + '" y="' + cy + '" width="14" height="17.5" ' + st + '/><rect x="' + cx + '" y="' + (cy + 19.5) + '" width="14" height="2.5" rx="1" fill="' + col + '"/>';
-    }
-    dotsSvg.innerHTML = h;
-  }
-  function showRun(run, animate) {
-    var done = function () {
-      drawDots(run, TSN);
-      $('tsChips').innerHTML = chip('On the drug', Lab.pct(run.share, 0), true) + chip('Improved', run.succ + ' of 200') + chip('Equal split expects', '80');
-    };
-    if (!animate) { done(); return; }
-    var k = 0, step = function () { k += 20; drawDots(run, k); if (k < TSN) setTimeout(step, 45); else done(); };
-    step();
-  }
-  function logRun(run) {
-    runsLog.push(Lab.pct(run.share, 0));
-    $('tsRuns').innerHTML = '<span class="note" style="margin:0">Share on the drug, per trial:</span>' + runsLog.slice(-12).map(function (s) { return '<span class="chip">' + s + '</span>'; }).join('');
-  }
-  $('tsRun').addEventListener('click', function () { var run = thompson(tsR, TSN, 0.3, 0.5); logRun(run); showRun(run, true); });
-  $('tsMany').addEventListener('click', function () { var run, i; for (i = 0; i < 10; i++) { run = thompson(tsR, TSN, 0.3, 0.5); logRun(run); } showRun(run, false); });
-  var tsStats = null;
-  function tsAvg() {
-    if (tsStats) return tsStats;
-    var r = Lab.rng(5), t, sh = 0, su = 0, x, T = 300;
-    for (t = 0; t < T; t++) { x = thompson(r, TSN, 0.3, 0.5); sh += x.share; su += x.succ; }
-    return (tsStats = { share: sh / T, succ: su / T });
-  }
 
   /* ============ Question cards ============ */
   var score = Lab.Score($('score')), Q = $('qcards');
@@ -420,26 +353,17 @@
     revealPlot: function (b) { miniBars(b, ['High cost', 'Medium', '100x cheaper'], [25.0, 34.7, 66.4], [ORANGE, GREY, TEAL], 80, 'patients per group'); },
     explain: function () { return 'From 25 to 66 per group on average.'; }
   });
-  // Q4: Thompson share
   Lab.QuestionCard(Q, {
-    tag: 'Predict 4', score: score, type: 'slider', min: 50, max: 100, step: 1, start: 60, tol: 8, fmt: function (v) { return v + '%'; },
-    q: 'Placebo 30%, drug 50%, 200 patients, Thompson sampling. What share of patients ends up on the better treatment, on average?',
-    answer: function () { return Math.round(100 * tsAvg().share); },
-    revealPlot: function (b) { var a = tsAvg(); miniBars(b, ['Equal split', 'Thompson'], [50, 100 * a.share], [GREY, TEAL], 100, 'percent on the drug'); },
-    explain: function () { var a = tsAvg(); return 'About ' + Lab.pct(a.share, 0) + ' and ' + a.succ.toFixed(1) + ' improved, against 80 for an equal split (300 simulated trials).'; }
-  });
-  // Q5: skeptical prior
-  Lab.QuestionCard(Q, {
-    tag: 'Predict 5', score: score, type: 'choice',
+    tag: 'Predict 4', score: score, type: 'choice',
     q: 'Both arms start as if 3 of 10 patients had already improved. What happens to false positives and power?',
     options: [{ value: 'bothdown', label: 'Both drop a little' }, { value: 'fpdown', label: 'False positives drop, power rises' }, { value: 'bothup', label: 'Both rise' }],
     answer: function () { return (0.020 < 0.026 && 0.867 < 0.896) ? 'bothdown' : 'other'; },
     revealPlot: function (b) { miniBars(b, ['False pos. no opinion', 'False pos. doubtful', 'Power no opinion', 'Power doubtful'], [2.6, 2.0, 89.6, 86.7], [ORANGE, ORANGE, TEAL, TEAL], 100, 'percent'); },
     explain: 'False positives fall from 2.6% to 2.0%, power from 89.6% to 86.7%. Caution costs power.'
   });
-  // Q6: borrowing under conflict
+  // Q5: borrowing under conflict
   Lab.QuestionCard(Q, {
-    tag: 'Predict 6', score: score, type: 'choice',
+    tag: 'Predict 5', score: score, type: 'choice',
     q: 'Today the true placebo rate is 45%, but last year it was 30%. You borrow all 100 old patients. Is the estimate too low, too high, or fine?',
     options: [{ value: 'low', label: 'Too low' }, { value: 'high', label: 'Too high' }, { value: 'fine', label: 'About right' }],
     answer: function () { var p = postAB(1, 0.45); return p[0] / (p[0] + p[1]) < 0.4 ? 'low' : 'fine'; },
@@ -447,9 +371,9 @@
     revealPlot: function (b) { var p0 = postAB(0, 0.45), p1 = postAB(1, 0.45); miniCurves(b, [{ a: p0[0], b: p0[1], label: 'Today only', color: ORANGE }, { a: p1[0], b: p1[1], label: 'Borrow all', color: TEAL }], { x: 0.45, label: 'true rate 45%' }); },
     explain: function () { var p0 = postAB(0, 0.45), p1 = postAB(1, 0.45); return 'Estimates: ' + (p0[0] / (p0[0] + p0[1])).toFixed(3) + ' today only, ' + (p1[0] / (p1[0] + p1[1])).toFixed(3) + ' with all history. Old data pulled it down to 34% and made the trial overconfident.'; }
   });
-  // Q7: CALGB 49907
+  // Q6: CALGB 49907
   Lab.QuestionCard(Q, {
-    tag: 'Predict 7', score: score, type: 'slider', min: 0, max: 100, step: 1, start: 30, tol: 8, fmt: function (v) { return v + '%'; },
+    tag: 'Predict 6', score: score, type: 'slider', min: 0, max: 100, step: 1, start: 30, tol: 8, fmt: function (v) { return v + '%'; },
     q: 'A cancer trial planned 1,800 patients and stopped at 633. What share of patients did it not need?',
     answer: function () { return Math.round(100 * (1 - 633 / 1800)); },
     revealPlot: function (b) { miniBars(b, ['Planned', 'Stopped at'], [1800, 633], [GREY, TEAL], 2000, 'patients'); },
@@ -566,7 +490,6 @@
 
   // Initial state
   syncOut(); renderMain(0); renderB(0); lecReset(); drawAward();
-  var first = thompson(tsR, TSN, 0.3, 0.5); logRun(first); showRun(first, false);
   document.querySelector('#bpre .btn').classList.add('on');
 })();
 </script>

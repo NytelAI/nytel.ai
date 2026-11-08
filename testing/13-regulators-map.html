@@ -37,15 +37,7 @@
 .game .tile span.topic { display: none; }
 .gamebar { display: none; align-items: center; gap: .8rem; flex-wrap: wrap; background: var(--orange-light); border: 1px solid rgba(184,83,26,.3); border-radius: 10px; padding: .6rem .9rem; font-weight: 600; }
 .game .gamebar { display: flex; }
-.progs { display: flex; flex-wrap: wrap; gap: .5rem; margin: .5rem 0 1rem; }
-.progs a { background: var(--white); border: 1px solid var(--border-strong); border-radius: 999px; padding: .3rem .8rem; font-size: .9rem; text-decoration: none; }
-.progs a:hover { background: var(--teal-light); }
 .twocol { display: flex; gap: 1.25rem; flex-wrap: wrap; align-items: flex-start; }
-.dots { display: flex; flex-wrap: wrap; gap: 4px; max-width: 300px; margin: .3rem 0; }
-.dots i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--teal-dark); display: block; }
-.dots i.f { background: var(--teal-dark); }
-.dots.o i { border-color: var(--orange); }
-.dots.o i.f { background: var(--orange-fill); }
 .tgl { display: inline-flex; gap: .3rem; margin: .2rem .5rem .4rem 0; }
 .tgl .btn { padding: .25rem .7rem; min-height: 32px; font-size: .85rem; }
 svg text { font-family: var(--sans); }
@@ -120,16 +112,13 @@ svg text { font-family: var(--sans); }
   <div class="shelf" id="shelf"></div>
   <div class="detail" id="docdetail" aria-live="polite">Click a document.</div>
   <p class="note" style="margin-top:.6rem">Drafts can still change.</p>
-  <h3 style="margin-top:1rem">FDA programs</h3>
-  <div class="progs" id="progs"></div>
 </section>
 
 <section class="section">
-  <h2>The AI credibility stepper</h2>
-  <p>FDA's draft for AI tools used in drug decisions has seven steps. Click a step.</p>
-  <figure class="figure"><svg id="steps" viewBox="0 0 920 110" role="img" aria-label="Seven chevrons: the FDA AI credibility steps"></svg>
-    <div class="detail" id="stepdetail" aria-live="polite">Click a step.</div>
-    <div class="twocol" style="margin-top:.8rem">
+  <h2>AI model risk</h2>
+  <p>FDA's draft for AI tools used in drug decisions rates model risk from two factors. Try the toggles.</p>
+  <figure class="figure">
+    <div class="twocol">
       <svg id="riskgrid" viewBox="0 0 250 210" style="width:250px;max-width:100%" role="img" aria-label="Two by two grid of model influence and decision consequence"></svg>
       <div>
         <div><b>Model influence</b> <span class="tip" tabindex="0" data-tip="How much the decision leans on the model, compared with other evidence.">(what is this?)</span></div>
@@ -141,20 +130,6 @@ svg text { font-family: var(--sans); }
       </div>
     </div>
     <figcaption><b>Source:</b> FDA draft guidance, Considerations for the Use of Artificial Intelligence to Support Regulatory Decision-Making (January 2025), Section IV.A.</figcaption></figure>
-</section>
-
-<section class="example">
-  <h2>A real case: borrowing from an earlier trial</h2>
-  <p>The REBYOTA program (a gut infection treatment) partly counted patients from an earlier trial in a later one. The more the results disagree, the fewer count.</p>
-  <div class="twocol">
-    <div>
-      <div class="field" style="max-width:320px"><label for="sim">How well do the earlier results agree?</label><input id="sim" type="range" min="0" max="1" step="0.1" value="0.6"></div>
-      <div><b>Earlier trial</b> (made-up: 20 patients). Teal = counted.</div><div class="dots" id="dots2"></div>
-      <div><b>New trial</b> (made-up: 30 patients).</div><div class="dots o" id="dots3"></div>
-    </div>
-    <div class="chips" id="borrowchips" style="align-self:center;flex-direction:column;align-items:flex-start"></div>
-  </div>
-  <p class="note">Made-up numbers, not REBYOTA data. Source: FDA draft guidance <a href="https://www.fda.gov/media/190505/download">Use of Bayesian Methodology in Clinical Trials</a>, Sections III.A and V; Sokolova, Sokolov and Polson, <a href="https://arxiv.org/abs/2602.09208">arXiv:2602.09208</a>.</p>
 </section>
 
 <section class="section">
@@ -400,11 +375,6 @@ svg text { font-family: var(--sans); }
     { id: 'nam', s: 'NAMs', topic: 'Beyond animals', title: 'General Considerations for the Use of New Approach Methodologies in Drug Development', date: 'Draft, March 2026', say: 'Lab-dish and computer tests can count as evidence, even if not fully validated.', quote: 'A fit-for-purpose NAM, even if not validated, may adequately address specific toxicological concerns.', url: 'https://www.fda.gov/media/191589/download', rel: 'Safety evidence' },
     { id: 'meet', s: 'Formal meetings', topic: 'Talking to FDA', title: 'Formal Meetings Between the FDA and Sponsors or Applicants of PDUFA Products', date: 'August 2026', say: 'The meeting types, who can ask, and how fast FDA answers.', quote: 'necessary for an otherwise stalled drug or biological product development program to proceed or to address an important safety issue.', url: 'https://www.fda.gov/media/172311/download', rel: 'This page' }
   ];
-  var PROGS = [
-    ['CID (complex innovative design) meeting program', 'Extra meetings for new trial designs', 'https://www.fda.gov/drugs/development-resources/complex-innovative-trial-design-meeting-program'],
-    ['MIDD (model-informed drug development) paired meetings', 'Talk about computer modeling for one program', 'https://www.fda.gov/drugs/development-resources/model-informed-drug-development-paired-meeting-program']
-  ];
-  PROGS.forEach(function (p) { var a = document.createElement('a'); a.href = p[2]; a.title = p[1]; a.textContent = p[0] + ': ' + p[1]; $('progs').appendChild(a); });
   var GAME = [
     ['Which paper says what proof FDA needs that a drug works?', 'se'], ['Many drugs share one control group. Which?', 'mp'],
     ['Which FDA paper on changing a trial as data arrive is final, not a draft?', 'ad'], ['Can I count what was known before the trial?', 'bayes'],
@@ -443,27 +413,7 @@ svg text { font-family: var(--sans); }
   });
   $('gnext').addEventListener('click', function () { G.i = (G.i + 1) % GAME.length; gameStep(); });
 
-  /* ---------- AI stepper and risk grid ---------- */
-  var STEPS = [
-    ['1', 'Question', 'Define the question of interest.', null],
-    ['2', 'Context', 'Name the one job the model does.', null],
-    ['3', 'Risk', 'Assess the AI model risk.', 'Model risk is a combination of two factors: (a) model influence ... and (b) decision consequence'],
-    ['4', 'Plan', 'Plan how to test the model.', null],
-    ['5', 'Run', 'Execute the plan.', null], ['6', 'Record', 'Document the results and discuss deviations.', null],
-    ['7', 'Decide', 'Decide if the model is adequate for its context of use.', null]
-  ];
-  var stSel = -1;
-  function renderSteps() {
-    var h = '';
-    STEPS.forEach(function (s, i) {
-      var x = 10 + i * 126, sel = stSel === i;
-      h += '<g class="gbox" data-id="' + i + '" tabindex="0" role="button" aria-label="Step ' + s[0] + ' ' + s[1] + '"><polygon points="' + x + ',20 ' + (x + 100) + ',20 ' + (x + 124) + ',55 ' + (x + 100) + ',90 ' + x + ',90 ' + (x + 24) + ',55" fill="' + (sel ? ORANGE : (i < 4 ? TEAL : TD)) + '"/>' +
-        '<text x="' + (x + 62) + '" y="48" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">' + s[0] + '</text><text x="' + (x + 62) + '" y="70" text-anchor="middle" font-size="13" font-weight="600" fill="#fff">' + s[1] + '</text></g>';
-    });
-    $('steps').innerHTML = h;
-    if (stSel >= 0) { var s = STEPS[stSel]; $('stepdetail').innerHTML = '<b>Step ' + s[0] + ':</b> ' + s[2] + (s[3] ? '<div><i>"' + s[3] + '"</i></div>' : ''); }
-  }
-  onAct($('steps'), '.gbox', function (id) { stSel = +id; renderSteps(); });
+  /* ---------- AI risk grid ---------- */
   var R = { inf: 0, con: 0 }, RL = ['light', 'some', 'most'];
   function renderRisk() {
     var h = '', fills = ['#E8F4F4', '#FDF0E8', '#F6C9AC'];
@@ -483,16 +433,6 @@ svg text { font-family: var(--sans); }
       $(g[0]).appendChild(b);
     });
   });
-
-  /* ---------- Borrowing toy ---------- */
-  function renderBorrow() {
-    var s = +$('sim').value, n2 = 20, n3 = 30, k = Math.round(n2 * s), a = '', b = '', i;
-    for (i = 0; i < n2; i++) a += '<i class="' + (i < k ? 'f' : '') + '"></i>';
-    for (i = 0; i < n3; i++) b += '<i class="f"></i>';
-    $('dots2').innerHTML = a; $('dots3').innerHTML = b;
-    $('borrowchips').innerHTML = '<span class="chip">Agreement <b>' + Math.round(s * 100) + '%</b></span><span class="chip">Counted from earlier trial <b>' + k + ' of ' + n2 + '</b></span><span class="chip warm">Evidence in the analysis <b>' + (n3 + k) + ' patients</b></span>';
-  }
-  $('sim').addEventListener('input', renderBorrow);
 
   /* ---------- Hero presets ---------- */
   SC.forEach(function (sc, i) {
@@ -517,14 +457,6 @@ svg text { font-family: var(--sans); }
     var h = '<svg viewBox="0 0 280 70" style="width:100%" role="img" aria-label="Boxes with one highlighted">', w = 280 / labels.length;
     labels.forEach(function (l, i) { h += '<rect x="' + (i * w + 4) + '" y="12" width="' + (w - 8) + '" height="46" rx="6" fill="' + (i === hi ? '#E8F4F4' : '#fff') + '" stroke="' + (i === hi ? TD : '#9aa5b1') + '" stroke-width="' + (i === hi ? 3 : 1.2) + '"/><text x="' + (i * w + w / 2) + '" y="40" text-anchor="middle" font-size="11" font-weight="600" fill="' + NAVY + '">' + l + '</text>'; });
     box.innerHTML = h + '</svg>';
-  }
-  function miniTail(box) {
-    var z = Lab.normalQuantile(0.975), P = Lab.miniPlot(box, { xlim: [-4, 4], ylim: [0, 0.5], xlabel: 'trial result if the drug does nothing', ylabel: '', label: 'Normal curve with the upper tail shaded' });
-    var xa = Lab.linspace(-4, 4, 161), xb = Lab.linspace(z, 4, 40);
-    P.line('n', xa, xa.map(function (x) { return Lab.normalPdf(x); }), { stroke: NAVY, width: 2 }, 0);
-    P.line('t', xb, xb.map(function (x) { return Lab.normalPdf(x); }), { stroke: ORANGE, fill: ORANGE, width: 2, opacity: 0.8 }, 0);
-    P.vline('z', z, '', { color: ODARK, dash: '4 3' }, 0);
-    P.legend([{ label: 'tail = ' + (1 - Lab.normalCdf(z)).toFixed(3) + ' beyond ' + z.toFixed(2), color: ORANGE, kind: 'box' }]);
   }
 
   /* ---------- Question cards ---------- */
@@ -560,11 +492,7 @@ svg text { font-family: var(--sans); }
       onReveal: function () { selectRole('cro'); },
       revealPlot: function (b) { miniBoxes(b, ['Sponsor', 'CRO', 'Investigator', 'IRB', 'FDA'], 0); },
       explain: function () { return 'A CRO takes tasks, not accountability. The sponsor answers for the trial.'; } },
-    { tag: 'Predict 7', q: 'FDA\'s Bayesian draft sets a default cap on false approvals (calling a drug that does not work a winner). What is it?', type: 'choice',
-      options: [{ value: '0.5', label: '50%' }, { value: '0.1', label: '10%' }, { value: '0.025', label: '2.5%, one-sided' }, { value: '0.0001', label: '0.01%' }], answer: '0.025',
-      revealPlot: function (b) { miniTail(b); },
-      explain: function () { return '2.5%, counting only wrong "drug is better" calls. FDA may accept another bar when earlier data are borrowed.'; } },
-    { tag: 'Predict 8', q: 'In the AI draft, which two things make up "model risk"?', type: 'choice',
+    { tag: 'Predict 7', q: 'In the AI draft, which two things make up "model risk"?', type: 'choice',
       options: [{ value: 'size', label: 'Model size and speed' }, { value: 'inf', label: 'Model influence and decision consequence' }, { value: 'cost', label: 'Cost and age' }], answer: 'inf',
       onReveal: function () { R.inf = 1; R.con = 1; document.querySelectorAll('#tInf .btn, #tCon .btn').forEach(function (b, i) { b.classList.toggle('on', i % 2 === 1); }); renderRisk(); },
       revealPlot: function (b) { miniBoxes(b, ['Influence', '+', 'Consequence'], 1); },
@@ -573,25 +501,23 @@ svg text { font-family: var(--sans); }
   CARDS.forEach(function (c) { c.score = score; Lab.QuestionCard(Q, c); });
 
   Lab.CodeBox($('code'), {
-    py: 'from scipy.stats import norm\n' +
+    py: '' +
       'stages = {"discovery": (2, 4), "preclinical": (1, 3), "phase 1": (1, 2),\n' +
       '          "phase 2": (1, 3), "phase 3": (2, 4), "review": (0.5, 1)}\n' +
       'fast = sum(lo for lo, hi in stages.values())\n' +
       'slow = sum(hi for lo, hi in stages.values())\n' +
       'print(fast, slow, (fast + slow) / 2)   # 7.5 17.0 12.25 years\n' +
-      'print(norm.ppf(0.975))                 # 1.96, upper tail 0.025\n' +
       'meet_days = {"A": 30, "B": 60, "B-EOP": 70, "C": 75, "D": 50}\n' +
       'print(sorted(meet_days, key=meet_days.get))   # fastest first',
     r: 'stages <- list(c(2,4), c(1,3), c(1,2), c(1,3), c(2,4), c(0.5,1))\n' +
       'fast <- sum(sapply(stages, `[`, 1))\n' +
       'slow <- sum(sapply(stages, `[`, 2))\n' +
       'c(fast, slow, (fast + slow) / 2)       # 7.5 17.0 12.25 years\n' +
-      'qnorm(0.975)                           # 1.96, upper tail 0.025\n' +
       'meet_days <- c(A = 30, B = 60, "B-EOP" = 70, C = 75, D = 50)\n' +
       'names(sort(meet_days))                 # fastest first'
   });
 
-  renderRoad(); renderClocks(); renderRoles(); renderHist(); renderSteps(); renderRisk(); renderBorrow();
+  renderRoad(); renderClocks(); renderRoles(); renderHist(); renderRisk();
   $('detail').setAttribute('aria-live', 'polite');
 })();
 </script>

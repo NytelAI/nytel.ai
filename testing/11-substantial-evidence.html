@@ -102,17 +102,9 @@
 
 <section class="example">
   <h2>Real cases: when "it helps" was wrong</h2>
-  <div class="two">
-    <div>
       <p><b>Thalidomide (1950s to 1962).</b> About 10,000 babies were born with birth defects, mostly outside the US, where FDA's Frances Kelsey had refused it.</p>
       <p>Congress then required proof that drugs work (1962), with <abbr class="tip" tabindex="0" data-tip="A trial with a fair comparison group, chance assignment, steps against bias, and a plan made before the data.">adequate and well-controlled</abbr> trials.</p>
       <p><b>CAST (late 1980s).</b> Heart drugs fixed a rhythm marker on a heart monitor, but more patients died than on placebo. The trial stopped early.</p>
-    </div>
-    <div>
-      <figure class="figure" style="margin-top:0"><svg id="hrt" viewBox="0 0 420 240" role="img" aria-label="Randomized trial: hormone therapy raised heart disease risk by about 29 percent and stroke by about 41 percent"></svg>
-        <figcaption><b>Hormone therapy, randomized trial:</b> 29% more heart disease, 41% more stroke.</figcaption></figure>
-    </div>
-  </div>
   <p class="note">Sources: Sokolova and Sokolov (2026), <i>Clinical Trials in Practice</i>, chapters 1 (history), 17 (endpoints) and 16 (randomization); Rossouw et al., Women's Health Initiative, JAMA 2002; CAST Investigators, N Engl J Med 1989.</p>
 </section>
 
@@ -256,16 +248,6 @@
     });
     svgEl('rect', { x: 10, y: 168, width: 880, height: 62, rx: 10, fill: '#0A1628' }, s);
     var w = svgEl('text', { x: 450, y: 207, 'text-anchor': 'middle', 'font-size': 20, 'font-weight': 600 }, s); w.setAttribute('style', 'fill:#fff'); w.textContent = 'Same standard of evidence for all four';
-  })();
-
-  /* ---------- Figure: HRT bars ---------- */
-  (function () {
-    var s = $('hrt'), P = Lab.Plot(s, { w: 420, h: 240, xlim: [0, 2], ylim: [0, 1.6], xlabel: '', ylabel: 'Risk vs placebo (1 = same)', label: 'Relative risk bars', small: true, xticks: [{ x: 0.5, label: 'Heart disease' }, { x: 1.5, label: 'Stroke' }] });
-    P.bars('b', [1.29, 1.41], 0, 2, { fill: TEAL, opacity: 0.85 }, 900);
-    P.line('one', [0, 2], [1, 1], { stroke: NAVY, width: 1.5, dash: '5 4' }, 0);
-    [['1.29', 0.5], ['1.41', 1.5]].forEach(function (v) {
-      var t = svgEl('text', { x: P.sx(v[1]), y: P.sy(+v[0]) - 5, 'class': 'mini-val' }, s); t.textContent = v[0];
-    });
   })();
 
   /* ---------- Question cards ---------- */
