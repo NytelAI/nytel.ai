@@ -333,7 +333,10 @@
       if (k + 25 < circles.length) painter = requestAnimationFrame(function () { step(k + 25); });
     })(i);
   }
-  $('dotKey').innerHTML = '<span class="chip">Grey = no clear difference</span><span class="chip">Teal = clear difference</span><span class="chip warm">Orange = false alarm</span>';
+  function dotKey() {
+    $('dotKey').innerHTML = '<span class="chip">Grey = no clear difference</span>' + ($('nothing').checked ? '<span class="chip warm">Orange = false alarm (the drug does nothing, yet the trial shows a clear difference)</span>' : '<span class="chip">Teal = clear difference</span>');
+  }
+  dotKey(); $('nothing').addEventListener('change', dotKey);
   $('runBtn').addEventListener('click', function () {
     var c = S.manual != null ? S.manual : zOf(S.alpha), nothing = $('nothing').checked, p1 = nothing ? P0 : S.p1;
     var w = simTrials(p1, S.n, c, 1000, rng), k = 0;
