@@ -71,6 +71,20 @@
   </div>
 </section>
 
+<section class="fig" id="figCI">
+  <h2>Two kinds of interval</h2>
+  <p>Same data, 9 of 12 patients got better. Two ways to give a range for the true rate.</p>
+  <div class="figgrid">
+    <div>
+      <p><b>Credible interval</b> (flat prior, module 1): <b id="ciCr"></b><br><span class="note">Given the data and a flat prior, the true rate is in here with 95% probability.</span></p>
+      <p><b>Confidence interval</b> (exact Clopper-Pearson): <b id="ciCf"></b><br><span class="note">If we ran this trial many times, 95% of intervals built this way would catch the true rate.</span></p>
+      <p class="note">Try it. The true rate is hidden from the method: 75%. Each run is 20 trials of 12 patients. The exact method catches the truth at least 95% of the time, so misses are rare.</p>
+      <div class="row"><button class="btn primary" id="ciRun" type="button">Run 20 trials</button></div>
+    </div>
+    <div><svg id="ciPlot" role="img" aria-label="Twenty confidence intervals for the response rate, one horizontal line per trial, with a vertical line at the true rate 75 percent. Press Run 20 trials to draw them."></svg><div class="chips" id="ciChips" aria-live="polite"></div></div>
+  </div>
+</section>
+
 <section class="section">
   <h2>Predict, then check</h2>
   <div class="scorebar" id="score"></div>
@@ -133,6 +147,7 @@
     <li>A p-value asks: if the drug did nothing, how often would luck give a result this good?</li>
     <li>It is not the chance that the drug works, and it depends on the plan you had before you looked.</li>
     <li>Peeking and fishing make luck look like a discovery.</li>
+    <li>A credible interval speaks about this trial, given a prior. A confidence interval speaks about the method: over many trials, about 95% of the intervals catch the truth.</li>
   </ul>
 </section>
 </main>
@@ -446,6 +461,45 @@
     $('eolia').setAttribute('viewBox', '0 0 ' + W + ' ' + H); $('eolia').innerHTML = h;
   })();
 
+  /* =============== Two kinds of interval =============== */
+  // Exact (Clopper-Pearson) 95% confidence interval for k responders of n, from beta quantiles.
+  function cpInt(k, n) {
+    return [k === 0 ? 0 : Lab.betaQuantile(0.025, k, n - k + 1), k === n ? 1 : Lab.betaQuantile(0.975, k + 1, n - k)];
+  }
+  (function () {
+    var TRUE_P = 0.75, N = 12, T = 20, W = PW, H = 300, ml = 40, mr = 14, mt = 14, mb = 40, iw = W - ml - mr, rowH = (H - mt - mb) / T;
+    var cr = [Lab.betaQuantile(0.025, 10, 4), Lab.betaQuantile(0.975, 10, 4)], cf = cpInt(9, 12);
+    $('ciCr').textContent = pctf(cr[0], 0) + ' to ' + pctf(cr[1], 0) + ' (Beta(10, 4) posterior)';
+    $('ciCf').textContent = pctf(cf[0], 0) + ' to ' + pctf(cf[1], 0);
+    var sx = function (v) { return ml + v * iw; }, svg = $('ciPlot'), crng = Lab.rng(3);
+    function frame() {
+      var h = '';
+      [0, 0.25, 0.5, 0.75, 1].forEach(function (v) { h += '<line class="grid" x1="' + sx(v) + '" x2="' + sx(v) + '" y1="' + mt + '" y2="' + (H - mb) + '"/><text x="' + sx(v) + '" y="' + (H - mb + 16) + '" text-anchor="middle">' + Math.round(v * 100) + '%</text>'; });
+      h += '<text x="' + (ml + iw / 2) + '" y="' + (H - 6) + '" text-anchor="middle">Response rate (one interval per trial)</text>';
+      return h;
+    }
+    function draw(res) {
+      var h = frame(), caught = 0;
+      res.forEach(function (r, i) {
+        var y = mt + rowH * (i + 0.5), hit = r.lo <= TRUE_P && TRUE_P <= r.hi, c = hit ? TEAL : ORANGE;
+        if (hit) caught++;
+        h += '<line x1="' + sx(r.lo).toFixed(1) + '" x2="' + sx(r.hi).toFixed(1) + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '" stroke="' + c + '" stroke-width="3" stroke-linecap="round"/>';
+        h += '<circle cx="' + sx(r.k / N).toFixed(1) + '" cy="' + y.toFixed(1) + '" r="3" fill="' + (hit ? NAVY : ORANGE_D) + '"/>';
+      });
+      h += '<line x1="' + sx(TRUE_P) + '" x2="' + sx(TRUE_P) + '" y1="' + mt + '" y2="' + (H - mb) + '" stroke="' + NAVY + '" stroke-width="2" stroke-dasharray="5 3"/>';
+      svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('class', 'plot'); svg.innerHTML = h;
+      $('ciChips').innerHTML = chip('Caught the truth:', caught + ' of ' + T, caught < T);
+      svg.setAttribute('aria-label', 'Twenty confidence intervals, one line per trial, with a vertical line at the true rate 75 percent. ' + caught + ' of 20 caught the truth; ' + (T - caught) + ' missed, shown in orange.');
+    }
+    $('ciRun').addEventListener('click', function () {
+      var res = [], i, k, ci;
+      for (i = 0; i < T; i++) { k = Lab.binomial(crng, N, TRUE_P); ci = cpInt(k, N); res.push({ k: k, lo: ci[0], hi: ci[1] }); }
+      draw(res);
+    });
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('class', 'plot'); svg.innerHTML = frame();
+    $('ciChips').innerHTML = chip('Caught the truth:', 'press Run');
+  })();
+
   /* =============== Code =============== */
   Lab.CodeBox($('code'), {
     py: 'from scipy import stats\n' +
@@ -456,6 +510,8 @@
       'sims = rng.binomial(12, 0.5, 100_000)  # 100,000 luck-only trials\n' +
       'print((sims >= 9).mean())             # same p-value, by counting\n' +
       'print(1 - 0.975**20)                  # 20 tests at 0.025, at least one false alarm: 0.397\n' +
+      'print(stats.beta.ppf([0.025, 0.975], 10, 4))  # 95% credible interval\n' +
+      'print(stats.beta.ppf(0.025, 9, 4), stats.beta.ppf(0.975, 10, 3))  # 95% Clopper-Pearson\n' +
       'print(stats.beta.sf(0.5, 10, 4))      # 9 of 12, flat prior: P(true rate > 50%) = 0.954\n' +
       'print(80 / (80 + 900 * 0.025))        # share of wins that are real: 0.78',
     r: 'print(1 - pbinom(8, 12, 0.5))          # P(9+ responders of 12): 0.073\n' +
@@ -464,6 +520,8 @@
       'sims <- rbinom(100000, 12, 0.5)        # 100,000 luck-only trials\n' +
       'print(mean(sims >= 9))                 # same p-value, by counting\n' +
       'print(1 - 0.975^20)                    # 20 tests at 0.025, at least one false alarm: 0.397\n' +
+      'print(qbeta(c(0.025, 0.975), 10, 4))   # 95% credible interval\n' +
+      'print(c(qbeta(0.025, 9, 4), qbeta(0.975, 10, 3)))  # 95% Clopper-Pearson\n' +
       'print(1 - pbeta(0.5, 10, 4))           # 9 of 12, flat prior: P(true rate > 50%) = 0.954\n' +
       'print(80 / (80 + 900 * 0.025))         # share of wins that are real: 0.78'
   });
