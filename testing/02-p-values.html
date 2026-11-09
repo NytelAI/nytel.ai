@@ -56,7 +56,7 @@
     <p class="note" id="story" style="margin:0 0 .5rem"></p>
     <div class="field col"><label for="sN">Patients <output id="oN"></output></label><input id="sN" type="range" min="5" max="200" step="1" value="12"></div>
     <div class="field col"><label for="sK">Responders <output id="oK"></output></label><input id="sK" type="range" min="0" max="12" step="1" value="9"></div>
-    <div class="field col"><label for="sP"><span>Share who get better on placebo (if the <span class="tip" tabindex="0" data-tip="The null: the drug does nothing, so any difference is luck.">drug does nothing</span>, the same on the drug): <output id="oP"></output></span></label><input id="sP" type="range" min="0.1" max="0.9" step="0.05" value="0.5"></div>
+    <div class="field col"><label for="sP"><span>Share who get better on placebo: <output id="oP"></output></span></label><input id="sP" type="range" min="0.1" max="0.9" step="0.05" value="0.5"></div>
     <h3>2. Simulate trials of a drug that does nothing</h3>
     <div class="row"><button class="btn primary" id="simBtn" type="button">Simulate 1,000 trials</button><button class="btn" id="clrBtn" type="button">Clear</button></div>
     <p class="note" id="simNote"></p>
@@ -236,7 +236,7 @@
     plot.line('sim', xs, ys, { stroke: NAVY, width: 2 }, 0);
   }
   function clearSim() { if (S.timer) { clearInterval(S.timer); S.timer = null; } S.counts = null; S.total = 0; $('simNote').textContent = ''; }
-  function story() { $('story').textContent = 'On placebo, ' + pctf(S.p, 0) + ' of patients get better. On the drug, ' + S.k + ' of ' + S.n + ' got better.'; }
+  function story() { $('story').textContent = 'On placebo, ' + pctf(S.p, 0) + ' of patients get better. In the trial, ' + S.k + ' of ' + S.n + ' patients on the drug got better. Could luck alone do that if the drug is no better than placebo?'; }
   function setParams(n, k, p, anim) {
     clearSim(); S.n = n; S.k = Math.min(k, n); S.p = p;
     $('sN').value = S.n; $('sK').max = S.n; $('sK').value = S.k; $('sP').value = S.p;
@@ -270,7 +270,7 @@
   var p912 = tailBin(12, 9, 0.5);
   card = Lab.QuestionCard(Q, {
     tag: 'Predict 1', score: score, type: 'choice',
-    q: 'On placebo, half of patients get better. On the drug, 9 of 12 get better. If the drug does nothing, how often would 9 or more get better?',
+    q: 'On placebo, half of patients get better. In the trial, 9 of 12 patients on the drug got better. Suppose the drug is really no better than placebo: each patient still has a 50% chance. How often would luck alone give 9 or more of 12?',
     options: [{ value: 'a', label: 'About 1 time in 100' }, { value: 'b', label: 'About 7 times in 100' }, { value: 'c', label: 'About 25 times in 100' }, { value: 'd', label: 'About 50 times in 100' }],
     answer: function () { return Math.abs(p912 - 0.07) < Math.abs(p912 - 0.01) && Math.abs(p912 - 0.07) < Math.abs(p912 - 0.25) ? 'b' : 'c'; },
     onReveal: function () { miniPmf(card, pmfArr(12, 0.5), 9, 'Responders in 12 patients (drug does nothing)'); },
