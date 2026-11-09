@@ -99,7 +99,7 @@
 
 <section class="fig" id="figPeek">
   <h2>Peeking at the data</h2>
-  <p>The drug does nothing: half of patients get better, the same as on placebo. Compute p at each look and stop at the first one-sided p below 0.025 (<span class="tip" tabindex="0" data-tip="Far enough above 50:50 that the one-sided p is below 0.025.">significant</span>). The height of the line is measured in <b>units of luck</b>. One unit of luck is how far a trial's result typically lands from the truth by chance alone (statisticians call it a standard error). The cutoff is at 1.96 units.</p>
+  <p>The drug does nothing: half of patients get better, the same as on placebo. Compute p at each look and stop at the first one-sided p below 0.025 (<span class="tip" tabindex="0" data-tip="Far enough above 50:50 that the one-sided p is below 0.025.">significant</span>). The height of the line shows how extreme the result is, in <b>units of luck</b>. One unit of luck is how far a trial's result typically lands from the truth by chance alone (statisticians call it a standard error). Exactly p = 0.025 sits at 1.96 units.</p>
   <div class="figgrid">
     <div>
       <div class="qrow">How often you look:</div>
@@ -183,14 +183,22 @@
   // Negative binomial: responders before the 3rd non-responder, true rate 0.5: P(H=h) = C(h+2,2) / 2^(h+3).
   function nbPmf(h) { return (h + 2) * (h + 1) / 2 / Math.pow(2, h + 3); }
   function tailNB(h0) { var s = 0, h; for (h = 0; h < h0; h++) s += nbPmf(h); return 1 - s; }
-  // Simulate one study at true response rate 0.5: returns {z: path of z-scores, stop: first look index that crosses, or 0}
-  function study(step) {
+  // Simulate one study at true response rate 0.5. A look wins when the exact one-sided p, tailBin(n,k,.5), is below 0.025.
+  // The plotted height is that exact p turned into units of luck, so the cutoff line sits at 1.96.
+  var critK = [0], zCache = {};
+  (function () { for (var n = 1; n <= 100; n++) { var k = 0; while (k <= n && tailBin(n, k, 0.5) >= 0.025) k++; critK.push(k); } })();
+  function zExact(n, k) {
+    if (n === 0) return 0;
+    var key = n * 200 + k;
+    if (zCache[key] == null) zCache[key] = Lab.normalQuantile(Math.min(1 - 1e-12, Math.max(1e-12, 1 - tailBin(n, k, 0.5))));
+    return zCache[key];
+  }
+  function study(step, wantZ) {
     var k = 0, z = [0], stop = 0, n;
     for (n = 1; n <= 100; n++) {
       if (rng() < 0.5) k++;
-      var zz = (2 * k - n) / Math.sqrt(n);
-      z.push(zz);
-      if (!stop && n % step === 0 && zz >= 1.96) stop = n;
+      if (wantZ) z.push(zExact(n, k));
+      if (!stop && n % step === 0 && k >= critK[n]) stop = n;
     }
     return { z: z, stop: stop };
   }
@@ -287,10 +295,17 @@
   /* =============== Question cards =============== */
   var score = Lab.Score($('score')), _add = score.add; score.add = function (ok) { _add(ok); try { localStorage.setItem('nytel-testing-2', '1'); } catch (e) {} };
   var Q = $('qcards'), card;
+  // Each card draws its reveal into its own card: point the shared variable at it just before drawing.
+  function mkCard(opts) {
+    var mine, orig = opts.onReveal;
+    if (orig) opts.onReveal = function (r) { card = mine; return orig(r); };
+    mine = Lab.QuestionCard(Q, opts);
+    return mine;
+  }
 
   // 1: p for 9 of 12
   var p912 = tailBin(12, 9, 0.5);
-  card = Lab.QuestionCard(Q, {
+  card = mkCard({
     tag: 'Predict 1', score: score, type: 'choice',
     q: 'On placebo, half of patients get better. In the trial, 9 of 12 patients on the drug got better. Suppose the drug is really no better than placebo: each patient still has a 50% chance. How often would luck alone give 9 or more of 12?',
     options: [{ value: 'a', label: 'About 1 time in 100' }, { value: 'b', label: 'About 7 times in 100' }, { value: 'c', label: 'About 25 times in 100' }, { value: 'd', label: 'About 50 times in 100' }],
@@ -301,7 +316,7 @@
 
   // 2: change the plan
   var pNB = tailNB(9), pPost = 1 - Lab.betaCdf(0.5, 10, 4);
-  card = Lab.QuestionCard(Q, {
+  card = mkCard({
     tag: 'Predict 2', score: score, type: 'choice',
     q: 'Same 9 responders and 3 non-responders, but the trial plan said: stop at the third non-responder. Does the p-value change?',
     options: [{ value: 'up', label: 'Goes up' }, { value: 'same', label: 'Stays the same' }, { value: 'down', label: 'Goes down' }],
@@ -314,7 +329,7 @@
   });
 
   // 4: p = 0.02 means 98% chance drug works?
-  card = Lab.QuestionCard(Q, {
+  card = mkCard({
     tag: 'True or false', score: score, type: 'choice',
     q: 'A trial gives p = 0.02. So there is a 98% chance the drug works.',
     options: [{ value: 'true', label: 'True' }, { value: 'false', label: 'False' }],
@@ -360,7 +375,7 @@
   var peekRates = null;
   function getPeek() { if (!peekRates) peekRates = [rate(100, 3000), rate(10, 3000), rate(1, 3000)]; return peekRates; }
   var peekOpts = [{ value: 'p3', label: 'About 2.5%', v: 0.025 }, { value: 'p10', label: 'About 10%', v: 0.10 }, { value: 'p20', label: 'About 20%', v: 0.20 }, { value: 'p40', label: 'About 40%', v: 0.40 }];
-  card = Lab.QuestionCard(Q, {
+  card = mkCard({
     tag: 'Predict 3', score: score, type: 'choice',
     q: 'The drug does nothing: half of patients get better, the same as on placebo. You compute p after every patient (up to 100) and stop at the first one-sided p below 0.025. How often is the drug called significant?',
     options: peekOpts,
@@ -374,9 +389,9 @@
 
   // 6: 20 subgroups
   var p20 = 1 - Math.pow(0.975, 20);
-  card = Lab.QuestionCard(Q, {
+  card = mkCard({
     tag: 'Predict 4', score: score, type: 'choice',
-    q: 'The drug does nothing. You test the drug separately in 20 groups of patients (for example by age or region), each with the 0.025 cutoff. Chance that at least one looks "significant"?',
+    q: 'The drug does nothing. You run 20 independent tests, for example in 20 separate groups of patients, each with the 0.025 cutoff. Chance that at least one looks "significant"?',
     options: [{ value: 'a', label: '2.5%' }, { value: 'b', label: '20%' }, { value: 'c', label: '40%' }, { value: 'd', label: '97.5%' }],
     answer: function () { return Math.abs(p20 - 0.40) < 0.02 ? 'c' : 'b'; },
     onReveal: function () {
@@ -391,7 +406,7 @@
 
   // 7: sample size
   var pSmall = tailBin(20, 11, 0.5), pBig = tailBin(200, 110, 0.5);
-  card = Lab.QuestionCard(Q, {
+  card = mkCard({
     tag: 'Predict 5', score: score, type: 'choice',
     q: 'Two trials each have 55% responders: 11 of 20, and 110 of 200. Which result gives the smaller p-value?',
     options: [{ value: 'small', label: '11 of 20' }, { value: 'big', label: '110 of 200' }, { value: 'same', label: 'Same' }],
@@ -414,7 +429,7 @@
     $('peekBtns').appendChild(b);
   });
   function newStudy() {
-    var st = study(peekStep), xs = [], ys = [], i;
+    var st = study(peekStep, true), xs = [], ys = [], i;
     for (i = 0; i <= 100; i++) { xs.push(i); ys.push(Math.max(-4.2, Math.min(4.2, st.z[i]))); }
     peekPlot = Lab.Plot($('peekPlot'), { w: PW, h: 280, xlim: [0, 100], ylim: [-4, 4], xlabel: 'Patients so far', ylabel: 'Distance from 50% (units of luck)', label: 'One simulated trial: distance from 50%, with the cutoff line' });
     peekPlot.line('hi', [0, 100], [1.96, 1.96], { stroke: ORANGE_D, width: 1.5, dash: '6 4' }, 0);

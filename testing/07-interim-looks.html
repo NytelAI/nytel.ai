@@ -99,7 +99,7 @@
       <button class="btn primary" id="run1" type="button">Run 1 trial</button>
       <button class="btn primary" id="run100" type="button">Run 100 trials</button>
     </div>
-    <p class="note">Each trial: 100 patients.</p>
+    <p class="note">Each trial: 100 patients. Each simulated patient's result is a measurement on a bell curve. This approximates yes/no outcomes in big trials.</p>
   </div>
   <div>
     <div class="plotbox"><svg id="plot"></svg>
@@ -149,8 +149,8 @@
   </div>
   <ul>
     <li><b>CALGB 49907</b> (cancer trial): stopped early.</li>
-    <li><b>ASTIN</b> (stroke drug): stopped for <span class="tip" tabindex="0" data-tip="Futility: very little chance the trial will end with a win, so continuing is not worth it.">futility</span>, meaning it was clearly not going to work.</li>
-    <li><b>DAWN</b> (clot removal after stroke): stopped at 206 patients when the chance clot removal was better passed 99.9%.</li>
+    <li><b>ASTIN</b> (stroke drug): stopped for <span class="tip" tabindex="0" data-tip="Futility: very little chance the trial will end with a win, so continuing is not worth it.">futility</span>. The trial had little chance of meeting its planned goal, so enrollment stopped.</li>
+    <li><b>DAWN</b> (clot removal after stroke): stopped enrollment at 206 patients because the predictive probability of a win (module 7, below) passed 95%. At the end, the chance clot removal was better was above 99.9%.</li>
   </ul>
   <p class="note">Sources: Sokolova and Sokolov (2026), <i>Clinical Trials in Practice</i>, which cites Krams et al. (2003, ASTIN) and <a href="https://doi.org/10.1056/NEJMoa1706442">Nogueira et al. (2018), NEJM, DAWN</a>.</p>
 </section>
@@ -291,7 +291,7 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
           s += '<rect x="' + (r[1] - 104) + '" y="' + (y + 24) + '" width="100" height="34" rx="8" fill="#fff" stroke="' + r[2] + '" stroke-width="2"/><text x="' + (r[1] - 54) + '" y="' + (y + 38) + '" text-anchor="middle" style="font-size:10px">' + r[3] + '</text><text x="' + (r[1] - 54) + '" y="' + (y + 52) + '" text-anchor="middle" style="font-family:IBM Plex Mono,monospace;font-weight:600;fill:#0A1628">' + fp(r[0].p1[k]) + '</text>';
         });
       });
-      s += '<text x="46" y="' + 372 + '" style="font-size:10px">Strict early: O’Brien-Fleming-type. Even: Pocock.</text>';
+      s += '<text x="46" y="' + 372 + '" style="font-size:10px">Strict early: O’Brien-Fleming-type. Even: Pocock-type.</text>';
       $('fig1').innerHTML = s; return;
     }
     s += '<text x="60" y="22" style="font-weight:600;fill:#0A1628">Patients join the trial</text>';
@@ -304,7 +304,7 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
       s += '<circle cx="' + x + '" cy="38" r="12" fill="#fff" stroke="#0A1628" stroke-width="2"/><text x="' + x + '" y="42" text-anchor="middle" style="font-weight:700;fill:#0A1628">' + (k + 1) + '</text>';
       s += '<text x="' + x + '" y="100" text-anchor="middle">' + Math.round(f * 100) + '% of patients</text>';
     });
-    [['Strict early bar (O’Brien-Fleming-type, Lan-DeMets spending): stop only if one-sided p is below', o, 150, '#2D8B8B'], ['Pocock, a stricter bar, about equal at each look: stop only if one-sided p is below', p, 215, '#1F6B6B']].forEach(function (r) {
+    [['Strict early bar (O’Brien-Fleming-type, Lan-DeMets spending): stop only if one-sided p is below', o, 150, '#2D8B8B'], ['Pocock-type spending, a stricter bar, similar at each look: stop only if one-sided p is below', p, 215, '#1F6B6B']].forEach(function (r) {
       s += '<text x="10" y="' + (r[2] - 20) + '" style="font-weight:600;fill:#0A1628">' + r[0] + '</text>';
       BOOK.forEach(function (f, k) {
         var x = X(f);
@@ -392,11 +392,11 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
   var PRESETS = [
     { id: 'ft', label: 'Drug vs placebo, 5 looks', K: 5, rule: 'naive', eff: 0, x: 'Share of patients so far', y: 'Evidence the drug is better (z)', what: 'patients', note: 'The drug does nothing, so any stop is a false alarm.' },
     { id: 'obf', label: 'Trial: strict early bar', K: 'book', rule: 'obf', eff: 0, x: 'Share of patients so far', y: 'Evidence the drug works (z)', what: 'patients', note: 'A useless drug, 4 looks, a very strict bar early on (O’Brien-Fleming-type).' },
-    { id: 'poc', label: 'Trial: same bar each look', K: 'book', rule: 'poc', eff: 0, x: 'Share of patients so far', y: 'Evidence the drug works (z)', what: 'patients', note: 'A useless drug, 4 looks, about the same stricter bar at every look (Pocock).' },
+    { id: 'poc', label: 'Trial: similar bar each look', K: 'book', rule: 'poc', eff: 0, x: 'Share of patients so far', y: 'Evidence the drug works (z)', what: 'patients', note: 'A useless drug, 4 looks, about the same stricter bar at every look (Pocock).' },
     { id: 'work', label: 'Drug that works', K: 'book', rule: 'obf', eff: 1, x: 'Share of patients so far', y: 'Evidence the drug works (z)', what: 'patients', note: 'A real effect: how often, and how early, does the trial stop?' }
   ];
   var KS = [[1, '1 (no peeking)'], [2, '2'], [5, '5'], [10, '10'], ['book', '4 (design above)']];
-  var RULES = [['naive', 'Usual bar (one-sided p < 0.025) each look'], ['poc', 'Pocock: same stricter bar each look'], ['obf', 'O’Brien-Fleming-type: strict early bar']];
+  var RULES = [['naive', 'Usual bar (one-sided p < 0.025) each look'], ['poc', 'Pocock-type spending: similar bars each look'], ['obf', 'O’Brien-Fleming-type: strict early bar']];
   var S = { K: 5, rule: 'naive', eff: 0, pre: PRESETS[0], runs: 0, wins: 0, pat: 0 };
   var plot = Lab.Plot($('plot'), { xlim: [0, 1], ylim: [-5, 5], xlabel: 'Share of patients so far', ylabel: 'Evidence (z)', label: 'Random-walk paths of the z statistic with the stopping boundary', xfmt: function (v) { return Math.round(v * 100) + '%'; } });
   var svg = $('plot'), defs = svgEl('defs', {}, svg), ov = svgEl('g', {}, svg), pg = svgEl('g', {}, svg), clipN = 0;

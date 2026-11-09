@@ -102,7 +102,7 @@
   <div>
     <div class="plotbox">
       <div class="progress" aria-hidden="true"><i id="prog"></i></div>
-      <p class="note" style="margin:0 0 .5rem"><b>Fixed:</b> one look, at the end. <b>Classic rule:</b> looks set so a useless drug wins 2.5%. <b>Your bar:</b> the rule set on the left.</p>
+      <p class="note" style="margin:0 0 .5rem"><b>Fixed:</b> one look, at the end. <b>Classic rule:</b> looks set so a useless drug wins about 2.5% under the bell-curve approximation. The simulated false-win rate in the table is the number to trust. <b>Your bar:</b> the rule set on the left.</p>
       <div id="tbl" aria-live="polite"></div>
             <p class="note" id="cap1" style="margin:.5rem 0 0"></p>
     </div>
@@ -270,7 +270,7 @@
   var calPlot = Lab.Plot($('calPlot'), { xlim: [0.9, 1], ylim: [0, 0.15], xlabel: 'Success bar', ylabel: 'False positives', yfmt: function (v) { return (100 * v).toFixed(0) + '%'; }, w: 640, h: 300, label: 'False-positive rate against the success bar' });
 
   var cur = { P: null, st: null, res: null }, exIdx = 0, estDesign = 'bayes', prevK = 0;
-  var runTok = 0, calTok = 0, cal = { c: null };
+  var runTok = 0, calTok = 0, cal = { c: null }, calFp = null;
 
   function renderTable() {
     var P = cur.P, R = cur.res, nullish = P.p1 <= P.p0;
@@ -340,6 +340,7 @@
   function renderAll() { renderTable(); renderStops(); renderEst(); renderPath(); }
 
   function run() {
+    checkCal();
     var tok = ++runTok, P = readP(), st = S.newStore(P.nsim, P.K);
     $('prog').style.width = '0%';
     fillAsync(P, st, function () { return tok === runTok; }, function (f) { $('prog').style.width = (100 * f) + '%'; }, function () {
@@ -349,10 +350,20 @@
     });
   }
   var deb; function later() { clearTimeout(deb); deb = setTimeout(run, 250); }
+  // Settings that change the calibrated bar (not the bar itself, the drug rate or the random seed).
+  function fingerprint(P) { return [P.p0, P.N, P.K, P.alloc, P.cap, P.burnIn, P.f, P.gs, P.alpha, P.a0, P.b0, P.a1, P.b1, P.margin].join('|'); }
+  function dropCal() {
+    calTok++; cal = { c: null }; calFp = null;
+    $('useCal').disabled = true; $('cal').disabled = false; $('progC').style.width = '0%';
+    $('calChips').innerHTML = chip('Settings changed', 'calibrate again');
+  }
+  function checkCal() {
+    if (calFp && calFp !== fingerprint(readP())) dropCal();
+  }
 
   /* ---------- Calibration ---------- */
   function calibrate() {
-    var tok = ++calTok, P = readP(); P.p1 = P.p0;
+    var tok = ++calTok, P = readP(); P.p1 = P.p0; calFp = fingerprint(P);
     var st = S.newStore(P.nsim, P.K); $('cal').disabled = true; $('useCal').disabled = true; $('progC').style.width = '0%';
     $('calChips').innerHTML = chip('Simulating', 'a useless drug...');
     fillAsync(P, st, function () { return tok === calTok; }, function (f) { $('progC').style.width = (50 * f) + '%'; }, function () {
@@ -397,9 +408,9 @@
   });
 
   /* ---------- Wiring ---------- */
-  ids.forEach(function (id) { $(id).addEventListener('input', function () { showOut(id); later(); }); });
-  $('aF').addEventListener('click', function () { setAlloc('fixed'); later(); });
-  $('aT').addEventListener('click', function () { setAlloc('ts'); later(); });
+  ids.forEach(function (id) { $(id).addEventListener('input', function () { showOut(id); checkCal(); later(); }); });
+  $('aF').addEventListener('click', function () { setAlloc('fixed'); checkCal(); later(); });
+  $('aT').addEventListener('click', function () { setAlloc('ts'); checkCal(); later(); });
   $('again').addEventListener('click', function () { state.seed += 1; exIdx = 0; run(); });
   $('cal').addEventListener('click', calibrate);
   $('useCal').addEventListener('click', function () { if (cal.c) { $('c').value = cal.c; showOut('c'); run(); } });

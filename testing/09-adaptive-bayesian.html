@@ -116,7 +116,8 @@
       <h3>How much to borrow</h3>
       <div class="field"><label for="bw"><span class="tip" tabindex="0" title="1 means last year's 100 patients count fully. 0 means ignore them.">Weight</span></label><input id="bw" type="range" min="0" max="1" step="0.05" value="0.5"><output id="bwO"></output></div>
       <div class="field"><label for="bt">Today's true placebo rate</label><input id="bt" type="range" min="0.15" max="0.6" step="0.05" value="0.3"><output id="btO"></output></div>
-      <p class="note">Today 30 placebo patients enroll. Made-up example.</p>
+      <p class="note">Today 30 placebo patients enroll. Their results are drawn at random from the true rate. Made-up example.</p>
+      <button type="button" class="btn" id="bre">Draw new patients</button>
     </div>
     <div>
       <div class="plotbox"><svg id="bplot"></svg><div class="chips" id="bchips" aria-live="polite"></div></div>
@@ -154,8 +155,8 @@
   <div class="stack" id="lecB"></div>
   <div class="row" style="margin-top:.5rem"><button class="btn primary" id="lecGo" type="button">Let the trial run</button><button class="btn" id="lecReset" type="button">Reset</button></div>
   <p class="note" id="lecNote"></p>
-  <p>Phase 2 (the smaller first trial) estimated 33% slower decline on a memory score. Phase 3 (the big trial) found 27%.</p>
-  <p>It missed its own pre-set success bar (0.64 chance versus 0.80 needed), yet went on to a positive phase 3.</p>
+  <p>Phase 2 (the smaller first trial) estimated 33% slower decline at 18 months on CDR-SB, a score of memory and daily living. Phase 3 (the big trial) found 27% on the same score.</p>
+  <p>At 12 months it missed its own pre-set success bar on a different score (ADCOMS): a 0.64 chance of at least 25% slower decline, versus 0.80 needed. It still went on to a positive phase 3.</p>
   <p class="note">Sources: <a href="https://doi.org/10.1186/s13195-021-00813-8">Swanson 2021</a>, <a href="https://doi.org/10.1056/NEJMoa2212948">van Dyck 2023</a>.</p>
 </section>
 
@@ -185,6 +186,7 @@
     <li>Polson, N. and Sokolov, V. (2026). <a href="https://vsokolov.org/books/bayes_ai_deep_learning/">Bayes, AI and Deep Learning: Foundations of Data Science</a>. doi:10.5281/zenodo.23992805</li>
     <li>Sokolova, A. and Sokolov, V. (2026). <a href="https://vsokolov.org/books/clinical_trials_in_practice/">Clinical Trials in Practice: From Foundations to AI Agents</a>. doi:10.5281/zenodo.23933570 (<a href="https://vsokolov.org/clinos-book/">chapters</a>)</li>
     <li>Sokolova, A., Sokolov, V. and Polson, N. (2026). Some Bayesian Perspectives on Clinical Trials. <a href="https://arxiv.org/abs/2602.09208">arXiv:2602.09208</a> (earlier public version of the submitted manuscript that supplies the numbers above).</li>
+    <li>Skrivanek, Z. et al. (2014). Dose-finding results in an adaptive, seamless, randomized trial of once-weekly dulaglutide combined with metformin in type 2 diabetes patients (AWARD-5). Diabetes Obes Metab 16(8):748-756. <a href="https://doi.org/10.1111/dom.12305">doi:10.1111/dom.12305</a></li>
     <li>Muss, H. B. et al. (2009). Adjuvant chemotherapy in older women with early-stage breast cancer. N Engl J Med 360(20):2055-2065. <a href="https://doi.org/10.1056/NEJMoa0810266">doi:10.1056/NEJMoa0810266</a> (CALGB 49907; numbers via the submitted manuscript).</li>
   </ul>
   <div class="nyt">&copy; 2026 Nytel. Nightingale + Intelligence. <a href="mailto:contact@nytel.ai">contact@nytel.ai</a></div>
@@ -274,8 +276,11 @@
   var bplot = Lab.Plot($('bplot'), { xlim: [0, 1], ylim: [0, 6], xlabel: 'Placebo response rate', ylabel: 'Belief', label: 'Posterior for the placebo rate without borrowing (orange) and with borrowing (teal)' });
   var rplot = Lab.Plot($('rplot'), { xlim: [0, 1], ylim: [0, 0.2], xlabel: 'Borrowing weight', ylabel: 'Average error', label: 'Typical error of the estimate against the borrowing weight' });
   var gx = Lab.linspace(0.002, 0.998, 200);
-  function succ(t) { return Math.round(NC * t + 1e-9); }
-  function postAB(w, t) { var s = succ(t); return [1 + s + w * SH, 1 + (NC - s) + w * (NH - SH)]; }
+  var brng = Lab.rng(31), BU = [];
+  function redraw() { BU = []; for (var i = 0; i < NC; i++) BU.push(brng()); }
+  function drawn(t) { var c = 0; BU.forEach(function (u) { if (u < t) c++; }); return c; }
+  redraw();
+  function postAB(w, t, k) { var s = (k === undefined) ? Math.round(NC * t + 1e-9) : k; return [1 + s + w * SH, 1 + (NC - s) + w * (NH - SH)]; }
   function rmse(w, t) {
     var tot = 0, k, m;
     for (k = 0; k <= NC; k++) { m = (1 + k + w * SH) / (2 + NC + w * NH); tot += Lab.binomPmf(k, NC, t) * (m - t) * (m - t); }
@@ -283,7 +288,7 @@
   }
   function curve(a, b) { return gx.map(function (x) { return Lab.betaPdf(x, a, b); }); }
   function renderB(ms) {
-    var p0 = postAB(0, B.t), p1 = postAB(B.w, B.t), c0 = curve(p0[0], p0[1]), c1 = curve(p1[0], p1[1]);
+    var kk = drawn(B.t), p0 = postAB(0, B.t, kk), p1 = postAB(B.w, B.t, kk), c0 = curve(p0[0], p0[1]), c1 = curve(p1[0], p1[1]);
     bplot.setYlim(0, Math.ceil(Math.max(Math.max.apply(null, c0), Math.max.apply(null, c1)) * 1.1));
     bplot.line('nob', gx, c0, { stroke: ORANGE, width: 2, fill: ORANGE }, ms);
     bplot.line('bor', gx, c1, { stroke: TEAL, width: 2.5 }, ms);
@@ -292,7 +297,7 @@
     if (same) bplot.remove('his'); else bplot.vline('his', 0.3, 'history', { color: GREY, dash: '2 3' }, ms);
     bplot.legend([{ label: 'Today only', color: ORANGE, kind: 'line' }, { label: 'With borrowing', color: TEAL, kind: 'line' }]);
     var mean = p1[0] / (p1[0] + p1[1]);
-    $('bchips').innerHTML = chip('Borrowed', Math.round(B.w * NH) + ' extra patients', true) + chip('Estimate', Lab.pct(mean, 1)) + chip('True rate', Lab.pct(B.t, 0)) + chip('Off by', (100 * Math.abs(mean - B.t)).toFixed(1) + ' points');
+    $('bchips').innerHTML = chip('Borrowed', Math.round(B.w * NH) + ' extra patients', true) + chip('Estimate', Lab.pct(mean, 1)) + chip('Today', kk + ' of ' + NC + ' placebo patients improved') + chip('True rate', Lab.pct(B.t, 0)) + chip('Off by', (100 * Math.abs(mean - B.t)).toFixed(1) + ' points');
     var ws = Lab.linspace(0, 1, 41), y1 = ws.map(function (w) { return rmse(w, 0.3); }), y2 = ws.map(function (w) { return rmse(w, B.t); });
     rplot.setYlim(0, Math.ceil(Math.max(Math.max.apply(null, y1), Math.max.apply(null, y2)) * 1.1 * 50) / 50);
     rplot.line('r1', ws, y1, { stroke: TEAL, width: 2.5 }, ms);
@@ -301,6 +306,7 @@
     rplot.legend([{ label: 'True rate = history (30%)', color: TEAL, kind: 'line' }, { label: 'True rate you chose', color: ORANGE, kind: 'dash' }]);
     $('bwO').textContent = B.w.toFixed(2); $('btO').textContent = Lab.pct(B.t, 0); $('bw').value = B.w; $('bt').value = B.t;
   }
+  $('bre').addEventListener('click', function () { redraw(); renderB(300); });
   $('bw').addEventListener('input', function () { B.w = r3(+this.value); renderB(150); });
   $('bt').addEventListener('input', function () { B.t = r3(+this.value); renderB(150); });
   [['History matches (30%)', 0.3], ['History conflicts (45%)', 0.45]].forEach(function (p) {
@@ -379,7 +385,7 @@
     q: 'A cancer trial planned 1,800 patients and stopped at 633. What share of patients did it not need?',
     answer: function () { return Math.round(100 * (1 - 633 / 1800)); },
     revealPlot: function (b) { miniBars(b, ['Planned', 'Stopped at'], [1800, 633], [GREY, TEAL], 2000, 'patients'); },
-    explain: function () { return 'Accrual stopped because the predictive probability of failing to show non-inferiority was about 96%, above the 80% futility line. Predictive probability is the chance the trial will end in success (or failure) if it runs to the end, given the data so far. ' + Lab.pct(1 - 633 / 1800, 0) + ' of patients saved (CALGB 49907, Muss et al., NEJM 2009).'; }
+    explain: function () { return 'At 600 patients, the chance the new pill was worse than allowed was 96%, above an 80% line. The 80% line was set from the predictive probability (module 7) that more follow-up would end in failure, so enrollment stopped. ' + Lab.pct(1 - 633 / 1800, 0) + ' of patients saved (CALGB 49907, Muss et al., NEJM 2009).'; }
   });
 
   /* ============ Truth versus what the trial sees ============ */

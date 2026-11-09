@@ -76,7 +76,7 @@
 <section class="case" aria-label="Case 2">
   <h2>Case 2: two drugs for critically ill COVID patients</h2>
   <p>REMAP-CAP is a <a href="10-platform-trials.html">platform trial</a> (module 10). It tested tocilizumab and sarilumab against usual care. The outcome was organ-support-free days: days alive without, for example, a breathing machine.</p>
-  <p>An odds ratio above 1 means the drug did better than usual care. 1 means no difference.</p>
+  <p>The analysis compares outcomes ordered from worst (death) to best (more days alive without organ support). An odds ratio above 1 means patients on the drug tended to land on better outcomes. 1 means no difference.</p>
   <figure class="figure" style="margin:.6rem 0">
     <svg id="remap" role="img" aria-label="Two intervals on a log odds ratio axis with a line at 1: tocilizumab 1.64 (1.25 to 2.14) and sarilumab 1.76 (1.17 to 2.91)"></svg>
   </figure>
@@ -116,7 +116,7 @@
   <h2>Takeaway</h2>
   <ul>
     <li>A Bayesian result is three things: a probability of benefit, a credible interval, and a check with other priors.</li>
-    <li>With lots of data (the vaccine), the prior does not matter. With borderline data (EOLIA), it does.</li>
+    <li>All three vaccine priors clear the 30% bar, but the strong skeptical prior still lowers the estimated benefit. With borderline data (EOLIA), the prior can decide the verdict.</li>
   </ul>
 </section>
 </main>
@@ -196,7 +196,7 @@
     options: [{ value: 'no', label: 'No, still a win' }, { value: 'yes', label: 'Yes, no longer a win' }],
     answer: function () { return vaccine(PRIORS[2]).pr > 0.986 ? 'no' : 'yes'; },
     onReveal: function () { setPrior(PRIORS[2]); },
-    explain: function () { var r = vaccine(PRIORS[2]); return 'Still a win: the chance that VE is above 30% is ' + (r.pr > 0.9999 ? 'above 99.99%' : pc(r.pr, 2)) + '. The 170 cases swamp the prior.'; }
+    explain: function () { var r = vaccine(PRIORS[2]); return 'Still a win: the chance that VE is above 30% is ' + (r.pr > 0.9999 ? 'above 99.99%' : pc(r.pr, 2)) + '. The skeptical prior still lowers the estimated benefit: median VE ' + pc(r.med) + ' versus ' + pc(vaccine(PRIORS[0]).med) + ' with the paper prior.'; }
   });
 
   /* ============ Case 2: REMAP-CAP intervals ============ */

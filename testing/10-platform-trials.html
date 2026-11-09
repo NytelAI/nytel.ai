@@ -28,8 +28,8 @@
 .fig3 svg { width: 100%; height: auto; }
 .fig3 text, .figsvg text { font-family: var(--sans); font-size: 12px; fill: #333; }
 .sqs { display: flex; flex-wrap: wrap; gap: .6rem; margin: .5rem 0; align-items: flex-start; }
-.sqg { display: grid; grid-template-columns: repeat(8, 9px); gap: 2px; padding: 3px; border: 1px solid var(--border); border-radius: 4px; }
-.sqg i { width: 9px; height: 9px; background: var(--teal); display: block; }
+.sqg { display: grid; grid-template-columns: repeat(8, 10px); gap: 2px; padding: 3px; border: 1px solid var(--border); border-radius: 4px; }
+.sqg i { width: 10px; height: 14px; background: var(--teal); display: block; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 14'%3E%3Ccircle cx='5' cy='3.2' r='2.8'/%3E%3Cpath d='M0.5 14v-4.5a4.5 3.5 0 0 1 9 0V14z'/%3E%3C/svg%3E") center/100% 100% no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 14'%3E%3Ccircle cx='5' cy='3.2' r='2.8'/%3E%3Cpath d='M0.5 14v-4.5a4.5 3.5 0 0 1 9 0V14z'/%3E%3C/svg%3E") center/100% 100% no-repeat; }
 .sqg i.c { background: var(--orange-fill); }
 .lbl2 { font-size: .85rem; font-weight: 600; margin-top: .75rem; }
 .ispy { display: flex; flex-wrap: wrap; gap: 6px; margin: .5rem 0; max-width: 520px; }
@@ -100,7 +100,7 @@
 
 <section class="section">
   <h2>Share a control group</h2>
-  <p>Each square is 10 patients: <span style="color:var(--teal-dark)">drug</span> or <span style="color:var(--orange)">control</span>. 80 patients per arm.</p>
+  <p>Each person icon stands for 10 patients: <span style="color:var(--teal-dark)">drug</span> or <span style="color:var(--orange)">control</span>. 80 patients per arm.</p>
   <figure class="figure">
     <div class="field" style="max-width:420px"><label for="kd">Drugs to test: <b id="kdv">3</b></label><input id="kd" type="range" min="1" max="10" step="1" value="3"></div>
     <div class="lbl2">Separate trials</div><div class="sqs" id="sepSq"></div>
@@ -117,7 +117,7 @@
     <div class="field" style="max-width:460px"><label for="dr">Response rate on standard care rises <b id="drv">2</b> percentage points a year</label><input id="dr" type="range" min="0" max="4" step="1" value="2"></div>
     <svg class="figsvg" id="tl" viewBox="0 0 640 210" role="img" aria-label="Timeline of arms entering and leaving a platform trial with a shared control"></svg>
     <div class="chips" id="tlChips"></div>
-    <figcaption>Care improves each year, so old controls make any drug look better (<a href="06-fair-comparisons.html">module 6</a>).</figcaption>
+    <figcaption>Controls from another time can bias the comparison either way. Older controls can favor drugs that joined later (<a href="06-fair-comparisons.html">module 6</a>).</figcaption>
   </figure>
 </section>
 
@@ -319,7 +319,7 @@
     var mid = function (r) { return (r.s + r.e) / 2; };
     var overlapMid = (ov0 + ov1) / 2;
     var bias = TLS.drift * (mid(a) - mid(CTL));
-    $('tlChips').innerHTML = chip('Concurrent controls', (ov1 - ov0).toFixed(1) + ' of ' + (CTL.e - CTL.s) + ' years') + chip('Fake gain if all controls are used', (bias >= 0 ? '+' : '') + bias.toFixed(1) + ' points', true) + chip('Fake gain with concurrent controls', (TLS.drift * (mid(a) - overlapMid)).toFixed(1) + ' points');
+    $('tlChips').innerHTML = chip('Concurrent controls', (ov1 - ov0).toFixed(1) + ' of ' + (CTL.e - CTL.s) + ' years') + chip('Bias if all controls are used (+ favors the drug)', (bias >= 0 ? '+' : '') + bias.toFixed(1) + ' points', true) + chip('Bias with concurrent controls', (TLS.drift * (mid(a) - overlapMid)).toFixed(1) + ' points');
     $('drv').textContent = TLS.drift;
   }
   ARMS.forEach(function (r, j) {

@@ -37,7 +37,7 @@
   <a href="/"><img src="../logo.svg" alt="Nytel"></a>
   <span class="crumb"><a href="./">Testing</a></span>
   <span class="title">11. What counts as proof</span>
-  <span class="pn"><a href="10-platform-trials.html">&larr; Prev</a><a href="13-regulators-map.html">Next &rarr;</a></span>
+  <span class="pn"><a href="10-platform-trials.html">&larr; Prev</a><a href="12-decisions.html">Next &rarr;</a></span>
 </div></div>
 
 <main class="wrap">
@@ -110,7 +110,7 @@
 
 <section class="reg">
   <h3>Regulator's corner</h3>
-  <p>"Substantial evidence" is the law's phrase for this page's question: adequate, well-controlled trials. FDA's revised draft guidance (June 2026; it revises the December 2019 draft and will replace the 1998 guidance) says one trial can be enough if it is very convincing or has strong backing:</p>
+  <p>"Substantial evidence" is the law's phrase for this page's question: adequate, well-controlled trials. FDA's revised draft guidance (June 2026; it revises the December 2019 draft and will replace the 1998 guidance) (section IV.A) describes one adequate, well-controlled trial plus confirmatory evidence. The evidence can come from a highly persuasive trial or from strong confirmatory evidence:</p>
   <blockquote>"a highly persuasive trial or a source of strong confirmatory evidence"</blockquote>
   <p class="note"><a href="https://www.fda.gov/media/133660/download">FDA draft guidance, Demonstrating Substantial Evidence of Effectiveness for Human Drug and Biological Products</a>. Revised draft. FDA also weighs trial quality and what the result means for patients.</p>
 </section>
@@ -120,7 +120,7 @@
 <section class="takeaway">
   <h2>Takeaway</h2>
   <ul>
-    <li>A trial that barely wins wins again only about half the time.</li>
+    <li>If the true effect equals the first estimate, an equally large repeat trial barely wins about half the time.</li>
     <li>Two wins by luck are rare (1 in 1,600). One very strong win plus other evidence can also count.</li>
     <li>A fast review is not a weaker standard. A marker that improves is not proof that patients do better.</li>
   </ul>
@@ -133,6 +133,7 @@
     <li>Polson, N. and Sokolov, V. (2026). <a href="https://vsokolov.org/books/bayes_ai_deep_learning/">Bayes, AI and Deep Learning: Foundations of Data Science</a>. doi:10.5281/zenodo.23992805</li>
     <li>Sokolova, A. and Sokolov, V. (2026). <a href="https://vsokolov.org/books/clinical_trials_in_practice/">Clinical Trials in Practice: From Foundations to AI Agents</a>. doi:10.5281/zenodo.23933570</li>
     <li>Sokolova, A., Sokolov, V. and Polson, N. (2026). Some Bayesian Perspectives on Clinical Trials. <a href="https://arxiv.org/abs/2602.09208">arXiv:2602.09208</a></li>
+    <li>Sokolova, A. and Sokolov, V. (2026). E-values for adaptive clinical trials. <a href="https://arxiv.org/abs/2602.06379">arXiv:2602.06379</a></li>
   </ul>
   <div class="nyt">&copy; 2026 Nytel. Nightingale + Intelligence. <a href="mailto:contact@nytel.ai">contact@nytel.ai</a></div>
 </div></footer>
@@ -289,17 +290,17 @@
   Lab.QuestionCard(Q, {
     tag: 'Predict 3', score: score, type: 'slider', min: 0, max: 1, step: 0.01, start: 0.5, tol: 0.1,
     fmt: function (v) { return Lab.pct(v, 0); },
-    q: 'Trial 1 barely won (p = 0.04). You run the same trial again with new patients. Drag to the chance trial 2 also wins.',
+    q: 'Trial 1 barely won (two-sided p = 0.04, one-sided 0.02). You run the same trial again with new patients. Drag to the chance trial 2 also wins.',
     answer: function () { return power(0.04); },
     onReveal: function () { setP(0.04, 900); document.querySelectorAll('#examples .btn').forEach(function (x, i) { x.classList.toggle('on', i === 0); }); },
     revealPlot: function (b, r) { miniBars(b, ['Wins again', 'Does not'], [r.answer, 1 - r.answer], [0, 1], 'chance', pct0); },
-    explain: function () { return 'About ' + Lab.pct(power(0.04), 0) + ': close to a coin flip, if the drug is as good as trial 1 showed.'; }
+    explain: function () { return 'About ' + Lab.pct(power(0.04), 0) + ': about half, if the drug is as good as trial 1 showed.'; }
   });
   // 4. Which is the strongest proof
   Lab.QuestionCard(Q, {
     tag: 'Predict 4', score: score, type: 'choice',
     q: 'A blood test is a marker: a stand-in for how patients do. Which single result is the strongest proof?',
-    options: [{ value: 'a', label: '(a) Huge trial, p = 0.0002, counts deaths' }, { value: 'b', label: '(b) Small, p = 0.04, blood test only' }, { value: 'c', label: '(c) 300 patients, no comparison group' }],
+    options: [{ value: 'a', label: '(a) Huge trial, two-sided p = 0.0002, counts deaths' }, { value: 'b', label: '(b) Small, two-sided p = 0.04 (one-sided 0.02), blood test only' }, { value: 'c', label: '(c) 300 patients, no comparison group' }],
     answer: 'a',
     onReveal: function () { setP(0.0002, 900); document.querySelectorAll('#examples .btn').forEach(function (x, i) { x.classList.toggle('on', i === 3); }); },
     revealPlot: function (b) { miniBars(b, ['(a) p=0.0002', '(b) p=0.04'], [power(0.0002), power(0.04)], [0, 1.1], 'chance a repeat wins', pct0); },

@@ -97,8 +97,8 @@
 
 <section class="fig" aria-label="One simulated trial as an icon array">
   <h3>One simulated trial, patient by patient</h3>
-  <div class="legend"><span><i style="background:#E07A3F"></i>sicker</span><span><i style="background:#2D8B8B"></i>healthier</span><span><i style="background:#fff;border:2.5px solid #0A1628"></i>recovered</span><span><i style="background:#fff;border:2.5px dashed #0A1628"></i>quit the drug</span></div>
-  <svg id="icons" role="img" aria-label="Icons for each patient in the placebo group and the drug group, colored sicker to healthier, quitters dashed"></svg>
+  <div class="legend"><span><i style="background:#E07A3F"></i>sicker</span><span><i style="background:#2D8B8B"></i>healthier</span><span><i style="background:#fff;border:2.5px solid #0A1628"></i>recovered</span><span><i style="background:#fff;border:2.5px dashed #0A1628"></i>quit the drug (marked ×)</span></div>
+  <svg id="icons" role="img" aria-label="Icons for each patient in the placebo group and the drug group, colored sicker to healthier, quitters dashed and marked with a cross"></svg>
   <p class="note" id="iconNote"></p>
 </section>
 
@@ -122,12 +122,12 @@
     <div>
       <h3>RECOVERY: dexamethasone</h3>
       <div id="recFig"></div>
-      <p class="note">Everyone knew who got the drug, but hope cannot change who dies.</p>
+      <p class="note">Everyone knew who got the drug. Death is less open to opinion than symptoms, but unblinded care can still differ.</p>
       <p class="src">Horby et al., N Engl J Med 2021;384:693-704.</p>
     </div>
     <div>
       <h3>PANORAMIC: molnupiravir</h3>
-      <p class="note">26,411 patients were randomized. About 1 in 100 in each group was hospitalized or died. Same rate in both groups, so no gain.</p>
+      <p class="note">26,411 patients were randomized. Hospitalization or death was rare. The trial did not show a reduction in this mostly vaccinated population. Adjusted odds ratio 1.06, 95% credible interval 0.81 to 1.41.</p>
       <div id="panFig"></div>
       <p class="src">Butler et al., Lancet 2023;401:281-293 A clear "no" is a useful answer.</p>
     </div>
@@ -238,6 +238,7 @@
         var t = Math.min(1, Math.max(0, (p.h + 2) / 4)), c1 = [224, 122, 63], c2 = [45, 139, 139];
         var col = 'rgb(' + c1.map(function (v, j) { return Math.round(v + (c2[j] - v) * t); }).join(',') + ')';
         E('circle', { cx: x0 + (k % cols) * cell + cell / 2, cy: oy + 32 + Math.floor(k / cols) * cell + cell / 2, r: cell * 0.38, fill: col, stroke: p.y ? NAVY : 'none', 'stroke-width': 2.2, 'stroke-dasharray': p.q ? '2.5 2' : 'none', 'fill-opacity': p.q ? 0.45 : 1 }, svg);
+        if (p.q) { var cx = x0 + (k % cols) * cell + cell / 2, cy = oy + 32 + Math.floor(k / cols) * cell + cell / 2, d = cell * 0.3; E('path', { d: 'M' + (cx - d) + ' ' + (cy - d) + 'L' + (cx + d) + ' ' + (cy + d) + 'M' + (cx + d) + ' ' + (cy - d) + 'L' + (cx - d) + ' ' + (cy + d), stroke: NAVY, 'stroke-width': 1.6, fill: 'none' }, svg); }
       });
       E('text', { x: x0, y: oy + BH - 20 }, svg).textContent = 'Recovered' + (gi ? ', all counted' : '') + ': ' + rec(gr.arr) + ' of ' + gr.arr.length + ' (' + (gr.arr.length ? pctTxt(rec(gr.arr) / gr.arr.length) : '0%') + ')';
       E('text', { x: x0, y: oy + BH - 5 }, svg).textContent = gi ? 'Those who stayed: ' + (avgH(stay) - avgH(groups[0].arr) > 0.15 ? 'healthier than the placebo group' : 'about as healthy as the placebo group') : '';
@@ -366,7 +367,7 @@
     });
     E('line', { x1: x0 + w, x2: x0 + w, y1: 6, y2: 98, stroke: NAVY, 'stroke-dasharray': '4 3' }, svg);
     E('text', { x: x0 + w / 2, y: 114, 'text-anchor': 'middle' }, svg).textContent = 'deaths vs usual care (1 = same)';
-    var cap = $('recFig'); var p = document.createElement('p'); p.className = 'note'; p.textContent = Math.round((1 - 0.83) * 100) + '% fewer deaths overall, ' + Math.round((1 - 0.64) * 100) + '% fewer on ventilators.'; cap.appendChild(p);
+    var cap = $('recFig'); var p = document.createElement('p'); p.className = 'note'; p.textContent = 'After adjusting for age: ' + Math.round((1 - 0.83) * 100) + '% fewer deaths overall, ' + Math.round((1 - 0.64) * 100) + '% fewer on ventilators (rate ratios 0.83 and 0.64).'; cap.appendChild(p);
     var pb = $('panFig'), s2 = E('svg', { viewBox: '0 0 300 150', role: 'img', 'aria-label': 'One in 100 icons highlighted in each group' }, pb), g;
     [['Molnupiravir', 0], ['Usual care', 1]].forEach(function (d, gi) {
       var ox = 10 + gi * 150;

@@ -111,7 +111,7 @@
     <div class="cell good"><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="#1F6B6B"/><path d="M9 17.5l5.5 5.5L25 11" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Right call</b><span>A drug that does nothing stays off the market.</span></div>
   </div>
   <p class="note">We start with no opinion about the drug. Costs are made up.</p>
-  <p><b>Start with no opinion and look once:</b> &ldquo;approve if 97.5% sure&rdquo; is the same rule as the one-sided 0.025 test, and the same as treating a false win as 39 times worse than a missed drug. Interim looks, adaptation and informative priors break this match, which is why regulators ask for simulations.</p>
+  <p><b>Start with no opinion and look once:</b> &ldquo;approve if 97.5% sure&rdquo; is the same rule as the one-sided 0.025 test in the simple bell-curve model used here. For yes/no outcomes it is only approximate, which is one more reason to check by simulation. It is also the same as treating a false win as 39 times worse than a missed drug. Interim looks, adaptation and informative priors break this match, which is why regulators ask for simulations.</p>
 </section>
 
 <section class="sec" id="secB">
@@ -187,7 +187,7 @@
   <ul>
     <li>Every rule for saying yes trades false wins against missed drugs and trial size.</li>
     <li>FDA's default bar: at most a 2.5% false win chance, one-sided.</li>
-    <li>Simulated trials show what a rule really does: here 0.026 to 0.038 (the source aimed for 0.05). Borrowing designs may agree another bar.</li>
+    <li>Simulated trials show what a rule really does: here 0.026 to 0.038 (the source aimed for 0.05). FDA's Bayesian draft allows other routes too.</li>
   </ul>
 </section>
 </main>
@@ -381,7 +381,7 @@
   $('c3').innerHTML = '<path d="M110 70V20M70 24h80" stroke="' + NAVY + '" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M92 70h36" stroke="' + NAVY + '" stroke-width="3"/><path d="M70 24l-18 28h36zM150 24l-18 28h36z" fill="none" stroke="' + NAVY + '" stroke-width="2"/><path d="M52 52a18 6 0 0 0 36 0z" fill="' + TEAL + '"/><path d="M132 52a18 6 0 0 0 36 0z" fill="' + ORANGE + '"/><text x="70" y="12" text-anchor="middle" font-size="10" fill="' + NAVY + '">benefit</text><text x="150" y="12" text-anchor="middle" font-size="10" fill="' + NAVY + '">risk</text>';
 
   /* ---------- Section D ---------- */
-  var METHODS = ['Equal costs (50% sure bar)', 'False win 39 times worse (97.5% sure bar)', 'Stops early if a win looks likely', 'Strict early bars, 5 looks', 'No early looks, 100 per arm'];
+  var METHODS = ['Chooses the new drug (equal costs, 50% sure bar)', 'False win 39 times worse (97.5% sure bar)', 'Stops early if a win looks likely', 'Strict early bars, 5 looks', 'No early looks, 100 per arm'];
   var MSHORT = ['Equal costs', '39 times worse', 'Early stop', '5 strict looks', 'Fixed 100'];
   var GAINL = ['New drug 30% (no gain)', 'New drug 35% (old 30%)', 'New drug 45% (old 30%)', 'New drug 55% (old 30%)'];
   var DELTAS = [0, 0.05, 0.15, 0.25];
@@ -401,7 +401,7 @@
       nb += '<div class="mrow"><span>' + METHODS[i] + '</span><span class="tr"><span class="fl" style="display:block;width:' + r[1] + '%;background:' + GREY + '"></span></span><span class="v">' + r[1].toFixed(1) + '</span></div>';
     });
     $('dBarsP').innerHTML = pb; $('dBarsN').innerHTML = nb;
-    $('dNote').innerHTML = isNull ? 'The drug does nothing, so every bar is a false win. With equal costs, the rule picks it about half the time. The other rules land at 0.026 to 0.038. The source study aimed for 0.05, not 0.025.' : 'The new drug truly helps, so each bar is power.';
+    $('dNote').innerHTML = isNull ? 'The drug does nothing. The first rule only chooses a treatment, and with equal costs it chooses the new drug about half the time. The other rules declare a win, and their false win chance is 0.026 to 0.038. The source study aimed for 0.05, not 0.025.' : 'The new drug truly helps, so each bar is power.';
     var tb = $('dTabs').querySelectorAll('.btn'); for (var i = 0; i < tb.length; i++) tb[i].classList.toggle('on', i === D.d);
   }
   DELTAS.forEach(function (d, i) { btn($('dTabs'), GAINL[i], '', function () { D.d = i; renderD(); }); });
@@ -471,7 +471,7 @@
     q: 'Does a Bayesian design escape the false win checks at FDA?',
     options: [{ value: 'yes', label: 'Yes, Bayes needs no error rates' }, { value: 'no', label: 'Usually no: show its false win rate, with exceptions' }],
     answer: 'no',
-    explain: function () { return 'Default 2.5% one-sided; FDA may accept another bar if earlier data are borrowed. "Approve if 90% sure" alone gives ' + Lab.pct(1 - Phi(Qn(0.9)), 0) + ' false wins.'; },
+    explain: function () { return 'FDA\u2019s Bayesian draft (January 2026) offers more than one route: calibrate to a 2.5% false win rate, read the posterior directly with a justified prior, or use decision theory. "Approve if 90% sure" alone gives ' + Lab.pct(1 - Phi(Qn(0.9)), 0) + ' false wins.'; },
     revealPlot: function (box) { miniBars(box, 'False wins by sureness bar', [0.9, 0.95, 0.975].map(function (g) { return { l: Math.round(g * 1000) / 10 + '% sure', v: 1 - Phi(Qn(g)), c: g === 0.975 ? TEAL : ORANGE }; }), 0.12, fp1); }
   });
   // 6 rare disease power

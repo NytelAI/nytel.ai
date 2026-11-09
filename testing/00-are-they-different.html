@@ -438,8 +438,8 @@
   // A preset: names, nA and nB (group sizes), m (bins for the gap), k = [successes A, successes B].
   function mk(n, ka, kb) { return { nA: n, nB: n, m: n, k: [ka, kb] }; }
   function P(o) { o.nA = o.nA || o.n; o.nB = o.nB || o.n; o.m = o.m || o.nA; return o; }
-  // Number of successes among n trials, counting by geometric jumps (fast when p is small).
-  function geoBinom(r, n, p) { var k = 0, pos = -1, lg = Math.log(1 - p); for (;;) { pos += 1 + Math.floor(Math.log(1 - r()) / lg); if (pos >= n) return k; k++; } }
+  // Re-dealing fixed outcomes without replacement: of K events among N patients, how many land in the first nA (fast: one step per event).
+  function hyperA(r, N, K, nA) { var a = 0, i; for (i = 0; i < K; i++) if (r() < (nA - a) / (N - i)) a++; return a; }
   // Optional preset fields: unit (gap scale, default 100 = points), bw (bin width in gap units), gunit (gap label), deathsOnly (re-randomize only the deaths).
   function bwOf(pre) { return pre.bw || 100 / pre.m; }
   function gapVal(pre, a, b) { return Math.abs(a / pre.nA - b / pre.nB) * (pre.unit || 100); }
@@ -448,16 +448,16 @@
   function obsBin(pre) { return binBin(pre, pre.k[0], pre.k[1]); }
   function gapPts(pre) { return gapVal(pre, pre.k[0], pre.k[1]); }
   function makePool(pre) { if (pre.nA + pre.nB > 5000) return null; return arrOf(pre.nA, pre.k[0]).concat(arrOf(pre.nB, pre.k[1])); }
-  var LASTK = [0, 0];
+  var LASTK = [0, 0], LASTTAIL = false;
   // One re-dealing: shuffle the pool, or (large groups) draw both counts from the pooled rate.
   function drawGap(pre, pool) {
     var a = 0, b = 0, i;
     if (pre.deathsOnly) { var tot = pre.k[0] + pre.k[1], pa = pre.nA / (pre.nA + pre.nB); for (i = 0; i < tot; i++) if (rng() < pa) a++; b = tot - a; }
-    else if (pre.binom) { var p = (pre.k[0] + pre.k[1]) / (pre.nA + pre.nB); a = geoBinom(rng, pre.nA, p); b = geoBinom(rng, pre.nB, p); }
+    else if (pre.binom) { var K = pre.k[0] + pre.k[1]; a = hyperA(rng, pre.nA + pre.nB, K, pre.nA); b = K - a; }
     else { shuffle(pool); for (i = 0; i < pre.nA; i++) a += pool[i]; for (; i < pool.length; i++) b += pool[i]; }
-    LASTK = [a, b]; return binBin(pre, a, b);
+    LASTK = [a, b]; LASTTAIL = gapVal(pre, a, b) >= gapPts(pre) - 1e-9; return binBin(pre, a, b);
   }
-  function permHist(pre, N) { var pool = (pre.binom || pre.deathsOnly) ? null : makePool(pre), h = new Array(pre.m + 1).fill(0), i; for (i = 0; i < N; i++) h[drawGap(pre, pool)]++; return h; }
+  function permHist(pre, N) { var pool = (pre.binom || pre.deathsOnly) ? null : makePool(pre), h = new Array(pre.m + 1).fill(0), i; h.tail = 0; for (i = 0; i < N; i++) { h[drawGap(pre, pool)]++; if (LASTTAIL) h.tail++; } return h; }
   function tailShare(h, N, d) { var c = 0, i; for (i = d; i < h.length; i++) c += h[i]; return N ? c / N : 0; }
   function tailCount(h, d) { var c = 0, i; for (i = d; i < h.length; i++) c += h[i]; return c; }
   function permXlim(m, d, pre) { var D = Math.min(m, Math.max(d + 2, pre && pre.hlen ? pre.hlen : Math.ceil(2.5 * Math.sqrt(m / 2)))), w = pre ? bwOf(pre) : 100 / m; return { D: D, lo: -0.5 * w, hi: (D + 0.5) * w }; }
@@ -474,7 +474,7 @@
     var X = permXlim(m, d, pre), Pl = Lab.miniPlot(box, { xlim: [X.lo, X.hi], ylim: [0, 10], xlabel: pre && pre.xlabel ? pre.xlabel : 'gap (points)', ylabel: '% of re-randomizations', label: 'Histogram of gaps after re-randomizing; gaps at least as big as the real gap are orange' });
     drawPerm(Pl, st.hist, st.N, m, d, 600, '', pre);
   }
-  function permStat(pre, N) { var h = permHist(pre, N), d = obsBin(pre); return { hist: h, N: N, share: tailShare(h, N, d), tail: tailCount(h, d) }; }
+  function permStat(pre, N) { var h = permHist(pre, N), d = obsBin(pre); return { hist: h, N: N, share: N ? h.tail / N : 0, tail: h.tail }; }
   function nf(x) { return x.toLocaleString('en-US'); }
   function rowsText(pre) { if (pre.deathsOnly) return pre.k[0] + ' vs ' + pre.k[1] + ' deaths'; return pre.k[0] + '/' + nf(pre.nA) + ' vs ' + pre.k[1] + '/' + nf(pre.nB); }
 
@@ -484,7 +484,7 @@
   var SRC_PAN = 'Butler et al. (2023), Lancet.';
   var SRC_REC = 'RECOVERY (2021), NEJM.';
   var SRC_VIOXX = 'Bresalier et al. (2005), NEJM. Led to Vioxx\'s withdrawal in 2004.';
-  var SRC_VIAGRA = 'Polson and Sokolov, <a href="https://vsokolov.org/html/_book/05-ab.html">Bayes, AI and Deep Learning, chapter 5</a>. The 77 heart-related deaths were reported to FDA in 1998, among more than 6 million prescriptions (trade press report of FDA data; reports do not prove the drug caused them). The comparison group of 1.5 million men is made up, as in the book. Nobody was randomized, so even a real gap could come from who chose to take Viagra.';
+  var SRC_VIAGRA = 'Polson and Sokolov, <a href="https://vsokolov.org/html/_book/05-ab.html">Bayes, AI and Deep Learning, chapter 5</a>. The 77 heart-related deaths were reported to FDA in 1998, among more than 6 million prescriptions (trade press report of FDA data; reports do not prove the drug caused them). Here each prescription counts as one man, which is a simplification (many men filled more than one). The comparison group of 1.5 million men is made up, as in the book. Nobody was randomized, so even a real gap could come from who chose to take Viagra.';
   var PRE = [
     P({ id: 'ulcer', label: 'Ulcer surgery (illustrative)', names: ['Treatment A', 'Treatment B'], n: 100, k: [7, 1], yes: '!', no: '·', what: 'died; fewer is better', illus: true, src: SRC_ULCER }),
     P({ id: 'ecmo', label: 'ECMO newborns (real)', names: ['ECMO', 'Standard care'], nA: 11, nB: 1, m: 11, k: [11, 0], yes: '✓', no: '✕', what: 'survived', real: true, src: SRC_ECMO }),
@@ -495,7 +495,7 @@
   ];
   var S3 = { pre: PRE[0], hist: null, N: 0, last: null, pool: null, busy: false, P: null };
   function loadS3(pre) {
-    S3.pre = pre; S3.hist = new Array(pre.m + 1).fill(0); S3.N = 0; S3.last = null; S3.busy = false;
+    S3.pre = pre; S3.hist = new Array(pre.m + 1).fill(0); S3.N = 0; S3.tail = 0; S3.last = null; S3.busy = false;
     S3.pool = (pre.binom || pre.deathsOnly) ? null : makePool(pre);
     $('s3title').textContent = 'Observed: ' + pre.names[0] + ' vs ' + pre.names[1] + (pre.real ? ' (real data)' : pre.illus ? ' (illustrative counts)' : pre.id === 'game' ? ' (your trial)' : ' (made-up numbers)');
     $('srcLine').innerHTML = pre.src || '';
@@ -516,7 +516,7 @@
   function update3(ms) {
     var pre = S3.pre, m = pre.m, d = obsBin(pre), g = gapPts(pre);
     drawPerm(S3.P, S3.hist, S3.N, m, d, ms, 'real', pre);
-    var tc = tailCount(S3.hist, d);
+    var tc = S3.tail;
     $('chips3').innerHTML = chip('Real gap', fmtGap(+g.toFixed(2)) + gunit(pre) + ' (' + rowsText(pre) + ')', true) +
       chip('Last gap', S3.last == null ? '–' : fmtGap(+(pre.deathsOnly ? gapVal(pre, LASTK[0], LASTK[1]) : S3.last * bwOf(pre)).toFixed(2)) + gunit(pre)) + chip('Re-randomizations', nf(S3.N)) +
       chip('At least as big as the real gap', S3.N ? nf(tc) + ' of ' + nf(S3.N) + ' (' + pct(tc / S3.N, S3.N >= 1000 ? 1 : 0) + ')' : '–');
@@ -547,16 +547,16 @@
   }
   function shuffleOnce() {
     if (S3.busy) return; var pre = S3.pre, d;
-    if (pre.binom || pre.deathsOnly) { d = drawGap(pre, null); S3.hist[d]++; S3.N++; S3.last = d; showDealt(pre); update3(0); return; }
+    if (pre.binom || pre.deathsOnly) { d = drawGap(pre, null); S3.hist[d]++; if (LASTTAIL) S3.tail++; S3.N++; S3.last = d; showDealt(pre); update3(0); return; }
     setBusy(true);
     var box = $('shufBox'); box.innerHTML = ''; $('shufTitle').textContent = 'Pooling everyone into one pile';
     var tl = el('div'); box.appendChild(tl); tiles(tl, S3.pool.slice(), pre.yes, pre.no, 'Everyone pooled in one row');
-    d = drawGap(pre, S3.pool); var kk = LASTK.slice();
-    setTimeout(function () { S3.hist[d]++; S3.N++; S3.last = d; showDealt(pre, kk); update3(0); setBusy(false); }, 800);
+    d = drawGap(pre, S3.pool); var kk = LASTK.slice(), tl2 = LASTTAIL;
+    setTimeout(function () { S3.hist[d]++; if (tl2) S3.tail++; S3.N++; S3.last = d; showDealt(pre, kk); update3(0); setBusy(false); }, 800);
   }
   function shuffleMany() {
     if (S3.busy) return; var pre = S3.pre, i, d;
-    for (i = 0; i < 1000; i++) { d = drawGap(pre, S3.pool); S3.hist[d]++; S3.N++; S3.last = d; }
+    for (i = 0; i < 1000; i++) { d = drawGap(pre, S3.pool); S3.hist[d]++; if (LASTTAIL) S3.tail++; S3.N++; S3.last = d; }
     showDealt(pre); update3(500);
   }
   $('b1').addEventListener('click', shuffleOnce);
@@ -836,7 +836,7 @@
     var tru = cfTrue(pts, eff), est = cfEst(pts, t, eff), nD = t.filter(Boolean).length;
     var hD = Lab.mean(pts.filter(function (p, i) { return t[i]; }).map(function (p) { return p.h; })), hC = Lab.mean(pts.filter(function (p, i) { return !t[i]; }).map(function (p) { return p.h; }));
     $('cfChips').innerHTML = chip('Real effect in these 40', signed(tru, 1) + ' points') + chip("Trial's result", signed(est, 1) + ' points', true) + chip('Took the drug', nD + ' of 40');
-    $('cfNote').innerHTML = (CF.mode === 'choose' ? 'Patients chose, so the healthier ones took the drug.' : 'A coin decided, so D is spread evenly over healthy and sick.') + ' The trial compares bright top icons (D) with bright bottom icons (P).';
+    $('cfNote').innerHTML = (CF.mode === 'choose' ? 'Patients chose, so the healthier ones took the drug.' : 'The coin ignores each patient\'s health. Luck can still leave the groups unequal.') + ' The trial compares bright top icons (D) with bright bottom icons (P).';
     $('cfEffv').textContent = signed(eff, 0) + ' points' + (eff === 0 ? ' (changes no patient)' : '');
     document.querySelectorAll('#cfMode .btn').forEach(function (b) { b.classList.toggle('on', b.dataset.m === CF.mode); });
     dealStrip(anim); sbDraw(); balDraw();
@@ -962,11 +962,11 @@
     explain: function () { return 'The drug group looks better only because healthier people picked it. Its own "had it skipped the drug" bar is just as tall.'; } };
   cfCard('qc', qc);
   var q7 = { tag: 'Predict: randomization 2', type: 'choice',
-    q: 'Many studies saw women on hormone therapy having fewer heart problems. Then a large randomized trial (WHI) tested it. What happened to the risk of heart attacks?',
+    q: 'Many studies saw women on hormone therapy having fewer heart problems. Then a large randomized trial (WHI) tested it. What happened to the risk of heart disease?',
     options: [{ value: 'lower', label: 'Lower, as expected' }, { value: 'same', label: 'No change' }, { value: 'higher', label: 'Higher' }],
     answer: 'higher',
-    onReveal: function () { miniBars(cardEl.q7.el, [{ label: 'Heart attacks', value: 29, color: ORANGE }, { label: 'Stroke', value: 41, color: ORANGE }], 50, null, function (v) { return '+' + v + '%'; }, 'Change in risk on hormones vs placebo, randomized Women\'s Health Initiative (Rossouw et al., JAMA 2002).', false); },
-    explain: function () { return 'Women who chose hormones were healthier already. The coin balanced health, and the harm showed.'; } };
+    onReveal: function () { miniBars(cardEl.q7.el, [{ label: 'Heart disease', value: 29, color: ORANGE }, { label: 'Stroke', value: 41, color: ORANGE }], 50, null, function (v) { return '+' + v + '%'; }, 'Change in risk on estrogen plus progestin vs placebo. Heart disease = heart attacks plus deaths from heart disease. Women\'s Health Initiative (Rossouw et al., JAMA 2002).', false); },
+    explain: function () { return 'Women who chose hormones may have been healthier already. The coin ignored health, and the harm showed.'; } };
   cfCard('q7', q7);
   })(score);
 

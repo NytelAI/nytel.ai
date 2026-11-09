@@ -19,8 +19,8 @@
     return x >= 0 ? r : 2 - r;
   };
   // Standard normal cdf and upper tail.
-  Sim14.Phi = function (x) { return 1 - 0.5 * Sim14.erfc(x / Math.SQRT2); };
-  Sim14.PhiUpper = function (x) { return 0.5 * Sim14.erfc(x / Math.SQRT2); };
+  Sim14.Phi = function (x) { return x === 0 ? 0.5 : (x > 0 ? 1 - 0.5 * Sim14.erfc(x / Math.SQRT2) : 0.5 * Sim14.erfc(-x / Math.SQRT2)); };
+  Sim14.PhiUpper = function (x) { return x === 0 ? 0.5 : (x > 0 ? 0.5 * Sim14.erfc(x / Math.SQRT2) : 1 - 0.5 * Sim14.erfc(-x / Math.SQRT2)); };
   Sim14.phi = function (x) { return Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI); };
   // Standard normal quantile (Acklam rational approximation plus one Halley step).
   Sim14.PhiInv = function (p) {
@@ -80,9 +80,35 @@
   };
 
   /* ---------- Posterior probability and z statistic ---------- */
-  // Pr(p1 > p0 + margin | data) with independent Beta(a, b) priors, by a normal approximation to the Beta difference.
-  Sim14.ppDiff = function (x0, n0, x1, n1, P) {
+  // Log-gamma (Lanczos), used by the exact Beta comparison.
+  var LG = [76.18009172947146, -86.50532032941677, 24.01409824083091, -1.231739572450155, 0.1208650973866179e-2, -0.5395239384953e-5];
+  function lgamma(x) {
+    var y = x, t = x + 5.5, ser = 1.000000000190015;
+    t -= (x + 0.5) * Math.log(t);
+    for (var j = 0; j < 6; j++) ser += LG[j] / ++y;
+    return -t + Math.log(2.5066282746310005 * ser / x);
+  }
+  function lbeta(a, b) { return lgamma(a) + lgamma(b) - lgamma(a + b); }
+  // Exact Pr(X > Y) for independent X ~ Beta(a, b), Y ~ Beta(c, d), all four parameters positive integers: a finite sum with min(a, b, c, d) terms.
+  function betaGreater(a, b, c, d) {
+    var flip = false, t;
+    // Four symmetries: swap (X,Y) with complement, or reflect both arms; pick the one with the fewest terms.
+    var m = Math.min(a, b, c, d);
+    if (m === c) { t = a; a = c; c = t; t = b; b = d; d = t; flip = true; }        // P(X>Y) = 1 - P(Y>X)
+    else if (m === b) { t = a; a = b; b = t; t = c; c = d; d = t; flip = true; }  // P(X>Y) = 1 - P(1-X > 1-Y)
+    else if (m === d) { t = a; a = d; d = t; t = b; b = c; c = t; }                // P(X>Y) = P(1-Y > 1-X)
+    // now a is the smallest: P(Beta(a,b) > Beta(c,d)) = sum_{i<a} B(c+i, b+d) / ((b+i) B(1+i, b) B(c, d))
+    var lb = lbeta(c, d), s = 0;
+    for (var i = 0; i < a; i++) s += Math.exp(lbeta(c + i, b + d) - lb - lbeta(1 + i, b)) / (b + i);
+    s = Math.min(1, Math.max(0, s));
+    return flip ? 1 - s : s;
+  }
+  Sim14.betaGreater = betaGreater;
+  var EXACT_MAX = 30;  // use the exact sum when every Beta parameter is a whole number and the smallest is at most this
+  // Pr(p1 > p0 + margin | data) with independent Beta(a, b) priors. Exact when margin is 0 and the counts are small; otherwise a normal approximation to the Beta difference.
+  Sim14.ppDiff = function (x0, n0, x1, n1, P, approx) {
     var A0 = P.a0 + x0, B0 = P.b0 + n0 - x0, A1 = P.a1 + x1, B1 = P.b1 + n1 - x1;
+    if (!approx && !P.margin && A0 % 1 === 0 && B0 % 1 === 0 && A1 % 1 === 0 && B1 % 1 === 0 && Math.min(A0, B0, A1, B1) <= EXACT_MAX) return betaGreater(A1, B1, A0, B0);
     var s0 = A0 + B0, s1 = A1 + B1;
     var m = A1 / s1 - A0 / s0, v = A0 * B0 / (s0 * s0 * (s0 + 1)) + A1 * B1 / (s1 * s1 * (s1 + 1));
     return Sim14.Phi((m - P.margin) / Math.sqrt(v));
@@ -170,7 +196,7 @@
   }
   // Thompson sampling allocation probability to treatment given the data so far, clipped to [1 - cap, cap].
   function tsWeight(P, x0, n0, x1, n1) {
-    var w = Sim14.ppDiff(x0, n0, x1, n1, { a0: P.a0, b0: P.b0, a1: P.a1, b1: P.b1, margin: 0 });
+    var w = Sim14.ppDiff(x0, n0, x1, n1, { a0: P.a0, b0: P.b0, a1: P.a1, b1: P.b1, margin: 0 }, n0 + n1 > 20);  // exact for the first few patients, fast approximation after
     return Math.min(P.cap, Math.max(1 - P.cap, w));
   }
   // Simulate trials s0 .. s1 - 1 into the store.
@@ -194,7 +220,7 @@
       } else {
         var n0 = 0, n1 = 0, y0 = 0, y1 = 0, T = 2 * M; k = 0;
         for (t = 0; t < T; t++) {
-          var arm = t < P.burnIn ? (t & 1) : (bufA[t] < tsWeight(P, y0, n0, y1, n1) ? 1 : 0);
+          var arm = (t < P.burnIn || n0 === 0 || n1 === 0) ? (t & 1) : (bufA[t] < tsWeight(P, y0, n0, y1, n1) ? 1 : 0);  // an empty arm is never left empty
           if (arm === 1) { if (bufU1[n1] < P.p1) y1++; n1++; } else { if (bufU0[n0] < P.p0) y0++; n0++; }
           if (t + 1 === 2 * m[k]) {
             var i2 = base + k;
@@ -213,7 +239,7 @@
     var out = { t: [], pp: [], arm: [], resp: [], lookT: m.map(function (v) { return 2 * v; }), lookPP: [] };
     var n0 = 0, n1 = 0, y0 = 0, y1 = 0, t, k = 0;
     for (t = 0; t < T; t++) {
-      var arm = P.alloc === 'ts' ? (t < P.burnIn ? (t & 1) : (bufA[t] < tsWeight(P, y0, n0, y1, n1) ? 1 : 0)) : (t & 1), r;
+      var arm = P.alloc === 'ts' ? ((t < P.burnIn || n0 === 0 || n1 === 0) ? (t & 1) : (bufA[t] < tsWeight(P, y0, n0, y1, n1) ? 1 : 0)) : (t & 1), r;
       if (arm === 1) { r = bufU1[n1] < P.p1 ? 1 : 0; y1 += r; n1++; } else { r = bufU0[n0] < P.p0 ? 1 : 0; y0 += r; n0++; }
       var pp = (n0 > 0 && n1 > 0) ? Sim14.ppDiff(y0, n0, y1, n1, P) : 0.5;
       out.t.push(t + 1); out.pp.push(pp); out.arm.push(arm); out.resp.push(r);
@@ -256,7 +282,7 @@
         else { var bs = bayesStop(st.bpp, base, K, c, f); k = bs[0]; ok = bs[1]; }
         var q = base + k;
         if (nm === 'bayes') { n0 = st.bn0[q]; n1 = st.bn1[q]; x0 = st.bx0[q]; x1 = st.bx1[q]; } else { n0 = n1 = m[k]; x0 = st.fx0[q]; x1 = st.fx1[q]; }
-        var e = x1 / n1 - x0 / n0;
+        var e = (n1 > 0 ? x1 / n1 : 0) - (n0 > 0 ? x0 / n0 : 0);
         r.succ += ok; r.EN += n0 + n1; r.stopHist[k]++; r.est[s] = e; r.ok[s] = ok; r.estAll += e;
         if (infArm >= 0) r.inf += infArm === 1 ? n1 : n0;
         if (ok) { r.estSucc += e; r.nSucc++; if (k < K - 1) { r.estEarly += e; r.nEarly++; } }

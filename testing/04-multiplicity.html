@@ -180,6 +180,7 @@ svg text { font-family: var(--sans); }
   <ul>
     <li>Every extra test is another ticket in the false alarm lottery.</li>
     <li>A fix (Bonferroni or a fixed order) pays for the extra tickets so the chance of any false alarm stays near 2.5%.</li>
+    <li>The percentages here assume independent tests. Bonferroni keeps the chance of any false alarm at or below 2.5% even when tests are related.</li>
     <li>Decide the tests and their order before you see the data.</li>
   </ul>
 </section>
@@ -402,7 +403,7 @@ svg text { font-family: var(--sans); }
 
   card({
     tag: 'Predict 3', type: 'choice',
-    q: 'A trial slices patients into 20 subgroups and tests each one. The drug is useless. In 100 such trials, how many show at least one "significant" subgroup (a one-sided p-value under 2.5%)?',
+    q: 'A trial splits patients into 20 separate subgroups and tests each one, so the 20 tests are independent. The drug is useless. In 100 such trials, how many show at least one "significant" subgroup (a one-sided p-value under 2.5%)?',
     options: [{ value: 'a', label: 'About 3' }, { value: 'b', label: 'About 20' }, { value: 'c', label: 'About 40' }, { value: 'd', label: 'About 90' }],
     answer: function () { var n = 100 * exactAny('none', 20, 0.025); return Math.abs(n - 40) < 1 ? 'c' : 'b'; },
     explain: function () { return 'Exact chance per trial is ' + pct(exactAny('none', 20, 0.025)) + ', so about ' + Math.round(100 * exactAny('none', 20, 0.025)) + ' of 100.'; }
@@ -450,7 +451,7 @@ svg text { font-family: var(--sans); }
 
   card({
     tag: 'Predict 7', type: 'slider', min: 0, max: 20, step: 1, start: 0, tol: 1, fmt: function (v) { return v + ' measurements'; },
-    q: 'A trial checks 100 lab measurements. The drug changes none. Cutoff: one-sided 2.5%. About how many will look "significant" (one-sided p-value under 2.5%)? Drag to your guess.',
+    q: 'A trial runs 100 independent tests on lab measurements. The drug changes none. Cutoff: one-sided 2.5%. About how many will look "significant" (one-sided p-value under 2.5%)? Drag to your guess.',
     answer: function () { return 100 * 0.025; },
     explain: function () { return 'On average 100 x 0.025 = ' + num(100 * 0.025, 1) + ' measurements. The chance of at least one is ' + pct(exactAny('none', 100, 0.025)) + '.'; }
   }, function (h, r) {
@@ -554,6 +555,16 @@ svg text { font-family: var(--sans); }
         TR.push({ t: t, c: c, xt: xt, xc: xc, p: 1 - Lab.normalCdf(z, 0, 1) });
       }
     }
+    // Exact chance one drug passes a cutoff in this widget: sum over every possible (drug, placebo) result.
+    function passProb(thr) {
+      var a, b, s = 0;
+      for (a = 0; a <= NP; a++) for (b = 0; b <= NP; b++) {
+        var pp = (a + b) / (2 * NP), se2 = Math.sqrt(pp * (1 - pp) * 2 / NP), z = se2 > 0 ? (a - b) / NP / se2 : 0;
+        if (1 - Lab.normalCdf(z, 0, 1) < thr) s += Lab.binomPmf(a, NP, TRUE_P) * Lab.binomPmf(b, NP, TRUE_P);
+      }
+      return s;
+    }
+    var ANY_NONE = 1 - Math.pow(1 - passProb(ALPHA), ND), ANY_BONF = 1 - Math.pow(1 - passProb(ALPHA / ND), ND);
     function bar() { return TM === 'bonf' ? ALPHA / ND : ALPHA; }
     function row(box, lab, a) {
       var w = document.createElement('div'); w.className = 'trw';
@@ -577,7 +588,7 @@ svg text { font-family: var(--sans); }
       });
       $('truthRule').textContent = TM === 'bonf' ? 'Bonferroni: split the 2.5% across 20 drugs. A drug passes only if its one-sided p-value is under ' + num(ALPHA / ND * 100, 3) + '%.' : 'No fix: a drug looks like it works if its one-sided p-value is under 2.5%.';
       $('truthChips').innerHTML = '<span class="chip warm">False alarms, no fix: <b>' + n5 + ' of ' + ND + '</b></span><span class="chip">False alarms, Bonferroni: <b>' + nb + ' of ' + ND + '</b></span>' +
-        '<span class="chip">Chance of at least 1 false alarm: <b>' + pct(exactAny('none', ND, ALPHA), 1) + '</b> no fix, <b>' + pct(exactAny('bonf', ND, ALPHA), 1) + '</b> Bonferroni</span>';
+        '<span class="chip">Chance of at least 1 false alarm in 20 independent trials like these: <b>' + pct(ANY_NONE, 1) + '</b> no fix, <b>' + pct(ANY_BONF, 1) + '</b> Bonferroni</span>';
       document.querySelectorAll('#truthBtns .btn').forEach(function (x) { x.classList.toggle('on', x.dataset.m === TM); });
     }
     [['none', 'No fix: cutoff 2.5%'], ['bonf', 'Bonferroni: cutoff 2.5% \u00f7 20']].forEach(function (m) {

@@ -96,7 +96,7 @@ svg text { font-family: var(--sans); }
 
 <section class="section">
   <h2>Who answers for the trial?</h2>
-  <p>Click CRO. A dashed arrow shows who still answers for the trial.</p>
+  <p>Click CRO. A dashed arrow shows who still oversees the trial.</p>
   <figure class="figure"><svg id="roles" viewBox="0 0 920 330" role="img" aria-label="Sponsor, CRO, investigator, IRB and FDA with their roles, and three FDA centers"></svg>
     <div class="detail" id="roledetail" aria-live="polite">Click any box.</div></figure>
 </section>
@@ -158,7 +158,7 @@ svg text { font-family: var(--sans); }
   <ul>
     <li>The road has stages, and FDA checks in at each big step.</li>
     <li>Pick the meeting that fits the question: stuck, early, or small.</li>
-    <li>The sponsor answers for the trial, even when a CRO does the work.</li>
+    <li>The sponsor oversees the trial, even when a CRO does the work. The CRO answers for the duties it took over in writing.</li>
   </ul>
 </section>
 </main>
@@ -169,6 +169,7 @@ svg text { font-family: var(--sans); }
     <li>FDA: <a href="https://www.fda.gov/media/172311/download">Formal Meetings Between the FDA and Sponsors or Applicants of PDUFA Products</a> (August 2026); <a href="https://www.fda.gov/media/190505/download">Use of Bayesian Methodology in Clinical Trials</a> (draft). Chapter on the drug development process: <a href="https://vsokolov.org/clinos-book/">Clinical Trials in Practice</a>.</li>
     <li>Polson, N. and Sokolov, V. (2026). <a href="https://vsokolov.org/books/bayes_ai_deep_learning/">Bayes, AI and Deep Learning: Foundations of Data Science</a>. doi:10.5281/zenodo.23992805</li>
     <li>Sokolova, A. and Sokolov, V. (2026). <a href="https://vsokolov.org/books/clinical_trials_in_practice/">Clinical Trials in Practice: From Foundations to AI Agents</a>. doi:10.5281/zenodo.23933570</li>
+    <li>21 CFR 312.52, Transfer of obligations to a contract research organization. <a href="https://www.ecfr.gov/current/title-21/chapter-I/subchapter-D/part-312/subpart-D/section-312.52">eCFR</a></li>
     <li>Sokolova, A., Sokolov, V. and Polson, N. (2026). Some Bayesian Perspectives on Clinical Trials. <a href="https://arxiv.org/abs/2602.09208">arXiv:2602.09208</a></li>
   </ul>
   <div class="nyt">&copy; 2026 Nytel. Nightingale + Intelligence. <a href="mailto:contact@nytel.ai">contact@nytel.ai</a></div>
@@ -301,7 +302,7 @@ svg text { font-family: var(--sans); }
   /* ---------- Roles ---------- */
   var ROLES = [
     { id: 'sponsor', t: 'Sponsor', l: ['Owns the trial,', 'answers for it'], d: 'The sponsor is ultimately responsible for the trial.' },
-    { id: 'cro', t: 'CRO', l: ['Hired company that', 'does tasks for sponsor'], d: 'A CRO (contract research organization) does tasks the sponsor hands over. Accountability stays with the sponsor.' },
+    { id: 'cro', t: 'CRO', l: ['Hired company that', 'does tasks for sponsor'], d: 'A CRO (contract research organization) does tasks the sponsor hands over. The sponsor stays responsible for overseeing the work. The CRO answers for duties it took over in writing.' },
     { id: 'pi', t: 'Investigator', l: ['Runs the trial at a', 'site, gets consent'], d: 'The principal investigator runs the study at one site and makes sure patients give consent. Consent means patients agree in writing after hearing the risks.' },
     { id: 'irb', t: 'IRB', l: ['Ethics committee:', 'approves the plan'], d: 'The IRB (institutional review board) approves the trial plan and the consent form.' },
     { id: 'fda', t: 'FDA', l: ['Inspects and', 'can halt a trial'], d: 'The regulator can inspect a trial and halt it.' },
@@ -323,7 +324,7 @@ svg text { font-family: var(--sans); }
     });
     h += '<text x="20" y="200" font-size="13" font-weight="600" fill="#4a5565">FDA centers</text>';
     h += '<line x1="180" x2="200" y1="85" y2="85" stroke="' + TD + '" stroke-width="2" marker-end="url(#ar)"/>';
-    if (accountable) h += '<path d="M 280 145 Q 190 185 100 145" fill="none" stroke="' + ODARK + '" stroke-width="2.5" stroke-dasharray="6 4" marker-end="url(#ar)"/><text x="190" y="178" text-anchor="middle" font-size="13" font-weight="700" fill="' + ODARK + '">responsibility stays here</text>';
+    if (accountable) h += '<path d="M 280 145 Q 190 185 100 145" fill="none" stroke="' + ODARK + '" stroke-width="2.5" stroke-dasharray="6 4" marker-end="url(#ar)"/><text x="190" y="178" text-anchor="middle" font-size="13" font-weight="700" fill="' + ODARK + '">oversight stays here</text>';
     $('roles').innerHTML = h;
     var r = ROLES.filter(function (x) { return x.id === S.role; })[0];
     if (r) $('roledetail').innerHTML = '<b>' + r.t + ':</b> ' + r.d;
@@ -494,10 +495,10 @@ svg text { font-family: var(--sans); }
       revealPlot: function (b) { miniBoxes(b, ['CDER', 'CBER', 'CDRH'], 1); },
       explain: function () { return 'CBER handles vaccines, blood, and gene and cell therapy.'; } },
     { tag: 'Predict 6', q: 'A CRO mishandles trial data. Who is accountable?', type: 'choice',
-      options: [{ value: 'cro', label: 'The CRO' }, { value: 'sponsor', label: 'The sponsor' }, { value: 'pi', label: 'The investigator' }], answer: 'sponsor',
+      options: [{ value: 'cro', label: 'Only the CRO' }, { value: 'sponsor', label: 'Only the sponsor' }, { value: 'both', label: 'Both: the CRO for duties handed to it in writing, the sponsor for overseeing them' }, { value: 'pi', label: 'The investigator' }], answer: 'both',
       onReveal: function () { selectRole('cro'); },
       revealPlot: function (b) { miniBoxes(b, ['Sponsor', 'CRO', 'Investigator', 'IRB', 'FDA'], 0); },
-      explain: function () { return 'A CRO takes tasks, not accountability. The sponsor answers for the trial.'; } },
+      explain: function () { return 'Both. The CRO answers for the duties transferred to it in writing. The sponsor still oversees them (21 CFR 312.52).'; } },
     { tag: 'Predict 7', q: 'In the AI draft, which two things make up "model risk"?', type: 'choice',
       options: [{ value: 'size', label: 'Model size and speed' }, { value: 'inf', label: 'Model influence and decision consequence' }, { value: 'cost', label: 'Cost and age' }], answer: 'inf',
       onReveal: function () { R.inf = 1; R.con = 1; document.querySelectorAll('#tInf .btn, #tCon .btn').forEach(function (b, i) { b.classList.toggle('on', i % 2 === 1); }); renderRisk(); },

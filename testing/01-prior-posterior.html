@@ -305,7 +305,7 @@
     var above = 0; th.forEach(function (x, i) { if (x > 0.5 + 1e-9) above += post[i]; });
     $('chips').innerHTML = chip('Data', S.h + ' ' + S.ex.s + ', ' + S.t + ' ' + S.ex.f, true) + chip('Best guess', gmean(th, post).toFixed(2)) +
       chip('90% sure', lo5.toFixed(2) + ' to ' + hi95.toFixed(2)) + chip('Chance it is above 0.5', Math.round(above * 100) + '%');
-    $('plotNote').innerHTML = (S.ex.real ? '<b>Real data.</b> ' : '') + 'Bars at 0, ' + (K > 11 ? '0.01' : '0.1') + ', ..., 1.';
+    $('plotNote').innerHTML = (S.ex.real ? '<b>Real data.</b> ' : '') + 'Bars at 0, ' + (K > 11 ? '0.01' : '0.1') + ', ..., 1.' + (K > 11 ? '' : ' Eleven bars is a coarse version, so numbers differ a little from a smooth Beta curve.');
     $('addA').textContent = '+ ' + S.ex.Ls; $('addB').textContent = '+ ' + S.ex.Lf;
     var tb = $('patients'); tb.innerHTML = '';
     S.seq.slice(-40).forEach(function (x) { var e = document.createElement('span'); e.className = x ? 'h' : 't'; e.textContent = x ? S.ex.Ls[0] : S.ex.Lf[0]; tb.appendChild(e); });
@@ -378,6 +378,20 @@
   }
   pp.svg.addEventListener('pointerdown', function (e) { dragging = true; S.dragTop = pp.getYlim()[1]; pp.svg.setPointerCapture(e.pointerId); setBar(e); });
   pp.svg.addEventListener('pointermove', function (e) { if (dragging) setBar(e); });
+  // Keyboard: Tab to the prior plot, Left/Right pick a bar, Up/Down change its share.
+  var kbI = 5;
+  pp.svg.setAttribute('tabindex', '0'); pp.svg.setAttribute('role', 'group'); pp.svg.setAttribute('aria-label', 'Prior bars. Left and right pick a bar, up and down change its share.');
+  pp.svg.addEventListener('keydown', function (e) {
+    var k = e.key, C = S.C; if (!C || ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].indexOf(k) < 0) return;
+    e.preventDefault(); kbI = Math.min(S.K - 1, kbI);
+    if (k === 'ArrowLeft') kbI = Math.max(0, kbI - 1); else if (k === 'ArrowRight') kbI = Math.min(S.K - 1, kbI + 1);
+    else {
+      var sh = norm(S.raw), others = 1 - sh[kbI], y = Math.min(0.9, Math.max(0, sh[kbI] + (k === 'ArrowUp' ? 0.02 : -0.02)));
+      if (others <= 0) return;
+      S.raw = sh.map(function (x, j) { return j === kbI ? y : x * (1 - y) / others; }); S.shape = null; S.stage = 'final'; S.cmp = null; render(0);
+    }
+    hover(kbI); $('hover').textContent = 'Bar ' + kbI + ' of ' + (S.K - 1) + ', prior share ' + f3(norm(S.raw)[kbI]) + '. ' + $('hover').textContent;
+  });
   pp.svg.addEventListener('pointerup', function () { dragging = false; S.dragTop = null; render(300); });
 
   /* ---------- the book's figure (static, same numbers as its code chunk) ---------- */

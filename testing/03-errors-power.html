@@ -197,7 +197,7 @@
   <h2>Takeaway</h2>
   <ul>
     <li>A trial can raise a false alarm (Type I, &alpha;) or miss a drug that works (Type II, &beta;). Power is 1 minus &beta;.</li>
-    <li>Only more patients shrink both errors at once. Moving the bar just trades one for the other.</li>
+    <li>More patients help detect a working drug without raising the false-alarm rate. Moving the bar trades one error against the other.</li>
     <li>Half the effect costs about four times the patients.</li>
   </ul>
 </section>
@@ -249,14 +249,14 @@
   function powerAt(p1, n, a) { return errs(p1, n, zOf(a)).power; }
 
   /* ---------- Two humps drawing (main lab and card 7) ---------- */
-  var XS = Lab.linspace(-4, 10, 281);
+  var XS = Lab.linspace(-4, 16, 401);
   function seg(a, b, f) { var xs = Lab.linspace(a, b, 60); return { xs: xs, ys: xs.map(f) }; }
   function drawHumps(plot, p1, n, c, ms) {
-    var e = errs(p1, n, c), m = e.m, s = e.s, cc = Math.min(c, 9.9);
+    var e = errs(p1, n, c), m = e.m, s = e.s, cc = Math.min(c, 15.9);
     var fN = function (x) { return Lab.normalPdf(x, 0, 1); }, fA = function (x) { return Lab.normalPdf(x, m, s); };
     plot.line('null', XS, XS.map(fN), { stroke: ORANGE, width: 2, fill: ORANGE, opacity: 0.12 }, ms);
     plot.line('alt', XS, XS.map(fA), { stroke: TEAL, width: 2, fill: TEAL, opacity: 0.12 }, ms);
-    var r1 = seg(cc, 10, fN), b1 = seg(-4, cc, fA), p2 = seg(cc, 10, fA);
+    var r1 = seg(cc, 16, fN), b1 = seg(-4, cc, fA), p2 = seg(cc, 16, fA);
     plot.line('beta', b1.xs, b1.ys, { stroke: NAVY, width: 0.5, fill: NAVY, opacity: 0.3 }, ms);
     plot.line('power', p2.xs, p2.ys, { stroke: TEAL, width: 0.5, fill: TEAL, opacity: 0.55 }, ms);
     plot.line('a1', r1.xs, r1.ys, { stroke: DARKO, width: 0.5, fill: DARKO, opacity: 0.8 }, ms);
@@ -295,7 +295,7 @@
   /* ---------- Main lab ---------- */
   var S = { p1: 0.45, n: 100, alpha: 0.025, manual: null };
   var ALPHAS = [0.05, 0.025, 0.005, 0.0005];
-  var plot = Lab.Plot($('plot'), { xlim: [-4, 10], ylim: [0, 0.5], xlabel: 'Difference, in units of luck', ylabel: 'How often', label: 'Two humps: results when the drug does nothing (orange) and when it works (teal), with a movable bar', yfmt: function () { return ''; } });
+  var plot = Lab.Plot($('plot'), { xlim: [-4, 16], ylim: [0, 0.5], xlabel: 'Difference, in units of luck', ylabel: 'How often', label: 'Two humps: results when the drug does nothing (orange) and when it works (teal), with a movable bar', yfmt: function () { return ''; } });
   function render(ms) {
     var c = S.manual != null ? S.manual : zOf(S.alpha);
     var e = drawHumps(plot, S.p1, S.n, c, ms);
@@ -567,7 +567,7 @@
     options: [{ value: 'up', label: 'Up' }, { value: 'down', label: 'Down' }, { value: 'same', label: 'Stays the same' }],
     answer: function () { return b1 > b5 ? 'up' : 'down'; },
     revealPlot: function (box) {
-      var pl = Lab.miniPlot(box, { xlim: [-4, 10], ylim: [0, 0.5], xlabel: 'Difference, in units of luck', ylabel: 'How often', yfmt: function () { return ''; }, label: 'Two humps with the bar moving from alpha 2.5% to 0.5%; the miss area grows' });
+      var pl = Lab.miniPlot(box, { xlim: [-4, 16], ylim: [0, 0.5], xlabel: 'Difference, in units of luck', ylabel: 'How often', yfmt: function () { return ''; }, label: 'Two humps with the bar moving from alpha 2.5% to 0.5%; the miss area grows' });
       drawHumps(pl, 0.45, 100, zOf(0.025), 0);
       setTimeout(function () { drawHumps(pl, 0.45, 100, zOf(0.005), 1100); }, 700);
     },
