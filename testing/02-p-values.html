@@ -48,7 +48,6 @@
   <div class="kicker">Module 2</div>
   <h1>What a p-value is (and isn't)</h1>
   <p class="hook">If the drug did nothing, how surprising would this result be?</p>
-  <div class="presets" id="examples"><span class="lbl">Try an example:</span></div>
 </section>
 
 <section id="lab" class="labgrid" aria-label="Simulate the null lab">
@@ -57,7 +56,7 @@
     <p class="note" id="story" style="margin:0 0 .5rem"></p>
     <div class="field col"><label for="sN">Patients <output id="oN"></output></label><input id="sN" type="range" min="5" max="200" step="1" value="12"></div>
     <div class="field col"><label for="sK">Responders <output id="oK"></output></label><input id="sK" type="range" min="0" max="12" step="1" value="9"></div>
-    <div class="field col"><label for="sP"><span>Response rate if the <span class="tip" tabindex="0" data-tip="The null: the drug does nothing, so any difference is luck.">drug does nothing</span>: <output id="oP"></output></span></label><input id="sP" type="range" min="0.1" max="0.9" step="0.05" value="0.5"></div>
+    <div class="field col"><label for="sP"><span>Share who get better on placebo (if the <span class="tip" tabindex="0" data-tip="The null: the drug does nothing, so any difference is luck.">drug does nothing</span>, the same on the drug): <output id="oP"></output></span></label><input id="sP" type="range" min="0.1" max="0.9" step="0.05" value="0.5"></div>
     <h3>2. Simulate trials of a drug that does nothing</h3>
     <div class="row"><button class="btn primary" id="simBtn" type="button">Simulate 1,000 trials</button><button class="btn" id="clrBtn" type="button">Clear</button></div>
     <p class="note" id="simNote"></p>
@@ -66,7 +65,7 @@
     <div class="plotbox"><svg id="plot"></svg>
       <div class="chips" aria-live="polite" id="chips"></div>
       <p class="note" id="plotNote" style="margin:.5rem 0 0">Orange: trials with as many responders as yours, or more. Their share of all trials is the <span class="tip" tabindex="0" data-tip="How often luck alone gives a result at least this good.">p-value</span>.</p>
-      <p class="note" style="margin:.3rem 0 0">By convention, p below 0.05 is called <b>significant</b>.</p>
+      <p class="note" style="margin:.3rem 0 0">We only count results on the drug's good side (one-sided). For that, regulators use a cutoff of 0.025: p below 0.025 is called <b>significant</b>. The familiar 0.05 counts surprises in both directions, so each side gets half, 0.025.</p>
     </div>
   </div>
 </section>
@@ -79,7 +78,7 @@
 
 <section class="fig" id="figPeek">
   <h2>Peeking at the data</h2>
-  <p>The drug does nothing: patients respond 50% of the time. Compute p at each look and stop at the first p below 0.05 (<span class="tip" tabindex="0" data-tip="Far enough from 50:50 that p is below 0.05.">significant</span>).</p>
+  <p>The drug does nothing: half of patients get better, the same as on placebo. Compute p at each look and stop at the first p below 0.05 (<span class="tip" tabindex="0" data-tip="Far enough from 50:50 that p is below 0.05.">significant</span>).</p>
   <div class="figgrid">
     <div>
       <div class="qrow">How often you look:</div>
@@ -214,12 +213,6 @@
 
   /* =============== Main lab =============== */
   var S = { n: 12, k: 9, p: 0.5, counts: null, total: 0, timer: null };
-  var EXAMPLES = [
-    { label: 'Trial: 9 of 12 respond', n: 12, k: 9, p: 0.5, story: 'Without the drug, half of patients respond. On the drug, 9 of 12 responded.', one: 'responded' },
-    { label: 'Trial: 17 of 20 respond', n: 20, k: 17, p: 0.7, story: 'Without the new drug, 70% of patients respond. On the drug, 17 of 20 responded.', one: 'responded' },
-    { label: '20 of 30 improve', n: 30, k: 20, p: 0.5, story: 'On placebo, half the patients improve. On the drug, 20 of 30 did.', one: 'improved' },
-    { label: '110 of 200 respond', n: 200, k: 110, p: 0.5, story: 'Without the drug, half respond. On the drug, 110 of 200 did (55%).', one: 'responded' }
-  ];
   var plot;
   function drawMain(animate) {
     var pm = pmfArr(S.n, S.p), top = Math.max.apply(null, pm);
@@ -232,7 +225,7 @@
     var p = tailBin(S.n, S.k, S.p);
     var h = '' + chip('p-value', pfmt(p), true);
     if (S.total) { var hits = 0, i; for (i = S.k; i <= S.n; i++) hits += S.counts[i]; h += chip('Simulated:', hits + ' of ' + S.total.toLocaleString('en-US')); }
-    h += chip('Significant (p below 0.05)?', p < 0.05 ? 'Yes' : 'No');
+    h += chip('Significant (p below 0.025)?', p < 0.025 ? 'Yes' : 'No');
     $('chips').innerHTML = h;
     $('oN').textContent = S.n; $('oK').textContent = S.k; $('oP').textContent = pctf(S.p, 0);
   }
@@ -243,25 +236,17 @@
     plot.line('sim', xs, ys, { stroke: NAVY, width: 2 }, 0);
   }
   function clearSim() { if (S.timer) { clearInterval(S.timer); S.timer = null; } S.counts = null; S.total = 0; $('simNote').textContent = ''; }
+  function story() { $('story').textContent = 'On placebo, ' + pctf(S.p, 0) + ' of patients get better. On the drug, ' + S.k + ' of ' + S.n + ' got better.'; }
   function setParams(n, k, p, anim) {
     clearSim(); S.n = n; S.k = Math.min(k, n); S.p = p;
     $('sN').value = S.n; $('sK').max = S.n; $('sK').value = S.k; $('sP').value = S.p;
     drawMain(anim);
   }
-  EXAMPLES.forEach(function (ex) {
-    var b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = ex.label;
-    b.addEventListener('click', function () {
-      setParams(ex.n, ex.k, ex.p, true); $('story').textContent = ex.story;
-      document.querySelectorAll('#examples .btn').forEach(function (x) { x.classList.toggle('on', x === b); });
-    });
-    $('examples').appendChild(b);
-  });
   ['sN', 'sK', 'sP'].forEach(function (id) {
     $(id).addEventListener('input', function () {
       var n = +$('sN').value, k = +$('sK').value, p = +$('sP').value;
       if (id === 'sN') k = Math.min(k, n);
-      setParams(n, k, p, false); $('story').textContent = 'On the drug, ' + S.k + ' of ' + S.n + ' patients responded.';
-      document.querySelectorAll('#examples .btn').forEach(function (x) { x.classList.remove('on'); });
+      setParams(n, k, p, false); story();
     });
   });
   $('simBtn').addEventListener('click', function () {
@@ -285,11 +270,11 @@
   var p912 = tailBin(12, 9, 0.5);
   card = Lab.QuestionCard(Q, {
     tag: 'Predict 1', score: score, type: 'choice',
-    q: 'Without the drug, half of patients respond. On the drug, 9 of 12 respond. If the drug does nothing, how often would 9 or more respond?',
+    q: 'On placebo, half of patients get better. On the drug, 9 of 12 get better. If the drug does nothing, how often would 9 or more get better?',
     options: [{ value: 'a', label: 'About 1 time in 100' }, { value: 'b', label: 'About 7 times in 100' }, { value: 'c', label: 'About 25 times in 100' }, { value: 'd', label: 'About 50 times in 100' }],
     answer: function () { return Math.abs(p912 - 0.07) < Math.abs(p912 - 0.01) && Math.abs(p912 - 0.07) < Math.abs(p912 - 0.25) ? 'b' : 'c'; },
     onReveal: function () { miniPmf(card, pmfArr(12, 0.5), 9, 'Responders in 12 patients (drug does nothing)'); },
-    explain: function () { return 'Exact: ' + pfmt(p912) + ', so about ' + Math.round(p912 * 100) + ' in 100. Not below 0.05, so not significant.'; }
+    explain: function () { return 'Exact: ' + pfmt(p912) + ', so about ' + Math.round(p912 * 100) + ' in 100. Not below 0.025, so not significant.'; }
   });
 
   // 2: change the plan
@@ -330,7 +315,7 @@
   var peekOpts = [{ value: 'p5', label: 'About 5%', v: 0.05 }, { value: 'p10', label: 'About 10%', v: 0.10 }, { value: 'p20', label: 'About 20%', v: 0.20 }, { value: 'p37', label: 'About 37%', v: 0.37 }];
   card = Lab.QuestionCard(Q, {
     tag: 'Predict 3', score: score, type: 'choice',
-    q: 'The drug does nothing: patients respond 50% of the time, as on placebo. You compute p after every patient (up to 100) and stop at the first p below 0.05. How often is the drug called significant?',
+    q: 'The drug does nothing: half of patients get better, the same as on placebo. You compute p after every patient (up to 100) and stop at the first p below 0.05. How often is the drug called significant?',
     options: peekOpts,
     answer: function () { var r = getPeek()[2], best = peekOpts[0]; peekOpts.forEach(function (o) { if (Math.abs(o.v - r) < Math.abs(best.v - r)) best = o; }); return best.value; },
     onReveal: function () {
@@ -450,8 +435,7 @@
 
   /* =============== Start =============== */
   setParams(12, 9, 0.5, false);
-  $('story').textContent = EXAMPLES[0].story;
-  document.querySelector('#examples .btn').classList.add('on');
+  story();
   newStudy(); $('oT').textContent = $('sT').value; runFish();
 })();
 </script>
