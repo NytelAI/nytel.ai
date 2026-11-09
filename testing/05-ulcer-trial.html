@@ -63,6 +63,7 @@ svg.fig text.dim { fill: rgba(10,22,40,.62); }
     <p class="note" style="margin:.4rem 0 0">Edit any count. Excellent = healed well. Fair = some trouble.</p>
     <p class="note" style="margin:.3rem 0 0">The chi-square test gives one mismatch score: how far the table is from "all four the same".</p>
     <h3>2. Compare two</h3>
+    <p class="note" style="margin:0 0 .4rem">A vs B is the worst against the best, picked after seeing the table. <a href="#qcards">Predict 6</a> shows how picking fools you. The 98% from "No guess" is fooled the same way. Shrinkage, which pulls extreme arms toward the average, is the fix.</p>
     <div class="field"><label for="selX">Treatment</label><select class="sel" id="selX"></select><label for="selY">vs</label><select class="sel" id="selY"></select></div>
     <h3>3. Starting guess (<abbr class="tip" tabindex="0" data-tip="Prior: what you believe about the death rate before you see the data.">prior</abbr>)</h3>
     <div class="row" id="priors"></div>
@@ -91,7 +92,7 @@ svg.fig text.dim { fill: rgba(10,22,40,.62); }
 </section>
 
 <section class="example">
-  <h2>A real trial</h2>
+  <h2>Where the numbers come from</h2>
   <p class="srcline">Illustrative counts based on Novick and Grizzle (1965), <a href="https://doi.org/10.1080/01621459.1965.10480777">"A Bayesian approach to the analysis of data from clinical trials"</a>.</p>
   <p class="note">The operations were not named.</p>
 </section>
@@ -109,7 +110,7 @@ svg.fig text.dim { fill: rgba(10,22,40,.62); }
   <ul>
     <li>A p-value just above 0.05 does not mean the treatments are equal.</li>
     <li>Each test answers one question. Ask which one, before you look.</li>
-    <li>Pick best vs worst after the fact, and chance fools you about 1 time in 8, ten times more than with a pair chosen in advance.</li>
+    <li>Pick best vs worst after the fact, and chance fools you about 1 time in 20 (5.2% here), over ten times more than with a pair chosen in advance (0.4%).</li>
   </ul>
 </section>
 </main>
@@ -202,7 +203,7 @@ svg.fig text.dim { fill: rgba(10,22,40,.62); }
     html += chip('All four the same? p =', c ? fp(c.p) : 'n/a', true);
     if (X.n > 0 && Y.n > 0 && S.x !== S.y) {
       var f = fisher(X.d, X.n, Y.d, Y.n), pg = probGreater(S.a, S.b, X.d, X.n, Y.d, Y.n);
-      html += chip(NAMES[S.x] + ' worse than ' + NAMES[S.y] + '? p =', fp(f.one), true) + chip(NAMES[S.x] + ' different from ' + NAMES[S.y] + '? p =', fp(f.two), true);
+      html += chip(NAMES[S.x] + ' worse than ' + NAMES[S.y] + '? one-sided p =', fp(f.one), true) + chip(NAMES[S.x] + ' different from ' + NAMES[S.y] + '? two-sided p =', fp(f.two), true);
       html += chip('Chance ' + NAMES[S.x] + '\'s true death rate is higher', Lab.pct(pg, 0));
     } else html += chip('Pick two different treatments with patients', '');
     $('chips').innerHTML = html;
@@ -369,7 +370,7 @@ svg.fig text.dim { fill: rgba(10,22,40,.62); }
       pl.vline('z', 0, 'no difference', { color: NAVY, dash: '4 3' }, 0);
       pl.legend([{ label: 'A worse: ' + Lab.pct(Lab.prob(dr, function (v) { return v > 0; }), 1) + ' of 20,000 simulated draws', color: ORANGE, kind: 'box' }]);
     },
-    explain: function () { return 'About ' + Lab.pct(P_AB, 0) + ', from no starting guess. This is about true death rates, not one patient.'; }
+    explain: function () { return 'About ' + Lab.pct(P_AB, 0) + ', from no starting guess. This is about true death rates, not one patient. A vs B is a best-vs-worst pick (see Predict 6), so this 98% is too high.'; }
   });
   // 3. chi-square
   var c3 = Lab.QuestionCard(Q, {
@@ -389,9 +390,9 @@ svg.fig text.dim { fill: rgba(10,22,40,.62); }
   // 4. Fisher
   var c4 = Lab.QuestionCard(Q, {
     tag: 'Predict 4', score: score, type: 'choice',
-    q: 'Now test only A vs B (7 vs 1 deaths) with Fisher\'s exact test. One-sided asks: is A worse? Two-sided asks: is A different, either way? Is p below 0.05?',
-    options: [{ value: 'both', label: 'Below 0.05, one-sided and two-sided' }, { value: 'mixed', label: 'One-sided below, two-sided above' }, { value: 'none', label: 'Above 0.05 both ways' }],
-    answer: function () { return FI.one < 0.05 && FI.two < 0.05 ? 'both' : (FI.one < 0.05 ? 'mixed' : 'none'); },
+    q: 'Now test only A vs B (7 vs 1 deaths) with Fisher\'s exact test. One-sided asks: is A worse? Judge it against 0.025. Two-sided asks: is A different, either way? Judge it against 0.05.',
+    options: [{ value: 'both', label: 'Both pass their lines' }, { value: 'mixed', label: 'Only one passes' }, { value: 'none', label: 'Neither passes' }],
+    answer: function () { var o = FI.one < 0.025, t = FI.two < 0.05; return o && t ? 'both' : (o || t ? 'mixed' : 'none'); },
     onReveal: function () {
       goBook();
       var svg = miniBox(c4.el, 'Of 8 deaths in all, how many land in A by chance alone? Orange: 7 or more.');
@@ -408,7 +409,7 @@ svg.fig text.dim { fill: rgba(10,22,40,.62); }
       txt(svg, 245, 206, 'Deaths in A', { 'text-anchor': 'middle', 'class': 'dim', 'font-size': 11 });
       svg.querySelectorAll('text').forEach(function (t) { t.style.fill = NAVY; t.style.fontFamily = 'var(--sans)'; });
     },
-    explain: function () { return 'One-sided p = ' + fp(FI.one) + ', two-sided p = ' + fp(FI.two) + '. Same data, a different question, a different verdict.'; }
+    explain: function () { return 'One-sided p = ' + fp(FI.one) + ' (line 0.025), two-sided p = ' + fp(FI.two) + ' (line 0.05). The two lines are built to agree. A was also picked as the worst, so this p is too small.'; }
   });
   // 5. prior
   var PVALS = [[1, 1], [2, 20], [5, 50]].map(function (p) { return probGreater(p[0], p[1], DA, NA, DB, NB); });
@@ -430,8 +431,8 @@ svg.fig text.dim { fill: rgba(10,22,40,.62); }
     var r = Lab.rng(2026), N = 4000, hitsBW = 0, hitsFix = 0, flags = [], i;
     for (i = 0; i < N; i++) {
       var T = simTable(r), bw = bestWorst(T), a = T[bw[0]][2], b = T[bw[1]][2];
-      var hit = fisher(a, 100, b, 100).one < 0.05; if (hit) hitsBW++; if (i < 200) flags.push(hit);
-      if (fisher(T[0][2], 100, T[1][2], 100).one < 0.05) hitsFix++;
+      var hit = fisher(a, 100, b, 100).one < 0.025; if (hit) hitsBW++; if (i < 200) flags.push(hit);
+      if (fisher(T[0][2], 100, T[1][2], 100).one < 0.025) hitsFix++;
     }
     NULLSIM = { bw: hitsBW / N, fix: hitsFix / N, flags: flags, N: N }; return NULLSIM;
   }
@@ -460,7 +461,7 @@ svg.fig text.dim { fill: rgba(10,22,40,.62); }
   }
   var c6 = Lab.QuestionCard(Q, {
     tag: 'Predict 6', score: score, type: 'choice',
-    q: 'Four identical operations (3% deaths each). You pick the best and worst after looking, then run a one-sided Fisher test at 0.05. How often is it "significant"?',
+    q: 'Four identical operations (3% deaths each). You pick the best and worst after looking, then run a one-sided Fisher test at 0.025. How often is it "significant"?',
     options: [{ value: 'five', label: 'About 1 time in 20' }, { value: 'eighth', label: 'About 1 time in 8' }, { value: 'half', label: 'About half the time' }],
     answer: function () { var r = runNull().bw; return r < 0.08 ? 'five' : (r < 0.3 ? 'eighth' : 'half'); },
     onReveal: function () {

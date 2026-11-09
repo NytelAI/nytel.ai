@@ -71,7 +71,7 @@
       <button class="btn prior" type="button" data-m="itt">Count everyone</button>
       <button class="btn" type="button" data-m="pp">Drop quitters</button>
     </div>
-    <p class="note" style="margin-top:.5rem">Patients who quit get no help from the drug.</p>
+    <p class="note" style="margin-top:.5rem"><b>Count everyone</b> is called <b>intention to treat</b>: every patient is counted in the group the coin chose, even if they quit. <b>Drop quitters</b> is called <b>per protocol</b>: only patients who stuck to the plan are counted. Patients who quit get no help from the drug.</p>
     <h3>2. Settings</h3>
     <div class="field"><label for="eff">Drug effect for patients who take it (extra recoveries per 100): <b id="effv"></b></label></div>
     <div class="field"><input id="eff" type="range" min="0" max="20" step="1" value="0"></div>
@@ -89,6 +89,10 @@
       <p class="note" id="plotNote" style="margin:.5rem 0 0"></p>
     </div>
   </div>
+</section>
+
+<section class="section" style="padding-bottom:0">
+  <p class="note"><b>Which question?</b> "What does the drug do if taken?" and "What happens when we prescribe it and some patients stop?" are different questions. A trial must say up front which one it answers (ICH E9(R1) calls this the estimand).</p>
 </section>
 
 <section class="fig" aria-label="One simulated trial as an icon array">
@@ -144,7 +148,8 @@
   <h2>Takeaway</h2>
   <ul>
     <li>Hide who got what with a look-alike placebo, so hopes cannot color the results.</li>
-    <li>Count everyone as randomized, even people who quit.</li>
+    <li>Count everyone in the group the coin chose, even people who quit (intention to treat).</li>
+    <li>Say up front which question the trial answers: the drug if taken, or prescribing it (the estimand).</li>
     <li>Dropping quitters makes the groups unequal again.</li>
   </ul>
 </section>
@@ -209,12 +214,14 @@
     LAST = { ha: ha, hb: hb };
     plot.setYlim(0, Math.ceil(Math.max(Math.max.apply(null, ha), Math.max.apply(null, hb)) * 1.2 * 20) / 20);
     paint(ms);
-    plot.vline('true', S.eff, 'truth', { color: NAVY, dash: '4 3' }, 0);
-    plot.legend([{ label: 'Count everyone', color: TEAL, kind: 'box' }, { label: 'Drop quitters', color: ORANGE, kind: 'box' }]);
+    var presc = S.eff * (1 - S.quit / 100);
+    plot.vline('true', S.eff, '', { color: '#8a93a0', dash: '4 3' }, 0);
+    plot.vline('true2', presc, '', { color: NAVY }, 0);
+    plot.legend([{ label: 'Count everyone', color: TEAL, kind: 'box' }, { label: 'Drop quitters', color: ORANGE, kind: 'box' }, { label: 'Effect if taken: ' + signed(S.eff, 0), color: '#8a93a0', kind: 'dash' }, { label: 'Effect of prescribing it: ' + signed(presc, 1), color: NAVY, kind: 'line' }]);
     $('chips').innerHTML =
       chip('Average, count everyone', signed(Lab.mean(a)) + ' per 100') + chip('Average, drop quitters', signed(Lab.mean(b)) + ' per 100', true) +
       chip('Trials where the drug looks helpful: count everyone', pctTxt(Lab.prob(a, function (v) { return v > 0; }))) + chip('drop quitters', pctTxt(Lab.prob(b, function (v) { return v > 0; })), true);
-    $('plotNote').innerHTML = 'Each bar: how many of 500 trials gave that result.';
+    $('plotNote').innerHTML = 'Each bar: how many of 500 trials gave that result. Count everyone (teal) lands on the solid line, the effect of prescribing the drug when some patients stop.';
   }
   function drawIcons() {
     var o = { eff: S.eff, quit: S.quit, str: S.str, N: S.N }, pts = trialPts(o), svg = $('icons'), i;
@@ -236,7 +243,7 @@
       E('text', { x: x0, y: oy + BH - 5 }, svg).textContent = gi ? 'Those who stayed: ' + (avgH(stay) - avgH(groups[0].arr) > 0.15 ? 'healthier than the placebo group' : 'about as healthy as the placebo group') : '';
     });
     var c = groups[0].arr, d = groups[1].arr, st = d.filter(function (p) { return !p.q; }), rc = rec(c) / Math.max(1, c.length);
-    $('iconNote').innerHTML = 'This trial, extra recoveries per 100: <b>' + signed(100 * (rec(d) / Math.max(1, d.length) - rc), 1) + '</b> (count everyone), <b>' + signed(100 * (rec(st) / Math.max(1, st.length) - rc), 1) + '</b> (drop quitters). Truth: ' + signed(S.eff, 0) + '.';
+    $('iconNote').innerHTML = 'This trial, extra recoveries per 100: <b>' + signed(100 * (rec(d) / Math.max(1, d.length) - rc), 1) + '</b> (count everyone), <b>' + signed(100 * (rec(st) / Math.max(1, st.length) - rc), 1) + '</b> (drop quitters). Effect if taken: ' + signed(S.eff, 0) + '. Effect of prescribing it: ' + signed(S.eff * (1 - S.quit / 100), 1) + '.';
   }
   function sync() {
     $('effv').textContent = signed(S.eff, 0); $('quitv').textContent = S.quit + '%';
@@ -266,7 +273,7 @@
   /* ---------- Mini figures inside question cards ---------- */
   function miniBox(card) { var old = card.querySelector('.mini'); if (old) old.remove(); var d = document.createElement('div'); d.className = 'mini'; card.appendChild(d); return d; }
   // Overlaid histograms; series [{vals, color, label}]; mark = x of a reference line.
-  function miniHist(card, series, lo, hi, nb, mark, cap) {
+  function miniHist(card, series, lo, hi, nb, mark, mark2, cap) {
     var box = miniBox(card), svg = E('svg', { viewBox: '0 0 360 170', role: 'img', 'aria-label': cap }, box), ml = 10, iw = 340, top = 14, ih = 110, mx = 0;
     var hs = series.map(function (s) { var h = Lab.histogram(s.vals, lo, hi, nb).counts.map(function (c) { return c / s.vals.length; }); mx = Math.max(mx, Math.max.apply(null, h)); return h; });
     var sx = function (x) { return ml + (x - lo) / (hi - lo) * iw; };
@@ -274,6 +281,7 @@
     E('line', { x1: ml, x2: ml + iw, y1: top + ih, y2: top + ih, stroke: '#8a93a0' }, svg);
     [lo, mark, hi].forEach(function (v) { E('text', { x: sx(v), y: top + ih + 14, 'text-anchor': 'middle' }, svg).textContent = signed(v, 0).replace('+', ''); });
     E('line', { x1: sx(mark), x2: sx(mark), y1: top, y2: top + ih, stroke: NAVY, 'stroke-dasharray': '4 3', 'stroke-width': 1.5 }, svg);
+    if (typeof mark2 === 'number') E('line', { x1: sx(mark2), x2: sx(mark2), y1: top, y2: top + ih, stroke: NAVY, 'stroke-width': 1.5 }, svg);
     series.forEach(function (s, i) { E('rect', { x: 10 + i * 150, y: 152, width: 12, height: 9, fill: s.color, opacity: 0.7 }, svg); E('text', { x: 26 + i * 150, y: 161 }, svg).textContent = s.label; });
     var p = document.createElement('p'); p.className = 'cap'; p.textContent = cap; box.appendChild(p);
   }
@@ -302,7 +310,7 @@
     q: 'The drug does nothing. Sicker patients quit it, and we count everyone as assigned. Will the trial show a benefit?',
     options: [{ value: 'up', label: 'Yes, it looks like it helps' }, { value: 'zero', label: 'No, nothing on average' }, { value: 'down', label: 'It looks like it hurts' }],
     answer: function () { qA.m = many({ eff: 0, quit: 30, str: 1.5, N: 400 }, 500); var m = Lab.mean(qA.m.itt); return m > 1 ? 'up' : m < -1 ? 'down' : 'zero'; },
-    onReveal: function () { miniHist(cardEl.qA.el, [{ vals: qA.m.itt, color: TEAL, label: 'Count everyone' }], -30, 30, 40, 0, 'Average: ' + signed(Lab.mean(qA.m.itt), 1) + ' (truth 0).'); },
+    onReveal: function () { miniHist(cardEl.qA.el, [{ vals: qA.m.itt, color: TEAL, label: 'Count everyone' }], -30, 30, 40, 0, null, 'Average: ' + signed(Lab.mean(qA.m.itt), 1) + ' (truth 0).'); },
     explain: function () { return 'Counting everyone keeps the groups alike. So a useless drug shows about 0.'; } };
   mk('qA', qA);
 
@@ -310,15 +318,15 @@
     q: 'Same useless drug, same sicker quitters. Now we drop the quitters and compare the rest to the placebo group. Compared with counting everyone, does the drug look better, same or worse?',
     options: [{ value: 'up', label: 'Better' }, { value: 'same', label: 'The same' }, { value: 'down', label: 'Worse' }],
     answer: function () { q6.m = many({ eff: 0, quit: 30, str: 1.5, N: 400 }, 500); return Lab.mean(q6.m.pp) - Lab.mean(q6.m.itt) > 1 ? 'up' : 'same'; },
-    onReveal: function () { miniHist(cardEl.q6.el, [{ vals: q6.m.itt, color: TEAL, label: 'Count everyone' }, { vals: q6.m.pp, color: ORANGE, label: 'Drop quitters' }], -30, 30, 40, 0, 'Average: ' + signed(Lab.mean(q6.m.itt)) + ' everyone, ' + signed(Lab.mean(q6.m.pp)) + ' quitters dropped.'); },
+    onReveal: function () { miniHist(cardEl.q6.el, [{ vals: q6.m.itt, color: TEAL, label: 'Count everyone' }, { vals: q6.m.pp, color: ORANGE, label: 'Drop quitters' }], -30, 30, 40, 0, null, 'Average: ' + signed(Lab.mean(q6.m.itt)) + ' everyone, ' + signed(Lab.mean(q6.m.pp)) + ' quitters dropped.'); },
     explain: function () { return 'Dropping quitters keeps only the healthier drug patients, while the placebo group keeps everyone. That breaks the balance the coin made.'; } };
   mk('q6', q6);
 
   var qR = { tag: 'Predict 3', type: 'choice',
     q: 'Now the drug adds 10 recoveries per 100 and 30% quit, but quitting is random, not tied to health. We drop the quitters. About what effect will the trials show?',
-    options: [{ value: 'seven', label: 'About 7 (quitters pull it down)' }, { value: 'ten', label: 'About 10, the effect for people who take it' }, { value: 'thirteen', label: 'About 13, more than the truth' }],
+    options: [{ value: 'seven', label: 'About 7 (quitters pull it down)' }, { value: 'ten', label: 'About 10, the effect if everyone takes it' }, { value: 'thirteen', label: 'About 13, more than the truth' }],
     answer: function () { qR.m = many({ eff: 10, quit: 30, str: 0, N: 400 }, 500); var m = Lab.mean(qR.m.pp); return Math.abs(m - 7) < Math.abs(m - 10) ? 'seven' : Math.abs(m - 13) < Math.abs(m - 10) ? 'thirteen' : 'ten'; },
-    onReveal: function () { miniHist(cardEl.qR.el, [{ vals: qR.m.itt, color: TEAL, label: 'Count everyone' }, { vals: qR.m.pp, color: ORANGE, label: 'Drop quitters' }], -30, 30, 40, 10, 'Dashed line: effect for those who take it (10). Average: ' + signed(Lab.mean(qR.m.itt)) + ' everyone, ' + signed(Lab.mean(qR.m.pp)) + ' quitters dropped.'); },
+    onReveal: function () { miniHist(cardEl.qR.el, [{ vals: qR.m.itt, color: TEAL, label: 'Count everyone' }, { vals: qR.m.pp, color: ORANGE, label: 'Drop quitters' }], -30, 30, 40, 10, 7, 'Dashed line: effect if taken (10). Solid line: effect of prescribing it (7). Average: ' + signed(Lab.mean(qR.m.itt)) + ' everyone, ' + signed(Lab.mean(qR.m.pp)) + ' quitters dropped.'); },
     explain: function () { return 'Random quitters leave the groups alike, so dropping them gives about 10. It goes wrong when sicker patients quit.'; } };
   mk('qR', qR);
 
@@ -331,7 +339,7 @@
       for (i = 0; i < 500; i++) { sa = 0; sb = 0; for (j = 0; j < 100; j++) { sa += 8 + 15 * Lab.normal(rng); sb += 15 * Lab.normal(rng); } a.push(sa / 100 - sb / 100); sa = 0; sb = 0; for (j = 0; j < 100; j++) { sa += 15 * Lab.normal(rng); sb += 15 * Lab.normal(rng); } b.push(sa / 100 - sb / 100); }
       q4.o = a; q4.b = b; return Lab.mean(a) > 2 ? 'up' : 'zero';
     },
-    onReveal: function () { miniHist(cardEl.q4.el, [{ vals: q4.o, color: ORANGE, label: 'Patients know' }, { vals: q4.b, color: TEAL, label: "Patients don't know" }], -15, 15, 30, 0, 'Assumed: knowing you got the pill adds 8 to the rating. Average: ' + signed(Math.round(Lab.mean(q4.o)) || 0, 0) + ' when patients know, ' + signed(Math.round(Lab.mean(q4.b)) || 0, 0) + ' when they don\'t.'); },
+    onReveal: function () { miniHist(cardEl.q4.el, [{ vals: q4.o, color: ORANGE, label: 'Patients know' }, { vals: q4.b, color: TEAL, label: "Patients don't know" }], -15, 15, 30, 0, null, 'Assumed: knowing you got the pill adds 8 to the rating. Average: ' + signed(Math.round(Lab.mean(q4.o)) || 0, 0) + ' when patients know, ' + signed(Math.round(Lab.mean(q4.b)) || 0, 0) + ' when they don\'t.'); },
     explain: function () { return 'Hope, not the pill, raised the ratings. A look-alike dummy pill (placebo) removes that.'; } };
   mk('q4', q4);
 
@@ -344,7 +352,7 @@
       q5.m = Lab.mean(est); return 10 * 0.7;
     },
     onReveal: function () { miniBars(cardEl.q5.el, [{ label: 'If taken', value: 10, color: '#8a93a0' }, { label: 'Count everyone', value: q5.m, color: TEAL }], 12, null, function (v) { return v.toFixed(1); }, 'Math: 10 x 0.7 = 7.', true); },
-    explain: function () { return '30% got no benefit, so the drug group gains 7, not 10.'; } };
+    explain: function () { return '30% got no benefit, so the drug group gains 7, not 10. Seven is the effect of prescribing the drug when some patients stop, and it is the honest answer to that question.'; } };
   mk('q5', q5);
 
   /* ---------- Real trials figures ---------- */

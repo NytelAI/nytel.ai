@@ -129,10 +129,14 @@
   </div>
   <div class="chips" aria-live="polite"><span class="chip" id="b2chip"></span></div>
   <div class="bgrid" id="b2rows"></div>
-  <h3 class="sub">Counting without listing</h3>
-  <div class="bsteps" id="b3steps" aria-live="polite"></div>
-  <p>The count is called "n choose h" (\(t=n-h\)):</p>
-  <p>\[\binom{n}{h}=\frac{n!}{h!\,t!}\]</p>
+  <p>The count is called "n choose h", written \(\binom{n}{h}\). It is the number of rows in the list.</p>
+  <details class="code"><summary>Optional: counting orderings</summary>
+    <div style="padding:0 1rem 1rem">
+      <p>Count without listing (\(t=n-h\)):</p>
+      <div class="bsteps" id="b3steps" aria-live="polite"></div>
+      <p>\[\binom{n}{h}=\frac{n!}{h!\,t!}\]</p>
+    </div>
+  </details>
   <h3 class="sub">Put together: the binomial</h3>
   <p>Chance of \(h\) responders in \(n\) patients:</p>
   <p>\[\binom{n}{h}\,\theta^{h}(1-\theta)^{t}\]</p>
@@ -146,7 +150,7 @@
   <h3 class="sub">Bars and formula agree</h3>
   <figure class="figure narrow" style="margin-top:.5rem"><svg id="m0"></svg><figcaption id="m0cap"></figcaption></figure>
   <h3 class="sub">Its name</h3>
-  <p>Start from no idea (flat bars): after \(h\) responders and \(t\) non-responders the posterior has exactly this shape, called a <b>Beta curve</b>, Beta(\(h+1\), \(t+1\)). Beta(<i>a</i>, <i>b</i>) = as if you had already seen <i>a</i> &minus; 1 responders and <i>b</i> &minus; 1 non-responders. Beta(1, 1) = no patients yet.</p>
+  <p>Start from no idea (flat bars): after \(h\) responders and \(t\) non-responders the posterior has exactly this shape, called a <b>Beta curve</b>, Beta(\(h+1\), \(t+1\)). Beta(<i>a</i>, <i>b</i>) = as if you had already seen <i>a</i> &minus; 1 responders and <i>b</i> &minus; 1 non-responders. Beta(1, 1) = no patients yet. The best guess, the average of the curve, is <i>a</i>/(<i>a</i> + <i>b</i>).</p>
   <p class="note">Each curve's <span class="tip" tabindex="0" title="Height is how believable a true response rate is. The area under the curve over a range is the chance the true response rate lands in that range.">height</span> shows how believable each true response rate is. The orange tick marks the best guess <i>a</i>/(<i>a</i> + <i>b</i>).</p>
   <div class="gallery" id="gallery"></div>
   <h3 class="sub">The shortcut</h3>
@@ -189,7 +193,9 @@
 <section class="example">
   <h2>A real small trial: ECMO</h2>
   <p>ECMO is a machine that adds oxygen to a sick newborn's blood. All 11 newborns on it survived (press "Newborn trial (real)" above).</p>
-  <p class="note">Source: Bartlett et al. (1985), <i>Pediatrics</i>.</p>
+  <p>Standard care had 0 of 1 survive. With flat priors for both arms, how likely is it that ECMO truly saves more newborns?</p>
+  <div class="chips" aria-live="polite"><span class="chip warm" id="ecmoTwo"></span></div>
+  <p class="note">Same data: ECMO 11 of 11, standard care 0 of 1, flat priors, simulated from the two posteriors. One baby on standard care is very little to compare with. Source: Bartlett et al. (1985), <i>Pediatrics</i>.</p>
 </section>
 
 <section class="reg">
@@ -471,7 +477,7 @@
     onGuess: clearGuess,
     onReveal: clearGuess,
     revealPlot: function (b) { var a = post('flat', 101, 100, 0), m = gmean(a.th, a.p); miniPair(b, ['side effect', 'none'], [1 - m, m]); },
-    explain: function () { var a = post('flat', 101, 100, 0); return 'About 101/102 = ' + Lab.pct(101 / 102, 0) + ', as if one patient with and one without a side effect were added. Never 100%.'; }
+    explain: function () { var a = post('flat', 101, 100, 0); return 'Flat prior Beta(1, 1) plus 100 patients with none gives Beta(101, 1). Best guess 101/102 = ' + Lab.pct(101 / 102, 0) + '. Never 100%.'; }
   });
   /* ---------- models section: binomial likelihood and Beta curves ---------- */
   var M = { a: 1, b: 1, h: 7, t: 3, theta: 0.6 };
@@ -564,6 +570,17 @@
     explain: function () { return 'Beta(20, 20) reads as 19 responders and 19 non-responders already seen, 38 patients. 7 responders and 3 non-responders barely move it.'; }
   });
 
+  /* ---------- ECMO, two arms: simulate both posteriors ---------- */
+  (function () {
+    var r2 = Lab.rng(11), N = 20000, win = 0;
+    for (var i = 0; i < N; i++) {
+      var pe = Math.pow(r2(), 1 / 12),      // Beta(12, 1): flat prior + 11 of 11
+          ps = 1 - Math.sqrt(r2());         // Beta(1, 2): flat prior + 0 of 1
+      if (pe > ps) win++;
+    }
+    $('ecmoTwo').innerHTML = 'Chance ECMO is better than standard care <b>' + (win / N).toFixed(2) + '</b>';
+  })();
+
   /* ---------- binomial build-up ---------- */
   function fact(k) { var r = 1; for (var i = 2; i <= k; i++) r *= i; return r; }
   function tilesHTML(s) { return s.split('').map(function (c) { return '<span class="' + (c === 'R' ? 'h' : 't') + '">' + c + '</span>'; }).join(''); }
@@ -624,7 +641,7 @@
     options: [{ value: 5, label: '5' }, { value: 10, label: '10' }, { value: 20, label: '20' }],
     answer: 10,
     revealPlot: function (b) { b.innerHTML = '<div class="bgrid" style="margin:.3rem 0">' + arrangements(5, 2).map(function (s) { return '<div class="brow" role="img" aria-label="' + s.split('').join(' ') + '">' + tilesHTML(s) + '</div>'; }).join('') + '</div>'; },
-    explain: function () { return '5! / (2! × 3!) = 120 / (2 × 6) = 10, and the ten rows above are all of them.'; }
+    explain: function () { return 'The ten rows above are all of them. (The optional counting box shows the shortcut: 5! / (2! × 3!) = 10.)'; }
   });
   Lab.QuestionCard(BQ, {
     tag: 'Binomial', score: score, type: 'choice',

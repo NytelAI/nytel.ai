@@ -486,7 +486,7 @@
   var SRC_VIOXX = 'Bresalier et al. (2005), NEJM. Led to Vioxx\'s withdrawal in 2004.';
   var SRC_VIAGRA = 'Polson and Sokolov, <a href="https://vsokolov.org/html/_book/05-ab.html">Bayes, AI and Deep Learning, chapter 5</a>. The 77 heart-related deaths were reported to FDA in 1998, among more than 6 million prescriptions (trade press report of FDA data; reports do not prove the drug caused them). The comparison group of 1.5 million men is made up, as in the book. Nobody was randomized, so even a real gap could come from who chose to take Viagra.';
   var PRE = [
-    P({ id: 'ulcer', label: 'Ulcer surgery (real)', names: ['Treatment A', 'Treatment B'], n: 100, k: [7, 1], yes: '!', no: '·', what: 'died; fewer is better', real: true, src: SRC_ULCER }),
+    P({ id: 'ulcer', label: 'Ulcer surgery (illustrative)', names: ['Treatment A', 'Treatment B'], n: 100, k: [7, 1], yes: '!', no: '·', what: 'died; fewer is better', illus: true, src: SRC_ULCER }),
     P({ id: 'ecmo', label: 'ECMO newborns (real)', names: ['ECMO', 'Standard care'], nA: 11, nB: 1, m: 11, k: [11, 0], yes: '✓', no: '✕', what: 'survived', real: true, src: SRC_ECMO }),
     P({ id: 'panoramic', label: 'PANORAMIC (real)', names: ['Molnupiravir', 'Usual care'], nA: 12529, nB: 12525, k: [105, 98], big: true, binom: true, yes: '!', no: '·', what: 'hospitalized or died; fewer is better', real: true, src: SRC_PAN }),
     P({ id: 'recovery', label: 'RECOVERY dexamethasone (real)', names: ['Dexamethasone', 'Usual care'], nA: 2104, nB: 4321, k: [482, 1110], big: true, binom: true, yes: '!', no: '·', what: 'died; fewer is better', real: true, src: SRC_REC }),
@@ -497,7 +497,7 @@
   function loadS3(pre) {
     S3.pre = pre; S3.hist = new Array(pre.m + 1).fill(0); S3.N = 0; S3.last = null; S3.busy = false;
     S3.pool = (pre.binom || pre.deathsOnly) ? null : makePool(pre);
-    $('s3title').textContent = 'Observed: ' + pre.names[0] + ' vs ' + pre.names[1] + (pre.real ? ' (real data)' : pre.id === 'game' ? ' (your trial)' : ' (made-up numbers)');
+    $('s3title').textContent = 'Observed: ' + pre.names[0] + ' vs ' + pre.names[1] + (pre.real ? ' (real data)' : pre.illus ? ' (illustrative counts)' : pre.id === 'game' ? ' (your trial)' : ' (made-up numbers)');
     $('srcLine').innerHTML = pre.src || '';
     var ob = $('obsBox'); ob.innerHTML = '';
     [0, 1].forEach(function (j) {
@@ -579,8 +579,8 @@
     if (['ulcer', 'ecmo', 'recovery', 'vioxx'].indexOf(pre.id) < 0) return;
     var st = permStat(pre, 2000), d = obsBin(pre);
     var c = el('div', 'excard');
-    c.innerHTML = '<h3></h3><span class="badge' + (pre.real ? ' real' : '') + '">' + (pre.real ? 'real data' : 'made up') + '</span>';
-    c.querySelector('h3').textContent = pre.label.replace(/ \((real|made up)\)/, '');
+    c.innerHTML = '<h3></h3><span class="badge' + (pre.real ? ' real' : '') + '">' + (pre.real ? 'real data' : pre.illus ? 'illustrative' : 'made up') + '</span>';
+    c.querySelector('h3').textContent = pre.label.replace(/ \((real|made up|illustrative)\)/, '');
     var p = pre.deathsOnly ? el('p', '', pre.names[0] + ' ' + pre.k[0] + ' deaths among ' + nf(pre.nA) + ' men vs ' + pre.names[1] + ' ' + pre.k[1] + ' among ' + nf(pre.nB) + '. Gap ' + fmtGap(+gapPts(pre).toFixed(2)) + gunit(pre) + '.') : el('p', '', pre.names[0] + ' ' + nf(pre.k[0]) + ' of ' + nf(pre.nA) + ' vs ' + pre.names[1] + ' ' + nf(pre.k[1]) + ' of ' + nf(pre.nB) + ' (' + pre.what + '). Gap ' + fmtGap(+gapPts(pre).toFixed(2)) + ' points.');
     p.style.marginTop = '.5rem'; c.appendChild(p);
     var mb = el('div', 'minibox'); c.appendChild(mb); permMini(mb, st, pre.m, d, pre);
@@ -630,11 +630,11 @@
   });
   Lab.QuestionCard(Q, {
     tag: 'Predict 4', score: score, type: 'choice',
-    q: 'ECMO trial: 11 of 11 newborns on ECMO survived, 0 of 1 on standard care. Re-randomize the 12 babies into rows of 11 and 1. How often is the gap that big (100 points)?',
+    q: 'ECMO trial: 11 of 11 newborns on ECMO survived, 0 of 1 on standard care. Re-randomize the 12 babies into rows of 11 and 1, as if a fair coin had assigned them. How often is the gap that big (100 points)?',
     options: [{ value: 0, label: 'About 1 time in 100' }, { value: 1, label: 'About 1 time in 10' }, { value: 2, label: 'About 1 time in 3' }, { value: 3, label: 'About 1 time in 2' }],
     answer: function () { return nearest(1 / 12, [0.01, 0.1, 1 / 3, 0.5]); },
     revealPlot: function (b) { permMini(b, permStat(PRE[1], 4000), PRE[1].m, obsBin(PRE[1])); },
-    explain: function () { var s = permStat(PRE[1], 4000); return 'Exactly 1 time in 12, because the one baby who died must land in the row of 1. A tiny trial can look dramatic and still be weak evidence.'; }
+    explain: function () { var s = permStat(PRE[1], 4000); return 'With a fair coin, 1 time in 12, because the one baby who died must land in the row of 1. The real trial did not use a fair coin: it used play-the-winner, so later babies were more likely to get the treatment that was winning. So 1 in 12 is only a rough guide. A tiny trial can look dramatic and still be weak evidence.'; }
   });
   Lab.QuestionCard(Q, {
     tag: 'Predict 5', score: score, type: 'choice',

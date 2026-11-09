@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Decisions: the price of avoiding false approvals | Nytel Testing</title>
-<meta name="description" content="Interactive lesson: the price of avoiding false approvals in patients and power, and how FDA expects Bayesian rules to be calibrated.">
+<title>Decisions: the price of avoiding false wins | Nytel Testing</title>
+<meta name="description" content="Interactive lesson: the price of avoiding false wins in patients and power, and how FDA expects Bayesian rules to be calibrated.">
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -69,27 +69,27 @@
 <div class="topbar"><div class="wrap">
   <a href="/"><img src="../logo.svg" alt="Nytel"></a>
   <span class="crumb"><a href="./">Testing</a></span>
-  <span class="title">12. Decisions: the price of avoiding false approvals</span>
+  <span class="title">12. Decisions: the price of avoiding false wins</span>
   <span class="pn"><a href="11-substantial-evidence.html">&larr; Prev</a><a href="./">Index</a><a href="13-regulators-map.html">Next &rarr;</a></span>
 </div></div>
 
 <main class="wrap">
 <section class="hero">
   <div class="kicker">Module 12</div>
-  <h1>Decisions: the price of avoiding false approvals</h1>
-  <p class="hook">Every rule for saying "yes" trades false approvals against missed drugs. What does safety cost in patients?</p>
+  <h1>Decisions: the price of avoiding false wins</h1>
+  <p class="hook">Every rule for saying "yes" trades false wins against missed drugs. What does safety cost in patients?</p>
   <div class="presets" id="examples"><span class="lbl">Jump to an example:</span></div>
 </section>
 
 <section class="sec" id="secA">
   <h2>A. Two ways to be wrong</h2>
-  <p class="setup">A regulator can approve a drug that does nothing (false approval) or reject a good one. Which mistake is worse?</p>
+  <p class="setup">A regulator can approve a drug that does nothing or reject a good one. In one trial, the first is a false win. Approval itself needs substantial evidence (<a href="11-substantial-evidence.html">module 11</a>). Which mistake is worse?</p>
   <div class="labgrid" aria-label="Cost of mistakes lab" style="margin-top:.5rem">
     <div class="panel">
-      <h3>A false approval is ... times worse</h3>
+      <h3>A false win is ... times worse</h3>
       <div class="chipbtns" id="aPresets"></div>
       <div class="rl"><span>Cost ratio</span><output id="aRatioOut">39 : 1</output></div>
-      <input id="aRatio" type="range" min="1" max="100" step="1" value="39" aria-label="Cost ratio, false approval to missed drug">
+      <input id="aRatio" type="range" min="1" max="100" step="1" value="39" aria-label="Cost ratio, false win to missed drug">
       <div class="rl"><span><span class="tip" tabindex="0" data-tip="Measured in standard errors (SE): how far a result lands from the truth by luck.">How strong the data look</span></span><output id="aMOut"></output></div>
       <input id="aM" type="range" min="0" max="4" step="0.1" value="1.5" aria-label="Strength of evidence in standard errors">
       <p class="note" style="margin-top:.6rem">Approve only if we are at least <b id="aGam">39/(39+1) = 97.5%</b> <span class="tip" tabindex="0" data-tip="Sure: what we believe after seeing the trial data (the posterior).">sure</span> the drug works.</p>
@@ -107,10 +107,11 @@
     <div class="cell good"><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="#1F6B6B"/><path d="M9 17.5l5.5 5.5L25 11" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Right call</b><span>Patients get a good drug.</span></div>
     <div class="cell fn"><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="#A8341F"/><path d="M11 11l12 12M23 11L11 23" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg><b>Missed drug (<span class="tip" tabindex="0" data-tip="Type II error: saying there is no effect when there is one.">Type II</span>)</b><span>Cost <span id="costFN">1</span></span><i class="cost" id="barFN"></i></div>
     <div class="h">Drug does nothing</div>
-    <div class="cell fp"><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="#B8531A"/><path d="M17 8v12" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/><circle cx="17" cy="25.5" r="2.2" fill="#fff"/></svg><b>False approval (<span class="tip" tabindex="0" data-tip="Type I error: concluding a drug works when it does not.">Type I</span>)</b><span>Cost <span id="costFP">39</span></span><i class="cost" id="barFP"></i></div>
+    <div class="cell fp"><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="#B8531A"/><path d="M17 8v12" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/><circle cx="17" cy="25.5" r="2.2" fill="#fff"/></svg><b>False win (<span class="tip" tabindex="0" data-tip="Type I error: concluding a drug works when it does not.">Type I</span>)</b><span>Cost <span id="costFP">39</span></span><i class="cost" id="barFP"></i></div>
     <div class="cell good"><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="#1F6B6B"/><path d="M9 17.5l5.5 5.5L25 11" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Right call</b><span>A drug that does nothing stays off the market.</span></div>
   </div>
   <p class="note">We start with no opinion about the drug. Costs are made up.</p>
+  <p><b>Start with no opinion and look once:</b> &ldquo;approve if 97.5% sure&rdquo; is the same rule as the one-sided 0.025 test, and the same as treating a false win as 39 times worse than a missed drug. Interim looks, adaptation and informative priors break this match, which is why regulators ask for simulations.</p>
 </section>
 
 <section class="sec" id="secB">
@@ -124,9 +125,9 @@
       <h3>Patients</h3>
       <div class="rl"><span>In the trial</span><output id="bNOut"></output></div>
       <input id="bN" type="range" min="10" max="1500" step="1" value="467" aria-label="Total patients">
-      <h3><span class="tip" tabindex="0" data-tip="Alpha: the false approval chance we allow.">Alpha</span> (<span class="tip" tabindex="0" data-tip="One-sided: only a wrong 'drug is better' counts as a false approval.">one-sided</span>)</h3>
+      <h3><span class="tip" tabindex="0" data-tip="Alpha: the false win chance we allow.">Alpha</span> (<span class="tip" tabindex="0" data-tip="One-sided: only a wrong 'drug is better' counts as a false win.">one-sided</span>)</h3>
       <div class="chipbtns" id="bAlpha"></div>
-      <h3><span class="tip" tabindex="0" data-tip="Endpoint: an outcome the trial measures.">Endpoints</span> tested (<span class="tip" tabindex="0" data-tip="Bonferroni: to keep the chance of any false approval at alpha across all endpoints, test each one at alpha divided by the number of endpoints.">Bonferroni</span>)</h3>
+      <h3><span class="tip" tabindex="0" data-tip="Endpoint: an outcome the trial measures.">Endpoints</span> tested (<span class="tip" tabindex="0" data-tip="Bonferroni: to keep the chance of any false win at alpha across all endpoints, test each one at alpha divided by the number of endpoints.">Bonferroni</span>)</h3>
       <div class="rl"><span>Endpoints</span><output id="bMOut"></output></div>
       <input id="bM" type="range" min="1" max="20" step="1" value="1" aria-label="Number of tests">
       <h3>Looks at the data (<a href="07-interim-looks.html">module 7</a>)</h3>
@@ -146,8 +147,8 @@
   <h2>C. What FDA asks for</h2>
   <p class="setup">FDA&rsquo;s 2026 draft gives three ways to decide a trial succeeded. <a href="https://www.fda.gov/media/190505/download">Read it at fda.gov</a>.</p>
   <div class="three">
-    <div class="rcard"><svg viewBox="0 0 220 80" id="c1" role="img" aria-label="Normal curve with a small orange tail beyond a cutoff"></svg><div class="n">Route 1</div><h3>Cap false approvals</h3>
-      <p class="note">Default: at most a 2.5% chance of any false approval across all endpoints (<a href="04-multiplicity.html">module 4</a>).</p></div>
+    <div class="rcard"><svg viewBox="0 0 220 80" id="c1" role="img" aria-label="Normal curve with a small orange tail beyond a cutoff"></svg><div class="n">Route 1</div><h3>Cap false wins</h3>
+      <p class="note">Default: at most a 2.5% chance of any false win across all endpoints (<a href="04-multiplicity.html">module 4</a>).</p></div>
     <div class="rcard"><svg viewBox="0 0 220 80" id="c2" role="img" aria-label="Posterior curve with the area above a threshold shaded"></svg><div class="n">Route 2</div><h3>Judge what we believe after the trial</h3>
       <p>Start from what is already known, then ask how sure we are now.</p>
       <p class="note">Win if we are sure enough (say 97.5%) the drug beats placebo by a set amount.</p></div>
@@ -158,7 +159,7 @@
 </section>
 
 <section class="sec" id="secD">
-  <h2>D. Tuning a rule with simulated trials</h2>
+  <h2>D. Checking a rule with simulated trials</h2>
   <p class="setup">10,000 simulated trials per case. Old drug: 30% improve. Up to 100 patients per arm.</p>
   <div class="tabs" id="dTabs"><span class="lbl note">Pick a case:</span></div>
   <div class="cmp">
@@ -170,7 +171,7 @@
       <p class="refline" id="dNote"></p>
     </div>
   </div>
-  <p class="note">Rules are tuned differently, so this is not a ranking. Costs are made up.</p>
+  <p class="note">Rules are set up differently, so this is not a ranking. Costs are made up.</p>
 </section>
 
 <section class="sec section" id="secE">
@@ -184,9 +185,9 @@
 <section class="takeaway">
   <h2>Takeaway</h2>
   <ul>
-    <li>Every rule for saying yes trades false approvals against missed drugs and trial size.</li>
-    <li>FDA's default bar: at most a 2.5% false approval chance, one-sided.</li>
-    <li>Simulated trials tune a rule to meet it; borrowing designs may agree another bar.</li>
+    <li>Every rule for saying yes trades false wins against missed drugs and trial size.</li>
+    <li>FDA's default bar: at most a 2.5% false win chance, one-sided.</li>
+    <li>Simulated trials show what a rule really does: here 0.026 to 0.038 (the source aimed for 0.05). Borrowing designs may agree another bar.</li>
   </ul>
 </section>
 </main>
@@ -325,7 +326,7 @@
     bPlot.line('nullTail', tx, tx.map(function (x) { return Lab.normalPdf(x, 0, 1); }), { stroke: 'none', fill: ORANGE, opacity: 0.55 }, 0);
     bPlot.line('altTail', tx, tx.map(function (x) { return Lab.normalPdf(x, th, 1); }), { stroke: 'none', fill: TEAL, opacity: 0.4 }, 0);
     bPlot.vline('bar', zc, 'Bar to win: ' + f2(zc), { color: NAVY, dash: '5 4' }, ms);
-    bPlot.legend([{ label: 'No real effect', color: ORANGE, kind: 'line' }, { label: 'Real effect', color: TEAL, kind: 'line' }, { label: 'False approvals (orange area)', color: ORANGE, kind: 'box' }, { label: 'Power (teal area)', color: TEAL, kind: 'box' }]);
+    bPlot.legend([{ label: 'No real effect', color: ORANGE, kind: 'line' }, { label: 'Real effect', color: TEAL, kind: 'line' }, { label: 'False wins (orange area)', color: ORANGE, kind: 'box' }, { label: 'Power (teal area)', color: TEAL, kind: 'box' }]);
     $('bNOut').textContent = B.n; $('bMOut').textContent = B.m;
     var ratio = N90 / N0;
     $('bChips').innerHTML =
@@ -363,7 +364,7 @@
   // hero presets
   [['A typical trial: 467 patients', function () { setB(0, 600); $('labB').scrollIntoView({ behavior: 'smooth' }); }],
    ['Rare disease: 40 patients', function () { setB(3, 600); $('labB').scrollIntoView({ behavior: 'smooth' }); }],
-   ['False approval 39 times worse', function () { A.ratio = 39; $('aRatio').value = 39; renderA(600); $('secA').scrollIntoView({ behavior: 'smooth' }); }]
+   ['False win 39 times worse', function () { A.ratio = 39; $('aRatio').value = 39; renderA(600); $('secA').scrollIntoView({ behavior: 'smooth' }); }]
   ].forEach(function (e) { btn($('examples'), e[0], '', e[1]); });
 
   /* ---------- Section C pictures ---------- */
@@ -380,8 +381,8 @@
   $('c3').innerHTML = '<path d="M110 70V20M70 24h80" stroke="' + NAVY + '" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M92 70h36" stroke="' + NAVY + '" stroke-width="3"/><path d="M70 24l-18 28h36zM150 24l-18 28h36z" fill="none" stroke="' + NAVY + '" stroke-width="2"/><path d="M52 52a18 6 0 0 0 36 0z" fill="' + TEAL + '"/><path d="M132 52a18 6 0 0 0 36 0z" fill="' + ORANGE + '"/><text x="70" y="12" text-anchor="middle" font-size="10" fill="' + NAVY + '">benefit</text><text x="150" y="12" text-anchor="middle" font-size="10" fill="' + NAVY + '">risk</text>';
 
   /* ---------- Section D ---------- */
-  var METHODS = ['No penalty for false approvals', 'Penalty for false approvals', 'Stops early if a win looks likely', 'Strict early bars, 5 looks', 'No early looks, 100 per arm'];
-  var MSHORT = ['No penalty', 'With penalty', 'Early stop', '5 strict looks', 'Fixed 100'];
+  var METHODS = ['Equal costs (50% sure bar)', 'False win 39 times worse (97.5% sure bar)', 'Stops early if a win looks likely', 'Strict early bars, 5 looks', 'No early looks, 100 per arm'];
+  var MSHORT = ['Equal costs', '39 times worse', 'Early stop', '5 strict looks', 'Fixed 100'];
   var GAINL = ['New drug 30% (no gain)', 'New drug 35% (old 30%)', 'New drug 45% (old 30%)', 'New drug 55% (old 30%)'];
   var DELTAS = [0, 0.05, 0.15, 0.25];
   var TABLE = {
@@ -400,7 +401,7 @@
       nb += '<div class="mrow"><span>' + METHODS[i] + '</span><span class="tr"><span class="fl" style="display:block;width:' + r[1] + '%;background:' + GREY + '"></span></span><span class="v">' + r[1].toFixed(1) + '</span></div>';
     });
     $('dBarsP').innerHTML = pb; $('dBarsN').innerHTML = nb;
-    $('dNote').innerHTML = isNull ? 'The drug does nothing, so every bar is a false approval. With no penalty, the rule picks it about half the time.' : 'The new drug truly helps, so each bar is power.';
+    $('dNote').innerHTML = isNull ? 'The drug does nothing, so every bar is a false win. With equal costs, the rule picks it about half the time. The other rules land at 0.026 to 0.038. The source study aimed for 0.05, not 0.025.' : 'The new drug truly helps, so each bar is power.';
     var tb = $('dTabs').querySelectorAll('.btn'); for (var i = 0; i < tb.length; i++) tb[i].classList.toggle('on', i === D.d);
   }
   DELTAS.forEach(function (d, i) { btn($('dTabs'), GAINL[i], '', function () { D.d = i; renderD(); }); });
@@ -419,7 +420,7 @@
   // 1 threshold
   Lab.QuestionCard(Q, {
     tag: 'Predict 1', score: score, type: 'choice',
-    q: 'A false approval is 39 times worse than a missed drug. Approve only if we are sure the drug works above what chance?',
+    q: 'A false win is 39 times worse than a missed drug. Approve only if we are sure the drug works above what chance?',
     options: [{ value: '0.5', label: '50%' }, { value: '0.9', label: '90%' }, { value: '0.975', label: '97.5%' }, { value: '0.39', label: '39%' }],
     answer: function () { return String(parseFloat((39 / 40).toPrecision(3))); },
     explain: function () { return '39 / (39 + 1) = 97.5%. Bigger cost ratios push the bar toward 100%.'; },
@@ -444,33 +445,34 @@
   // 3 utility only
   Lab.QuestionCard(Q, {
     tag: 'Predict 3', score: score, type: 'choice',
-    q: 'A rule has no penalty for false approvals. The drug does nothing. How often does it pick the drug?',
+    q: 'A rule treats both mistakes as equally costly (approve if over 50% sure). The drug does nothing. How often does it pick the drug?',
     options: [{ value: '3', label: 'About 3% of trials' }, { value: '15', label: 'About 15%' }, { value: '50', label: 'About 50%' }, { value: '90', label: 'About 90%' }],
     answer: function () { return TABLE[0][0][0] > 0.4 && TABLE[0][0][0] < 0.6 ? '50' : '15'; },
-    explain: function () { return 'It picks the useless drug about half the time (' + Lab.pct(TABLE[0][0][0], 0) + '). A penalty cuts that to ' + Lab.pct(TABLE[0][1][0], 1) + '.'; },
+    explain: function () { return 'It picks the useless drug about half the time (' + Lab.pct(TABLE[0][0][0], 0) + '). Making a false win 39 times worse cuts that to ' + Lab.pct(TABLE[0][1][0], 1) + '.'; },
     revealPlot: function (box) { miniBars(box, 'Chance of picking a useless drug', METHODS.map(function (m, i) { return { l: MSHORT[i], v: TABLE[0][i][0], c: i === 0 ? BAD : TEAL }; }), 0.6, fp1); }
   });
   // 4 skeptical prior
+  /* bayesclin fig/prior_sensitivity_results.csv (exact policy, 5,000 trials); section D's 0.911 is simulation_results.csv (10,000 trials). */
   var PRI = { flat: [0.026, 0.896], skep: [0.020, 0.867] };
   Lab.QuestionCard(Q, {
     tag: 'Predict 4', score: score, type: 'choice',
-    q: 'Before the trial, assume the new drug is no better (as if 3 of 10 improved on each arm). What happens to false approvals and power (new drug 30% to 55%)?',
-    options: [{ value: 'a', label: 'Fewer false approvals, more power' }, { value: 'b', label: 'Fewer false approvals, less power' }, { value: 'c', label: 'More false approvals, more power' }, { value: 'd', label: 'No change' }],
+    q: 'Before the trial, assume the new drug is no better (as if 3 of 10 improved on each arm). What happens to false wins and power (new drug 30% to 55%)?',
+    options: [{ value: 'a', label: 'Fewer false wins, more power' }, { value: 'b', label: 'Fewer false wins, less power' }, { value: 'c', label: 'More false wins, more power' }, { value: 'd', label: 'No change' }],
     answer: function () { return PRI.skep[0] < PRI.flat[0] && PRI.skep[1] < PRI.flat[1] ? 'b' : 'a'; },
-    explain: function () { return 'False approvals ' + Lab.pct(PRI.flat[0], 1) + ' to ' + Lab.pct(PRI.skep[0], 1) + '; power ' + Lab.pct(PRI.flat[1], 0) + ' to ' + Lab.pct(PRI.skep[1], 0) + '.'; },
+    explain: function () { return 'False wins ' + Lab.pct(PRI.flat[0], 1) + ' to ' + Lab.pct(PRI.skep[0], 1) + '; power ' + Lab.pct(PRI.flat[1], 0) + ' to ' + Lab.pct(PRI.skep[1], 0) + ' (from a separate set of simulated trials that uses an exact version of the rule, so it is a little below the 91% in section D).'; },
     revealPlot: function (box) {
-      miniBars(box, 'False-approval chance', [{ l: 'No assumption', v: PRI.flat[0], c: GREY }, { l: 'Doubtful start', v: PRI.skep[0], c: ORANGE }], 0.05, fp1);
+      miniBars(box, 'False-win chance', [{ l: 'No assumption', v: PRI.flat[0], c: GREY }, { l: 'Doubtful start', v: PRI.skep[0], c: ORANGE }], 0.05, fp1);
       miniBars(box, 'Power, 30% to 55%', [{ l: 'No assumption', v: PRI.flat[1], c: GREY }, { l: 'Doubtful start', v: PRI.skep[1], c: ORANGE }], 1, fp0);
     }
   });
   // 5 Bayesian escape
   Lab.QuestionCard(Q, {
     tag: 'Predict 5', score: score, type: 'choice',
-    q: 'Does a Bayesian design escape the false approval checks at FDA?',
-    options: [{ value: 'yes', label: 'Yes, Bayes needs no error rates' }, { value: 'no', label: 'Usually no: show its false approval rate, with exceptions' }],
+    q: 'Does a Bayesian design escape the false win checks at FDA?',
+    options: [{ value: 'yes', label: 'Yes, Bayes needs no error rates' }, { value: 'no', label: 'Usually no: show its false win rate, with exceptions' }],
     answer: 'no',
-    explain: function () { return 'Default 2.5% one-sided; FDA may accept another bar if earlier data are borrowed. "Approve if 90% sure" alone gives ' + Lab.pct(1 - Phi(Qn(0.9)), 0) + ' false approvals.'; },
-    revealPlot: function (box) { miniBars(box, 'False approvals by sureness bar', [0.9, 0.95, 0.975].map(function (g) { return { l: Math.round(g * 1000) / 10 + '% sure', v: 1 - Phi(Qn(g)), c: g === 0.975 ? TEAL : ORANGE }; }), 0.12, fp1); }
+    explain: function () { return 'Default 2.5% one-sided; FDA may accept another bar if earlier data are borrowed. "Approve if 90% sure" alone gives ' + Lab.pct(1 - Phi(Qn(0.9)), 0) + ' false wins.'; },
+    revealPlot: function (box) { miniBars(box, 'False wins by sureness bar', [0.9, 0.95, 0.975].map(function (g) { return { l: Math.round(g * 1000) / 10 + '% sure', v: 1 - Phi(Qn(g)), c: g === 0.975 ? TEAL : ORANGE }; }), 0.12, fp1); }
   });
   // 6 rare disease power
   Lab.QuestionCard(Q, {

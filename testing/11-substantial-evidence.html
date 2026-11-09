@@ -51,7 +51,7 @@
 <section id="lab" class="labgrid" aria-label="Replication lab">
   <div class="panel">
     <h3>1. First trial result</h3>
-    <label class="slide">The <abbr class="tip" tabindex="0" data-tip="p-value: how often a useless drug would look this good by luck alone. Smaller means stronger.">p-value</abbr> of trial 1: <output id="pOut"></output>
+    <label class="slide">The two-sided <abbr class="tip" tabindex="0" data-tip="p-value: how often a useless drug would look this good by luck alone. Smaller means stronger.">p-value</abbr> of trial 1: <output id="pOut"></output>
       <input type="range" id="pSlide" min="-4" max="-0.7" step="0.01" value="-1.4"></label>
     <p class="note">A trial wins if the drug looks better with one-sided p below 0.025 (the same line as the familiar two-sided 0.05). A useless drug wins by luck 1 time in 40.</p>
     <h3>2. Run trial 2</h3>
@@ -89,8 +89,8 @@
 
 <section class="section">
   <h2>How the rule changed</h2>
-  <figure class="figure"><svg id="timeline" class="tl" viewBox="0 0 900 230" role="img" aria-label="Timeline of the evidence rule: 1962, 1997, 2019, 2026"></svg>
-    <figcaption><b>Timeline.</b> Sources: <a href="https://vsokolov.org/clinos-book/">Clinical Trials in Practice</a>, chapters 1, 9 (history, Phase 3) and the FDA draft guidance below.</figcaption></figure>
+  <figure class="figure"><svg id="timeline" class="tl" viewBox="0 0 900 230" role="img" aria-label="Timeline of the evidence rule: 1962, 1997, 1998, 2019, 2026"></svg>
+    <figcaption><b>Timeline.</b> Sources: <a href="https://vsokolov.org/clinos-book/">Clinical Trials in Practice</a>, chapters 1, 9 (history, Phase 3) and the FDA guidance below.</figcaption></figure>
 </section>
 
 <section class="section">
@@ -110,9 +110,9 @@
 
 <section class="reg">
   <h3>Regulator's corner</h3>
-  <p>"Substantial evidence" is the law's phrase for this page's question: adequate, well-controlled trials. FDA's draft guidance (June 2026) says one trial can be enough if it is very convincing or has strong backing:</p>
+  <p>"Substantial evidence" is the law's phrase for this page's question: adequate, well-controlled trials. FDA's revised draft guidance (June 2026; it revises the December 2019 draft and will replace the 1998 guidance) says one trial can be enough if it is very convincing or has strong backing:</p>
   <blockquote>"a highly persuasive trial or a source of strong confirmatory evidence"</blockquote>
-  <p class="note"><a href="https://www.fda.gov/media/133660/download">FDA draft guidance, Demonstrating Substantial Evidence of Effectiveness for Human Drug and Biological Products</a>. Draft. FDA also weighs trial quality and what the result means for patients.</p>
+  <p class="note"><a href="https://www.fda.gov/media/133660/download">FDA draft guidance, Demonstrating Substantial Evidence of Effectiveness for Human Drug and Biological Products</a>. Revised draft. FDA also weighs trial quality and what the result means for patients.</p>
 </section>
 
 <div id="code"></div>
@@ -168,7 +168,7 @@
     var pw = power(S.p), obs = S.sim.length ? Lab.prob(S.sim, function (z) { return z > CRIT; }) : null;
     $('pOut').textContent = fmtP(S.p);
     $('chips').innerHTML =
-      '<span class="chip warm">Trial 1: p = <b>' + fmtP(S.p) + '</b></span>' +
+      '<span class="chip warm">Trial 1: two-sided p = <b>' + fmtP(S.p) + '</b></span>' +
       '<span class="chip">Chance trial 2 wins: <b>' + (S.runs ? Lab.pct(pw, 0) : 'press Run again') + '</b></span>';
     $('plotNote').innerHTML = '';
     $('runNote').innerHTML = '';
@@ -179,7 +179,7 @@
     S.runs++; render(ms);
   }
   function setP(p, ms) { S.p = p; S.sim = []; S.runs = 0; $('pSlide').value = Math.log10(p).toFixed(2); runSim(ms); }
-  var EX = [{ l: 'Barely (p = 0.04)', p: 0.04 }, { l: 'Solid (p = 0.01)', p: 0.01 }, { l: 'Strong (p = 0.001)', p: 0.001 }, { l: 'Huge trial (p = 0.0002)', p: 0.0002 }];
+  var EX = [{ l: 'Barely (two-sided p = 0.04)', p: 0.04 }, { l: 'Solid (two-sided p = 0.01)', p: 0.01 }, { l: 'Strong (two-sided p = 0.001)', p: 0.001 }, { l: 'Huge trial (two-sided p = 0.0002)', p: 0.0002 }];
   EX.forEach(function (e) {
     var b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = e.l;
     b.addEventListener('click', function () {
@@ -218,16 +218,17 @@
   /* ---------- Figure: timeline ---------- */
   (function () {
     var s = $('timeline'), items = [
-      { x: 110, y: '1962', t: ['US law (Kefauver-Harris):', 'show it works,', 'not only that it is safe'] },
-      { x: 340, y: '1997', t: ['FDA Modernization Act:', 'one trial plus data that', 'backs it up is allowed'] },
-      { x: 570, y: '2019', t: ['Draft guidance:', 'two trials is the usual way'] },
-      { x: 780, y: '2026', t: ['Draft: one trial plus', 'confirmatory evidence is', 'a clearer option'] }
+      { x: 90, y: '1962', t: ['US law (Kefauver-Harris):', 'show it works,', 'not only that it is safe'] },
+      { x: 270, y: '1997', t: ['FDA Modernization Act:', 'one trial plus data that', 'backs it up is allowed'] },
+      { x: 450, y: '1998', t: ['FDA guidance (May 1998,', 'still in force): one trial', 'plus confirmatory', 'evidence can be enough'] },
+      { x: 630, y: '2019', t: ['Draft guidance:', 'two trials is the usual way'] },
+      { x: 810, y: '2026', t: ['Revised draft (revises', '2019; will replace the', '1998 guidance): one trial', 'plus confirmatory evidence'] }
     ];
     svgEl('line', { x1: 30, x2: 880, y1: 70, y2: 70, stroke: '#0A1628', 'stroke-width': 3 }, s);
     items.forEach(function (it, k) {
-      svgEl('circle', { cx: it.x, cy: 70, r: 12, fill: k === 3 ? '#2D8B8B' : '#E07A3F' }, s);
+      svgEl('circle', { cx: it.x, cy: 70, r: 12, fill: k === 4 ? '#2D8B8B' : '#E07A3F' }, s);
       var t = svgEl('text', { x: it.x, y: 40, 'text-anchor': 'middle', 'font-size': 20, 'font-weight': 600 }, s); t.textContent = it.y;
-      it.t.forEach(function (ln, j) { var q = svgEl('text', { x: it.x, y: 110 + j * 22, 'text-anchor': 'middle', 'font-size': 14.5 }, s); q.textContent = ln; });
+      it.t.forEach(function (ln, j) { var q = svgEl('text', { x: it.x, y: 110 + j * 22, 'text-anchor': 'middle', 'font-size': 13.5 }, s); q.textContent = ln; });
     });
   })();
 
@@ -337,6 +338,20 @@
     revealPlot: function (b) { miniBars(b, ['Priority', 'Standard'], [6, 10], [0, 12], 'review clock (months)', function (v) { return String(v); }); },
     explain: function () { return 'The clock shrinks from 10 months to 6. The standard of evidence stays the same.'; }
   });
+
+  // 8. Single-trial winners
+  (function () {
+    var N = 1000, real = N * 0.10 * 0.80, fa1 = N * 0.90 * 0.025, fa2 = N * 0.90 * 0.025 * 0.025, real2 = N * 0.10 * 0.80 * 0.80;
+    var sh1 = fa1 / (fa1 + real), sh2 = fa2 / (fa2 + real2);
+    Lab.QuestionCard(Q, {
+      tag: 'Predict 8', score: score, type: 'slider', min: 0, max: 0.5, step: 0.01, start: 0.05, tol: 0.05,
+      fmt: function (v) { return Lab.pct(v, 0); },
+      q: 'Of 1,000 tested drugs, 100 really work. Trials have 80% power and a one-sided 0.025 line. Among the drugs that win one trial, drag to the share that are useless.',
+      answer: function () { return sh1; },
+      revealPlot: function (b) { miniBars(b, ['One trial', 'Two trials'], [sh1, sh2], [0, 0.3], 'winners that are useless', function (v) { return Lab.pct(v, 1); }); },
+      explain: function () { return 'One trial: ' + num(real) + ' real wins and ' + num(fa1) + ' false wins, so ' + Lab.pct(sh1, 0) + ' of winners are useless. Two trials: ' + num(real2) + ' real and ' + num(fa2) + ' false, under ' + Lab.pct(Math.ceil(sh2 * 100) / 100, 0) + '.'; }
+    });
+  })();
 
   /* ---------- Code ---------- */
   Lab.CodeBox($('code'), {

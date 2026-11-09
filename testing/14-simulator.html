@@ -92,7 +92,7 @@
       <div class="field col"><div class="lab2"><label for="burn">Equal groups for the first</label><output id="burnO"></output></div><input id="burn" type="range" min="0" max="200" step="10" value="40"></div>
     </div>
     <h3>3. The stopping rule</h3>
-    <p class="note" style="margin:0 0 .4rem">At each look, find the chance the drug is better. Above the success bar: stop and say success.</p>
+    <p class="note" style="margin:0 0 .4rem">This lab starts every arm from no opinion, a flat prior. At each look, find the chance the drug is better. Above the success bar: stop and say success.</p>
     <div class="field col"><div class="lab2"><label for="c">Success bar</label><output id="cO"></output></div><input id="c" type="range" min="0.9" max="0.9999" step="0.0001" value="0.975"></div>
     <div class="field col"><div class="lab2"><label for="f">Give-up bar</label><output id="fO"></output></div><input id="f" type="range" min="0" max="0.5" step="0.01" value="0.05"></div>
     <p class="note" style="margin:0">Below it at an early look: stop and give up. Off = never give up.</p>
@@ -144,7 +144,7 @@
 
 <section class="section">
   <h2>Find a fair bar</h2>
-  <p>Calibrate finds the lowest success bar at which a useless drug wins 2.5% of trials or fewer.</p>
+  <p>Calibrate finds the lowest success bar at which a useless drug wins 2.5% of trials or fewer (the one-sided 0.025 line, counting only wins for the drug). It checks one placebo rate only. A real design checks the false-win rate at every plausible placebo rate.</p>
   <div class="labgrid">
     <div class="panel">
       <div class="row"><button class="btn primary" id="cal" type="button">Calibrate</button><button class="btn" id="useCal" type="button" disabled>Use the calibrated bar</button></div>

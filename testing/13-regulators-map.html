@@ -89,6 +89,12 @@ svg text { font-family: var(--sans); }
 </section>
 
 <section class="section">
+  <h2>Talking to FDA about a new design</h2>
+  <p>FDA's <b>Complex Innovative Trial Design (CID) paired meeting program</b> is where sponsors discuss designs such as Bayesian ones with FDA staff.</p>
+  <p class="note">Designs are usually agreed at an end-of-phase-2 meeting (Type B) or a Type C meeting. The clocks above apply.</p>
+</section>
+
+<section class="section">
   <h2>Who answers for the trial?</h2>
   <p>Click CRO. A dashed arrow shows who still answers for the trial.</p>
   <figure class="figure"><svg id="roles" viewBox="0 0 920 330" role="img" aria-label="Sponsor, CRO, investigator, IRB and FDA with their roles, and three FDA centers"></svg>
@@ -111,7 +117,7 @@ svg text { font-family: var(--sans); }
   <div class="gamebar" id="gamebar"><span id="prompt"></span><span class="scorebar" id="gscore" style="position:static;margin:0"></span><button class="btn" id="gnext" type="button" disabled>Next</button></div>
   <div class="shelf" id="shelf"></div>
   <div class="detail" id="docdetail" aria-live="polite">Click a document.</div>
-  <p class="note" style="margin-top:.6rem">Drafts can still change.</p>
+  <p class="note" style="margin-top:.6rem">Drafts can still change. "Revised draft" means FDA reissued an earlier draft.</p>
 </section>
 
 <section class="section">
@@ -284,7 +290,7 @@ svg text { font-family: var(--sans); }
         '<text x="12" y="' + (y + 18) + '" font-size="13" font-weight="' + (sel ? 700 : 400) + '" fill="' + NAVY + '">' + m.name + '</text>' +
         '<rect x="' + CX0 + '" y="' + y + '" width="' + (m.reply * KD) + '" height="13" fill="' + ORANGE + '"/><text x="' + (CX0 + m.reply * KD + 6) + '" y="' + (y + 11) + '" font-size="12" fill="#4a5565">' + m.reply + '</text>';
       if (m.sched != null) h += '<rect x="' + CX0 + '" y="' + (y + 16) + '" width="' + (m.sched * KD) + '" height="13" fill="' + TEAL + '"/><text x="' + (CX0 + m.sched * KD + 6) + '" y="' + (y + 27) + '" font-size="12" fill="#4a5565">' + m.sched + '</text>';
-      else h += '<rect x="' + CX0 + '" y="' + (y + 16) + '" width="90" height="13" fill="none" stroke="' + TEAL + '" stroke-dasharray="4 3"/><text x="' + (CX0 + 96) + '" y="' + (y + 27) + '" font-size="12" fill="#4a5565">not in the table I read; see the guidance</text>';
+      else h += '<rect x="' + CX0 + '" y="' + (y + 16) + '" width="90" height="13" fill="none" stroke="' + TEAL + '" stroke-dasharray="4 3"/><text x="' + (CX0 + 96) + '" y="' + (y + 27) + '" font-size="12" fill="#4a5565">see the guidance</text>';
       h += '</g>';
     });
     $('clocks').innerHTML = h;
@@ -365,11 +371,11 @@ svg text { font-family: var(--sans); }
     { id: 'e8', s: 'ICH E8(R1)', topic: 'Study design', title: 'General Considerations for Clinical Studies', date: 'Adopted 6 October 2021', say: 'Plan quality into a study from the start, and use tools that limit bias.', quote: 'Interventional studies, and in particular randomised studies, play a central role in drug development, as they can better control biases.', url: 'https://database.ich.org/sites/default/files/E8-R1_Guideline_Step4_2021_1006.pdf', rel: 'Fair comparisons' },
     { id: 'e9', s: 'ICH E9', topic: 'Statistics', title: 'Statistical Principles for Clinical Trials', date: 'Final (Step 4), 5 February 1998', say: 'The basic statistics rules: randomize, plan the analysis, look at data on a schedule.', quote: 'Randomisation introduces a deliberate element of chance into the assignment of treatments to subjects in a clinical trial.', url: 'https://database.ich.org/sites/default/files/E9_Guideline.pdf', rel: 'P-values, multiplicity, interim looks' },
     { id: 'e9r1', s: 'ICH E9(R1)', topic: 'Estimands', title: 'Addendum on Estimands and Sensitivity Analysis', date: 'Adopted 20 November 2019', say: 'Say exactly which treatment effect you want to measure before you start.', quote: 'An estimand is a precise description of the treatment effect reflecting the clinical question posed by a given clinical trial objective.', url: 'https://database.ich.org/sites/default/files/E9-R1_Step4_Guideline_2019_1203.pdf', rel: 'Fair comparisons' },
-    { id: 'se', s: 'Substantial evidence', topic: 'Proof of benefit', title: 'Demonstrating Substantial Evidence of Effectiveness', date: 'Draft, June 2026', say: 'What FDA needs to see before it says a drug works.', quote: 'evidence consisting of adequate and well-controlled investigations', url: 'https://www.fda.gov/media/133660/download', rel: 'Substantial evidence' },
-    { id: 'mp', s: 'Master protocols', topic: 'Platform trials', title: 'Master Protocols for Drug and Biological Product Development', date: 'Draft, June 2026', say: 'One trial shell can test many drugs and share a control group.', quote: 'improve efficiency by using a shared control arm in evaluating multiple drugs', url: 'https://www.fda.gov/media/174976/download', rel: 'Platform trials' },
+    { id: 'se', s: 'Substantial evidence', topic: 'Proof of benefit', title: 'Demonstrating Substantial Evidence of Effectiveness', date: 'Revised draft, June 2026', say: 'What FDA needs to see before it says a drug works.', quote: 'evidence consisting of adequate and well-controlled investigations', url: 'https://www.fda.gov/media/133660/download', rel: 'Substantial evidence' },
+    { id: 'mp', s: 'Master protocols', topic: 'Platform trials', title: 'Master Protocols for Drug and Biological Product Development', date: 'Revised draft, June 2026', say: 'One trial shell can test many drugs and share a control group.', quote: 'improve efficiency by using a shared control arm in evaluating multiple drugs', url: 'https://www.fda.gov/media/174976/download', rel: 'Platform trials' },
     { id: 'ad', s: 'Adaptive designs', topic: 'Changing a trial', title: 'Adaptive Designs for Clinical Trials of Drugs and Biologics', date: 'Final, November 2019', say: 'You may change a trial as data arrive if the changes were planned and false approvals stay controlled.', quote: 'the chance of erroneous conclusions should be adequately controlled', url: 'https://www.fda.gov/media/78495/download', rel: 'Adaptive designs' },
     { id: 'e20', s: 'ICH E20', topic: 'Adaptive (global)', title: 'Adaptive Designs for Clinical Trials', date: 'Draft, June 2025', say: 'The world-wide draft rulebook for adaptive trials.', quote: 'A proposed adaptive design requires a clear and compelling justification.', url: 'https://www.fda.gov/media/188961/download', rel: 'Adaptive designs' },
-    { id: 'bayes', s: 'Bayesian draft', topic: 'Using past knowledge', title: 'Use of Bayesian Methodology in Clinical Trials of Drug and Biological Products', date: 'Draft, January 2026', say: 'How to use a prior in a trial, and how to show the design is safe from false approvals.', quote: 'It is always critical for Bayesian analyses to have a prespecified prior', url: 'https://www.fda.gov/media/190505/download', rel: 'Prior and posterior' },
+    { id: 'bayes', s: 'Bayesian draft', topic: 'Using past knowledge', title: 'Use of Bayesian Methodology in Clinical Trials of Drug and Biological Products', date: 'Draft, January 2026', say: 'How to use a prior in a trial, and how to show the design is safe from false wins.', quote: 'It is always critical for Bayesian analyses to have a prespecified prior', url: 'https://www.fda.gov/media/190505/download', rel: 'Prior and posterior' },
     { id: 'm15', s: 'ICH M15', topic: 'Models', title: 'General Principles for Model-Informed Drug Development', date: 'Final, January 2026', say: 'Computer models can help pick doses and designs.', quote: 'the use of computational modeling and simulation (M&S) methods', url: 'https://www.fda.gov/media/184747/download', rel: 'Decisions' },
     { id: 'ai', s: 'AI credibility', topic: 'AI tools', title: 'Considerations for the Use of Artificial Intelligence to Support Regulatory Decision-Making', date: 'Draft, January 2025', say: 'Seven steps to show an AI model can be trusted for one specific job.', quote: 'Model risk is a combination of two factors: (a) model influence ... and (b) decision consequence', url: 'https://www.fda.gov/media/184830/download', rel: 'Decisions' },
     { id: 'nam', s: 'NAMs', topic: 'Beyond animals', title: 'General Considerations for the Use of New Approach Methodologies in Drug Development', date: 'Draft, March 2026', say: 'Lab-dish and computer tests can count as evidence, even if not fully validated.', quote: 'A fit-for-purpose NAM, even if not validated, may adequately address specific toxicological concerns.', url: 'https://www.fda.gov/media/191589/download', rel: 'Safety evidence' },

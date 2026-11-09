@@ -75,15 +75,15 @@
     <div><h3>Seen so far</h3><div class="note" style="margin:0">Placebo (a dummy pill)</div><div class="trow" id="tvP" role="img"></div><div class="note" style="margin:0">Drug</div><div class="trow" id="tvD" role="img"></div>
       <p class="legend"><svg class="pp yes" viewBox="0 0 16 20" aria-hidden="true"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> filled = got better &nbsp; <svg class="pp no" viewBox="0 0 16 20" aria-hidden="true"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> outline = did not &nbsp; <svg class="pp unseen" viewBox="0 0 16 20" aria-hidden="true"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg> faded = not yet enrolled</p></div>
   </div>
-  <table class="tvt" id="tvTab" aria-live="polite"><thead><tr><th>Look</th><th>Patients per group</th><th>Got better: placebo</th><th>Got better: drug</th><th>Gap</th><th><span class="tip" tabindex="0" data-tip="p: how often luck alone gives a gap this big or bigger (module 2). Two-sided: a gap in either direction counts.">p, two-sided</span></th></tr></thead><tbody></tbody></table>
+  <table class="tvt" id="tvTab" aria-live="polite"><thead><tr><th>Look</th><th>Patients per group</th><th>Got better: placebo</th><th>Got better: drug</th><th>Gap</th><th><span class="tip" tabindex="0" data-tip="p: how often luck alone gives a gap this big or bigger (module 2). One-sided: only gaps that favor the drug count.">p, one-sided</span></th></tr></thead><tbody></tbody></table>
   <p class="note" id="tvVerdict" style="margin-top:.5rem"></p>
   <p class="cap" id="tvCap"></p>
 </section>
 
 <section class="fig" aria-label="Timeline of a trial with four looks">
   <h3>A trial with planned looks</h3>
-  <svg id="fig1" viewBox="0 0 760 250" role="img" aria-label="Timeline: patients join, four planned looks at 40, 60, 80 and 100 percent, each with the p-value needed to stop"></svg>
-  <p class="cap">At each look an independent safety board (<span class="tip" tabindex="0" data-tip="Data safety monitoring board: independent experts who see the unblinded data and may recommend to stop.">DSMB</span>) checks the data.</p>
+  <svg id="fig1" viewBox="0 0 760 250" role="img" aria-label="Timeline: patients join, four planned looks at 40, 60, 80 and 100 percent, each with the one-sided p-value needed to stop"></svg>
+  <p class="cap">The strict early bars come from a spending formula (Lan-DeMets), so they differ a little from the textbook O’Brien-Fleming bars. At each look an independent safety board (<span class="tip" tabindex="0" data-tip="Data safety monitoring board: independent experts who see the unblinded data and may recommend to stop.">DSMB</span>) checks the data.</p>
 </section>
 
 <section id="lab" class="labgrid" aria-label="Interim looks lab">
@@ -104,7 +104,7 @@
   <div>
     <div class="plotbox"><svg id="plot"></svg>
       <div class="keys" id="keys"></div>
-      <p class="note" style="margin:.4rem 0 0"><b>z</b>: how big the gap is compared with luck. Above 2 rarely happens by luck (<a href="02-p-values.html">module 2</a>).</p>
+      <p class="note" style="margin:.4rem 0 0"><b>z</b>: how big the gap is compared with luck. Above 1.96 on the drug’s side is the usual bar, one-sided p below 0.025 (<a href="02-p-values.html">module 2</a>). Only the drug’s good side is drawn.</p>
       <div class="chips" aria-live="polite" id="chips"></div>
       <p class="note" id="plotNote" style="margin:.5rem 0 0"></p>
     </div>
@@ -118,8 +118,8 @@
 
 <section class="fig" aria-label="False alarm chance by number of looks">
   <h3>Chance that a useless drug gives a false alarm</h3>
-  <svg id="fig2" viewBox="0 0 640 260" role="img" aria-label="Bars: false alarm chance grows with the number of looks if every look uses p below 0.05, and stays at 5 percent with Pocock or O'Brien-Fleming"></svg>
-  <div class="keys"><span><span class="sw" style="background:#E07A3F"></span>Every look at p &lt; 0.05 (usual bar)</span><span><span class="sw" style="background:#2D8B8B"></span>Stricter bars (Pocock or O'Brien-Fleming)</span></div>
+  <svg id="fig2" viewBox="0 0 640 260" role="img" aria-label="Bars: false alarm chance grows with the number of looks if every look uses one-sided p below 0.025, and stays at 2.5 percent with Pocock or O'Brien-Fleming-type bars"></svg>
+  <div class="keys"><span><span class="sw" style="background:#E07A3F"></span>Every look at one-sided p &lt; 0.025 (usual bar)</span><span><span class="sw" style="background:#2D8B8B"></span>Stricter bars (Pocock or O’Brien-Fleming-type)</span></div>
   <p class="cap">False alarm: the trial stops though the drug does nothing.</p>
 </section>
 
@@ -156,7 +156,7 @@
   <h2>Takeaway</h2>
   <ul>
     <li>Every extra look is another chance for a false alarm.</li>
-    <li>Plan the looks first, and use stricter bars so false alarms stay at 5%.</li>
+    <li>Plan the looks first, and use stricter bars so false alarms stay at 2.5%.</li>
     <li>Stopping early saves patients, but the early estimate tends to be too big.</li>
   </ul>
 </section>
@@ -188,16 +188,16 @@
   var rng = Lab.rng(2026), rng2 = Lab.rng(77);
   var BOOK = [0.4, 0.6, 0.8, 1], NPAT = 100, MU = 0.25;
   function eq(K) { var o = []; for (var i = 1; i <= K; i++) o.push(i / K); return o; }
-  function fp(p) { return p >= 0.01 ? p.toFixed(3) : p.toFixed(4); }
+  function fp(p) { if (p < 0.0001) return '<0.0001'; return p >= 0.01 ? p.toFixed(3) : p.toFixed(4); }
   function pc(x, d) { return (100 * x).toFixed(d == null ? 1 : d) + '%'; }
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
 
   /* ---------- group-sequential boundaries (exact numerical integration) ---------- */
   var cnd=function(x){var xa=Math.abs(x),c,b;if(xa>37)c=0;else{var e=Math.exp(-xa*xa/2);if(xa<7.07106781186547){b=3.52624965998911E-02*xa+0.700383064443688;b=b*xa+6.37396220353165;b=b*xa+33.912866078383;b=b*xa+112.079291497871;b=b*xa+221.213596169931;b=b*xa+220.206867912376;c=e*b;b=8.83883476483184E-02*xa+1.75566716318264;b=b*xa+16.064177579207;b=b*xa+86.7807322029461;b=b*xa+296.564248779674;b=b*xa+637.333633378831;b=b*xa+793.826512519948;b=b*xa+440.413735824752;c=c/b;}else{b=xa+0.65;b=xa+4/b;b=xa+3/b;b=xa+2/b;b=xa+1/b;c=e/b/2.506628274631;}}return x>0?1-c:c;};
-var H=0.01,GM=4,M=Math.round(2*GM/H)+1,G=new Float64Array(M),cache={},Z2=2.241402727604947;
+var H=0.01,GM=5,M=Math.round(2*GM/H)+1,G=new Float64Array(M),cache={},Z2=2.241402727604947;
 for(var gi=0;gi<M;gi++)G[gi]=-GM+gi*H;
-function crossP(f,B,sd){if(!f)return 2*(1-cnd(B/sd));var s=0;for(var i=0;i<M;i++){var fi=f[i];if(fi>0)s+=fi*(1-(cnd((B-G[i])/sd)-cnd((-B-G[i])/sd)));}return s*H;}
-function wt(x,B){var w=(B-Math.abs(x))/H+0.5;return w<=0?0:w>=1?1:w;}
+function crossP(f,B,sd){if(!f)return 1-cnd(B/sd);var s=0;for(var i=0;i<M;i++){var fi=f[i];if(fi>0)s+=fi*(1-cnd((B-G[i])/sd));}return s*H;}
+function wt(x,B){var w=(B-x)/H+0.5;return w<=0?0:w>=1?1:w;}
 function stepF(f,B,sd){var out=new Float64Array(M),c=1/(sd*Math.sqrt(2*Math.PI)),j,i;
   if(!f){for(j=0;j<M;j++){var w0=wt(G[j],B);if(w0>0)out[j]=w0*c*Math.exp(-G[j]*G[j]/(2*sd*sd));}return out;}
   var ilo=M,ihi=-1;for(i=0;i<M;i++)if(f[i]>0){if(i<ilo)ilo=i;ihi=i;}
@@ -207,10 +207,10 @@ function stepF(f,B,sd){var out=new Float64Array(M),c=1/(sd*Math.sqrt(2*Math.PI))
 function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cache[key];
   var K=fr.length,f=null,prev=0,spent=0,zs=[],ps=[];
   for(var k=0;k<K;k++){var t=fr[k],d=t-prev,sd=Math.sqrt(d),st=Math.sqrt(t),b;
-    if(rule==='naive')b=1.96;else{var target=rule==='obf'?2*(2-2*cnd(Z2/st)):0.05*Math.log(1+(Math.E-1)*t),lo=0.5,hi=14;
+    if(rule==='naive')b=1.96;else{var target=rule==='obf'?2*(1-cnd(Z2/st)):0.025*Math.log(1+(Math.E-1)*t),lo=0.5,hi=14;
       for(var it=0;it<45;it++){var m=(lo+hi)/2;if(spent+crossP(f,m*st,sd)>target)lo=m;else hi=m;}b=(lo+hi)/2;}
     var p=crossP(f,b*st,sd);spent+=p;zs.push(b);ps.push(p);f=stepF(f,b*st,sd);prev=t;}
-  return cache[key]={fr:fr,z:zs,total:spent,p2:zs.map(function(z){return 2*(1-cnd(z));}),p1:zs.map(function(z){return 1-cnd(z);})};}
+  return cache[key]={fr:fr,z:zs,total:spent,p1:zs.map(function(z){return 1-cnd(z);})};}
 
 
   /* ---------- small SVG helpers ---------- */
@@ -267,16 +267,16 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
     var o = design(BOOK, 'obf'), p = design(BOOK, 'poc'), s = '', X = function (f) { return 60 + 640 * f; };
     if (NARROW) {
       $('fig1').setAttribute('viewBox', '0 0 360 380');
-      s += '<text x="10" y="18" style="font-weight:600;fill:#0A1628">Look: share of patients, then p needed to stop</text>';
+      s += '<text x="10" y="18" style="font-weight:600;fill:#0A1628">Look, then one-sided p needed to stop</text>';
       BOOK.forEach(function (f, k) {
         var y = 50 + k * 82;
         s += '<circle cx="24" cy="' + (y + 10) + '" r="12" fill="#fff" stroke="#0A1628" stroke-width="2"/><text x="24" y="' + (y + 14) + '" text-anchor="middle" style="font-weight:700;fill:#0A1628">' + (k + 1) + '</text>';
         s += '<text x="46" y="' + (y + 14) + '" style="font-weight:600;fill:#0A1628">' + Math.round(f * 100) + '% of patients</text>';
         [[o, 150, '#2D8B8B', 'Strict early'], [p, 255, '#1F6B6B', 'Even bar']].forEach(function (r) {
-          s += '<rect x="' + (r[1] - 104) + '" y="' + (y + 24) + '" width="100" height="34" rx="8" fill="#fff" stroke="' + r[2] + '" stroke-width="2"/><text x="' + (r[1] - 54) + '" y="' + (y + 38) + '" text-anchor="middle" style="font-size:10px">' + r[3] + '</text><text x="' + (r[1] - 54) + '" y="' + (y + 52) + '" text-anchor="middle" style="font-family:IBM Plex Mono,monospace;font-weight:600;fill:#0A1628">' + fp(r[0].p2[k]) + '</text>';
+          s += '<rect x="' + (r[1] - 104) + '" y="' + (y + 24) + '" width="100" height="34" rx="8" fill="#fff" stroke="' + r[2] + '" stroke-width="2"/><text x="' + (r[1] - 54) + '" y="' + (y + 38) + '" text-anchor="middle" style="font-size:10px">' + r[3] + '</text><text x="' + (r[1] - 54) + '" y="' + (y + 52) + '" text-anchor="middle" style="font-family:IBM Plex Mono,monospace;font-weight:600;fill:#0A1628">' + fp(r[0].p1[k]) + '</text>';
         });
       });
-      s += '<text x="46" y="' + 372 + '" style="font-size:10px">Strict early = O’Brien-Fleming. Even bar = Pocock.</text>';
+      s += '<text x="46" y="' + 372 + '" style="font-size:10px">Strict early: O’Brien-Fleming-type. Even: Pocock.</text>';
       $('fig1').innerHTML = s; return;
     }
     s += '<text x="60" y="22" style="font-weight:600;fill:#0A1628">Patients join the trial</text>';
@@ -289,12 +289,12 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
       s += '<circle cx="' + x + '" cy="38" r="12" fill="#fff" stroke="#0A1628" stroke-width="2"/><text x="' + x + '" y="42" text-anchor="middle" style="font-weight:700;fill:#0A1628">' + (k + 1) + '</text>';
       s += '<text x="' + x + '" y="100" text-anchor="middle">' + Math.round(f * 100) + '% of patients</text>';
     });
-    [['Strict early bar (O’Brien-Fleming): stop only if p is below', o, 150, '#2D8B8B'], ['Pocock, a stricter bar, about equal at each look: stop only if p is below', p, 215, '#1F6B6B']].forEach(function (r) {
+    [['Strict early bar (O’Brien-Fleming-type, Lan-DeMets spending): stop only if one-sided p is below', o, 150, '#2D8B8B'], ['Pocock, a stricter bar, about equal at each look: stop only if one-sided p is below', p, 215, '#1F6B6B']].forEach(function (r) {
       s += '<text x="10" y="' + (r[2] - 20) + '" style="font-weight:600;fill:#0A1628">' + r[0] + '</text>';
       BOOK.forEach(function (f, k) {
         var x = X(f);
         s += '<rect x="' + (x - 52) + '" y="' + (r[2] - 10) + '" width="104" height="30" rx="8" fill="#fff" stroke="' + r[3] + '" stroke-width="2"/>';
-        s += '<text x="' + x + '" y="' + (r[2] + 10) + '" text-anchor="middle" style="font-family:IBM Plex Mono,monospace;font-weight:600;fill:#0A1628">' + fp(r[1].p2[k]) + '</text>';
+        s += '<text x="' + x + '" y="' + (r[2] + 10) + '" text-anchor="middle" style="font-family:IBM Plex Mono,monospace;font-weight:600;fill:#0A1628">' + fp(r[1].p1[k]) + '</text>';
       });
     });
     $('fig1').innerHTML = s;
@@ -302,10 +302,10 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
 
   /* ---------- Figure 2: false alarms by number of looks ---------- */
   (function () {
-    var Ks = [1, 2, 3, 5, 10, 20], W = 640, x0 = 56, x1 = 626, y0 = 214, y1 = 20, ymax = 0.3, s = '', bw = 30, dg = 1;
+    var Ks = [1, 2, 3, 5, 10, 20], W = 640, x0 = 56, x1 = 626, y0 = 214, y1 = 20, ymax = 0.15, s = '', bw = 30, dg = 1;
     if (NARROW) { W = 360; x0 = 40; x1 = 352; y0 = 214; bw = 20; dg = 0; $('fig2').setAttribute('viewBox', '0 0 360 260'); }
     var sy = function (v) { return y0 - (v / ymax) * (y0 - y1); };
-    [0, 0.1, 0.2, 0.3].forEach(function (v) { s += '<line x1="' + x0 + '" x2="' + x1 + '" y1="' + sy(v) + '" y2="' + sy(v) + '" stroke="#E3E8EE"/><text x="' + (x0 - 8) + '" y="' + (sy(v) + 4) + '" text-anchor="end">' + Math.round(v * 100) + '%</text>'; });
+    [0, 0.05, 0.1, 0.15].forEach(function (v) { s += '<line x1="' + x0 + '" x2="' + x1 + '" y1="' + sy(v) + '" y2="' + sy(v) + '" stroke="#E3E8EE"/><text x="' + (x0 - 8) + '" y="' + (sy(v) + 4) + '" text-anchor="end">' + Math.round(v * 100) + '%</text>'; });
     var gw = (x1 - x0) / Ks.length;
     Ks.forEach(function (K, i) {
       var cx = x0 + gw * (i + 0.5), a = design(eq(K), 'naive').total, b = design(eq(K), 'obf').total;
@@ -336,11 +336,11 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
   /* ---------- Truth vs what the trial sees ---------- */
   (function () {
     var N = 100, LK = [40, 60, 80, 100], RP = 0.40, RD = { 1: 0.60, 0: 0.40 }, mode = 1, timers = [], r3 = Lab.rng(515);
-    function pval(a, b, n) { var pp = (a + b) / (2 * n), se = Math.sqrt(pp * (1 - pp) * 2 / n); if (!se) return 1; return 2 * (1 - cnd(Math.abs(a - b) / n / se)); }
+    function pval(a, b, n) { var pp = (a + b) / (2 * n), se = Math.sqrt(pp * (1 - pp) * 2 / n); if (!se) return 1; return 1 - cnd((b - a) / n / se); }
     function draw(eff, rg) { var a = [], b = [], i; for (i = 0; i < N; i++) { a.push(rg() < RP ? 1 : 0); b.push(rg() < RD[eff] ? 1 : 0); } return { a: a, b: b }; }
     function sumTo(x, n) { var s = 0, i; for (i = 0; i < n; i++) s += x[i]; return s; }
     function looks(t) { return LK.map(function (n) { var a = sumTo(t.a, n), b = sumTo(t.b, n); return { n: n, a: a, b: b, p: pval(a, b, n) }; }); }
-    function firstStop(ls) { for (var k = 0; k < ls.length; k++) if (ls[k].p < 0.05) return k; return -1; }
+    function firstStop(ls) { for (var k = 0; k < ls.length; k++) if (ls[k].p < 0.025) return k; return -1; }
     var rate = {}; [0, 1].forEach(function (e) { var w = 0, i; for (i = 0; i < 1000; i++) if (firstStop(looks(draw(e, r3))) >= 0) w++; rate[e] = w / 1000; });
     function rows(box, arr, n) { box.innerHTML = arr.map(function (v, i) { return '<svg class="pp ' + (i < n ? (v ? 'yes' : 'no') : 'unseen') + '" viewBox="0 0 16 20" aria-hidden="true"><circle cx="8" cy="5" r="4"/><path d="M1 19.5c0-4.4 3.1-7.5 7-7.5s7 3.1 7 7.5z"/></svg>'; }).join(''); }
     function el0(tag, cls) { var e = document.createElement(tag); e.className = cls; return e; }
@@ -359,10 +359,10 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
           tr.innerHTML = '<td>' + (k + 1) + '</td><td>' + l.n + '</td><td>' + l.a + ' of ' + l.n + '</td><td>' + l.b + ' of ' + l.n + '</td><td>' + (gap > 0 ? '+' : '') + gap + ' patients</td><td>' + fp(l.p) + (k === st ? ' stop' : late ? ' (already stopped)' : '') + '</td>';
           tb.appendChild(tr);
           if (k === ls.length - 1) {
-            var v = st < 0 ? 'The naive rule (stop if p is below 0.05) never stops here.' : 'The naive rule stops at look ' + (st + 1) + ' with ' + (ls[st].b - ls[st].a) + ' more drug patients improved.';
+            var v = st < 0 ? 'The naive rule (stop if one-sided p is below 0.025) never stops here.' : 'The naive rule stops at look ' + (st + 1) + ' with ' + (ls[st].b - ls[st].a) + ' more drug patients improved.';
             v += mode ? (st < 0 ? ' The drug works, but this trial missed it.' : ' A correct stop.') : (st < 0 ? ' Correct: nothing is there.' : ' But the drug does nothing, so this is a false alarm: the trial stops anyway.');
             $('tvVerdict').textContent = v;
-            $('tvCap').textContent = 'In 1,000 such trials the naive rule ' + (mode ? 'stops in ' + pc(rate[mode], 0) + ' (it found the real effect).' : 'wrongly stops ' + pc(rate[mode], 0) + ' of the time (goal: 5%).');
+            $('tvCap').textContent = 'In 1,000 such trials the naive rule ' + (mode ? 'stops in ' + pc(rate[mode], 0) + ' (it found the real effect).' : 'wrongly stops ' + pc(rate[mode], 0) + ' of the time (goal: 2.5%).');
           }
         }, 500 * (k + 1)));
       });
@@ -376,12 +376,12 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
   /* ---------- Main lab ---------- */
   var PRESETS = [
     { id: 'ft', label: 'Drug vs placebo, 5 looks', K: 5, rule: 'naive', eff: 0, x: 'Share of patients so far', y: 'Evidence the drug is better (z)', what: 'patients', note: 'The drug does nothing, so any stop is a false alarm.' },
-    { id: 'obf', label: 'Trial: strict early bar', K: 'book', rule: 'obf', eff: 0, x: 'Share of patients so far', y: 'Evidence the drug works (z)', what: 'patients', note: 'A useless drug, 4 looks, a very strict bar early on (O’Brien-Fleming).' },
+    { id: 'obf', label: 'Trial: strict early bar', K: 'book', rule: 'obf', eff: 0, x: 'Share of patients so far', y: 'Evidence the drug works (z)', what: 'patients', note: 'A useless drug, 4 looks, a very strict bar early on (O’Brien-Fleming-type).' },
     { id: 'poc', label: 'Trial: same bar each look', K: 'book', rule: 'poc', eff: 0, x: 'Share of patients so far', y: 'Evidence the drug works (z)', what: 'patients', note: 'A useless drug, 4 looks, about the same stricter bar at every look (Pocock).' },
     { id: 'work', label: 'Drug that works', K: 'book', rule: 'obf', eff: 1, x: 'Share of patients so far', y: 'Evidence the drug works (z)', what: 'patients', note: 'A real effect: how often, and how early, does the trial stop?' }
   ];
   var KS = [[1, '1 (no peeking)'], [2, '2'], [5, '5'], [10, '10'], ['book', '4 (design above)']];
-  var RULES = [['naive', 'Usual bar (p < 0.05) each look'], ['poc', 'Pocock: same stricter bar each look'], ['obf', 'O’Brien-Fleming: strict early bar']];
+  var RULES = [['naive', 'Usual bar (one-sided p < 0.025) each look'], ['poc', 'Pocock: same stricter bar each look'], ['obf', 'O’Brien-Fleming-type: strict early bar']];
   var S = { K: 5, rule: 'naive', eff: 0, pre: PRESETS[0], runs: 0, wins: 0, pat: 0 };
   var plot = Lab.Plot($('plot'), { xlim: [0, 1], ylim: [-5, 5], xlabel: 'Share of patients so far', ylabel: 'Evidence (z)', label: 'Random-walk paths of the z statistic with the stopping boundary', xfmt: function (v) { return Math.round(v * 100) + '%'; } });
   var svg = $('plot'), defs = svgEl('defs', {}, svg), ov = svgEl('g', {}, svg), pg = svgEl('g', {}, svg), clipN = 0;
@@ -390,30 +390,26 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
   function cy(z) { return Math.max(-5, Math.min(5, z)); }
 
   function drawBounds() {
-    var d = dsg(), up = '', lo = '', prev = 0, P = plot, zoneU = '', zoneL = '';
+    var d = dsg(), up = '', prev = 0, P = plot, zoneU = '';
     d.fr.forEach(function (f, k) {
       var b = Math.min(5, d.z[k]), x0 = P.sx(prev).toFixed(1), x1 = P.sx(f).toFixed(1);
       up += (k ? 'L' : 'M') + x0 + ',' + P.sy(b).toFixed(1) + 'L' + x1 + ',' + P.sy(b).toFixed(1);
-      lo += (k ? 'L' : 'M') + x0 + ',' + P.sy(-b).toFixed(1) + 'L' + x1 + ',' + P.sy(-b).toFixed(1);
       prev = f;
     });
     var xr = P.sx(1).toFixed(1), xl = P.sx(0).toFixed(1);
     ov.innerHTML = '';
     svgEl('path', { d: up + 'L' + xr + ',' + P.sy(5) + 'L' + xl + ',' + P.sy(5) + 'Z', fill: '#FDF0E8' }, ov);
-    svgEl('path', { d: lo + 'L' + xr + ',' + P.sy(-5) + 'L' + xl + ',' + P.sy(-5) + 'Z', fill: '#FDF0E8' }, ov);
     svgEl('line', { x1: xl, x2: xr, y1: P.sy(0), y2: P.sy(0), stroke: '#9AA6B2', 'stroke-dasharray': '3 3' }, ov);
     svgEl('path', { d: up, fill: 'none', stroke: ORANGE, 'stroke-width': 3 }, ov);
-    svgEl('path', { d: lo, fill: 'none', stroke: ORANGE, 'stroke-width': 3 }, ov);
     svgEl('text', { x: P.sx(0) + 6, y: P.sy(5) + 14, style: 'fill:#B8531A;font-weight:600' }, ov).textContent = 'Stop: drug looks helpful';
     svgEl('text', { x: P.sx(1) - 6, y: P.sy(0) - 6, 'text-anchor': 'end', style: 'fill:#5A6B7B' }, ov).textContent = 'No difference';
-    svgEl('text', { x: P.sx(0) + 6, y: P.sy(-5) - 6, style: 'fill:#B8531A;font-weight:600' }, ov).textContent = 'Stop: drug looks harmful';
   }
 
   function trial() {
     var d = dsg(), nk = d.fr.map(function (f) { return Math.round(f * NPAT); }), s = 0, zs = [], stopAt = -1, k = 0, n;
     for (n = 1; n <= NPAT; n++) {
       s += Lab.normal(rng) + (S.eff ? MU : 0); zs.push(s / Math.sqrt(n));
-      if (k < nk.length && n === nk[k]) { if (stopAt < 0 && Math.abs(zs[n - 1]) > d.z[k]) stopAt = k; k++; }
+      if (k < nk.length && n === nk[k]) { if (stopAt < 0 && zs[n - 1] > d.z[k]) stopAt = k; k++; }
     }
     return { zs: zs, stopAt: stopAt, nk: nk, n: stopAt < 0 ? NPAT : nk[stopAt], win: stopAt >= 0 };
   }
@@ -440,7 +436,7 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
 
   function chip(txt, val, warm) { return '<span class="chip' + (warm ? ' warm' : '') + '">' + txt + ' <b>' + val + '</b></span>'; }
   function renderChips() {
-    var d = dsg(), h = chip('Looks', d.fr.length) + chip('Bar at look 1: p below', fp(d.p2[0])) +
+    var d = dsg(), h = chip('Looks', d.fr.length) + chip('Bar at look 1: one-sided p below', fp(d.p1[0])) +
       chip('False alarm chance if the drug did nothing', pc(d.total), S.rule === 'naive' && d.fr.length > 1);
     if (S.runs) h += chip('Your trials that stopped', S.wins + ' of ' + S.runs, true) + chip('Average ' + S.pre.what, (S.pat / S.runs).toFixed(0) + ' of ' + NPAT);
     $('chips').innerHTML = h;
@@ -489,28 +485,28 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
   var h1, h2, h3, h4, h5, h6, h7, c;
 
   // 1: five peeks
-  var r5 = design(eq(5), 'naive').total, opts1 = [0.05, 0.09, 0.14, 0.25];
+  var r5 = design(eq(5), 'naive').total, opts1 = [0.025, 0.05, 0.07, 0.12];
   c = Lab.QuestionCard(Q, {
     tag: 'Predict 1', score: score, type: 'choice',
-    q: 'A useless drug. You look 5 times and stop if p is below 0.05. How often do you wrongly stop?',
-    options: [{ value: 0, label: '5%' }, { value: 1, label: 'About 9%' }, { value: 2, label: 'About 14%' }, { value: 3, label: 'About 25%' }],
+    q: 'A useless drug. You look 5 times and stop if one-sided p is below 0.025. How often do you wrongly stop?',
+    options: [{ value: 0, label: '2.5%' }, { value: 1, label: 'About 5%' }, { value: 2, label: 'About 7%' }, { value: 3, label: 'About 12%' }],
     answer: function () { return nearest(opts1, r5); },
     onReveal: function () {
       var g = [1, 2, 3, 5, 10, 20].map(function (K) { return { label: K + '', vals: [design(eq(K), 'naive').total] }; });
-      h1.innerHTML = miniBars(g, [ORANGE], 0.3, function (v) { return v < 1 && v > 0 ? (v * 100).toFixed(v < 0.2 ? 1 : 0) + '%' : '0'; }, { ref: { v: 0.05, label: '5%' }, hl: 3, yl: 'False alarm chance', aria: 'False alarm chance by number of looks' });
+      h1.innerHTML = miniBars(g, [ORANGE], 0.15, function (v) { return v < 1 && v > 0 ? (v * 100).toFixed(v < 0.2 ? 1 : 0) + '%' : '0'; }, { ref: { v: 0.025, label: '2.5%' }, hl: 3, yl: 'False alarm chance', aria: 'False alarm chance by number of looks' });
     },
-    explain: function () { return 'Five looks give ' + pc(r5) + ', nearly three times the 5% you wanted.'; }
+    explain: function () { return 'Five looks give ' + pc(r5) + ', nearly three times the 2.5% you wanted.'; }
   }); h1 = host(c);
 
   // 2: OBF first look
-  var o2 = design(eq(2), 'obf'), opts2 = [0.05, 0.01, 0.003];
+  var o2 = design(eq(2), 'obf'), opts2 = [0.025, 0.005, 0.0015];
   c = Lab.QuestionCard(Q, {
     tag: 'Predict 2', score: score, type: 'choice',
-    q: 'Two looks: halfway and at the end, with O’Brien-Fleming. About what p must you see at the halfway look to stop?',
-    options: [{ value: 0, label: 'p below 0.05' }, { value: 1, label: 'p below 0.01' }, { value: 2, label: 'p below 0.003' }],
-    answer: function () { return nearest(opts2, o2.p2[0]); },
-    onReveal: function () { h2.innerHTML = miniBounds([{ d: design(eq(2), 'naive'), color: GRAY, dash: 1, label: 'p < 0.05 each look' }, { d: o2, color: TEAL, label: 'O’Brien-Fleming' }], 'Boundaries for two looks'); },
-    explain: function () { return 'Halfway needs p below ' + o2.p2[0].toFixed(3) + '. The last look needs p below ' + o2.p2[1].toFixed(3) + ', almost the usual 0.05.'; }
+    q: 'Two looks: halfway and at the end, with the O’Brien-Fleming-type bar. About what one-sided p must you see at the halfway look to stop?',
+    options: [{ value: 0, label: 'p below 0.025' }, { value: 1, label: 'p below 0.005' }, { value: 2, label: 'p below 0.0015' }],
+    answer: function () { return nearest(opts2, o2.p1[0]); },
+    onReveal: function () { h2.innerHTML = miniBounds([{ d: design(eq(2), 'naive'), color: GRAY, dash: 1, label: 'p < 0.025 each look' }, { d: o2, color: TEAL, label: 'O’Brien-Fleming-type' }], 'Boundaries for two looks'); },
+    explain: function () { return 'Halfway needs one-sided p below ' + o2.p1[0].toFixed(4) + '. The last look needs p below ' + o2.p1[1].toFixed(4) + ', almost the usual 0.025.'; }
   }); h2 = host(c);
 
   // 3: last look
@@ -518,30 +514,30 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
   c = Lab.QuestionCard(Q, {
     tag: 'Predict 3', score: score, type: 'choice',
     q: 'Four equal looks. Which design asks for MORE evidence at the very last look?',
-    options: [{ value: 'obf', label: 'O’Brien-Fleming' }, { value: 'poc', label: 'Pocock' }, { value: 'same', label: 'The same' }],
+    options: [{ value: 'obf', label: 'O’Brien-Fleming-type' }, { value: 'poc', label: 'Pocock' }, { value: 'same', label: 'The same' }],
     answer: function () { return p3.z[3] > o3.z[3] ? 'poc' : 'obf'; },
-    onReveal: function () { h3.innerHTML = miniBounds([{ d: p3, color: TDARK, label: 'Pocock' }, { d: o3, color: TEAL, label: 'O’Brien-Fleming' }], 'Boundaries for four looks'); },
-    explain: function () { return 'Last look: Pocock needs p below ' + p3.p2[3].toFixed(3) + ', O’Brien-Fleming below ' + o3.p2[3].toFixed(3) + '. Pocock’s easier early bars cost it at the end.'; }
+    onReveal: function () { h3.innerHTML = miniBounds([{ d: p3, color: TDARK, label: 'Pocock' }, { d: o3, color: TEAL, label: 'O’Brien-Fleming-type' }], 'Boundaries for four looks'); },
+    explain: function () { return 'Last look: Pocock needs one-sided p below ' + p3.p1[3].toFixed(4) + ', the O’Brien-Fleming-type bar (Lan-DeMets spending) below ' + o3.p1[3].toFixed(4) + '. Pocock’s easier early bars cost it at the end.'; }
   }); h3 = host(c);
 
   // 4: p = 0.01 at look 1
   var ob = design(BOOK, 'obf'), pk = design(BOOK, 'poc');
   c = Lab.QuestionCard(Q, {
     tag: 'Predict 4', score: score, type: 'choice',
-    q: 'Four looks. At the first look (40% of patients) you see p = 0.01. Which design stops?',
-    options: [{ value: 'both', label: 'Both' }, { value: 'poc', label: 'Only Pocock' }, { value: 'obf', label: 'Only O’Brien-Fleming' }, { value: 'none', label: 'Neither' }],
-    answer: function () { var a = ob.p2[0] > 0.01, b = pk.p2[0] > 0.01; return a && b ? 'both' : b ? 'poc' : a ? 'obf' : 'none'; },
+    q: 'Four looks. At the first look (40% of patients) you see one-sided p = 0.01. Which design stops?',
+    options: [{ value: 'both', label: 'Both' }, { value: 'poc', label: 'Only Pocock' }, { value: 'obf', label: 'Only O’Brien-Fleming-type' }, { value: 'none', label: 'Neither' }],
+    answer: function () { var a = ob.p1[0] > 0.01, b = pk.p1[0] > 0.01; return a && b ? 'both' : b ? 'poc' : a ? 'obf' : 'none'; },
     onReveal: function () {
-      var g = BOOK.map(function (f, k) { return { label: 'Look ' + (k + 1), vals: [ob.p2[k], pk.p2[k]] }; });
-      h4.innerHTML = miniBars(g, [TEAL, TDARK], 0.05, function (v) { return v === 0 ? '0' : v.toFixed(4).replace(/0+$/, '').replace(/\.$/, ''); }, { ref: { v: 0.01, label: 'your p = 0.01' }, yl: 'p needed to stop', aria: 'p thresholds for O’Brien-Fleming and Pocock at four looks' });
+      var g = BOOK.map(function (f, k) { return { label: 'Look ' + (k + 1), vals: [ob.p1[k], pk.p1[k]] }; });
+      h4.innerHTML = miniBars(g, [TEAL, TDARK], 0.02, function (v) { return v === 0 ? '0' : v.toFixed(4).replace(/0+$/, '').replace(/\.$/, ''); }, { ref: { v: 0.01, label: 'your p = 0.01' }, yl: 'p needed to stop', aria: 'One-sided p thresholds for O’Brien-Fleming-type and Pocock at four looks' });
     },
-    explain: function () { return 'At look 1, O’Brien-Fleming needs p below ' + fp(ob.p2[0]) + ' and Pocock below ' + fp(pk.p2[0]) + '. Only Pocock stops.'; }
+    explain: function () { return 'At look 1, the O’Brien-Fleming-type bar needs one-sided p below ' + fp(ob.p1[0]) + ' and Pocock below ' + fp(pk.p1[0]) + '. Only Pocock stops.'; }
   }); h4 = host(c);
 
   // 5: early stop overestimates
   var sim5 = (function () {
     var n = 40, zc = ob.z[0], all = [], st = [], i, S40, est;
-    for (i = 0; i < 40000; i++) { S40 = MU * n + Math.sqrt(n) * Lab.normal(rng2); est = S40 / n; all.push(est); if (Math.abs(S40 / Math.sqrt(n)) > zc) st.push(est); }
+    for (i = 0; i < 40000; i++) { S40 = MU * n + Math.sqrt(n) * Lab.normal(rng2); est = S40 / n; all.push(est); if (S40 / Math.sqrt(n) > zc) st.push(est); }
     return { all: all, st: st, meanSt: Lab.mean(st), meanAll: Lab.mean(all), share: st.length / all.length };
   })();
   c = Lab.QuestionCard(Q, {
@@ -559,18 +555,20 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
       s += '<text x="' + (ML + 6) + '" y="' + (MT + 28) + '" style="fill:#2D8B8B;font-weight:600">all trials</text><text x="' + (ML + 6) + '" y="' + (MT + 42) + '" style="fill:#B8531A;font-weight:600">stopped at look 1</text>';
       h5.innerHTML = '<svg viewBox="0 0 ' + MW + ' ' + MH + '" role="img" aria-label="Histograms of estimated effect, all trials and trials stopped at look 1">' + s + '</svg>';
     },
-    explain: function () { return 'Trials that stop at look 1 guess the effect at more than twice the truth. Only lucky trials cross the early bar.'; }
+    explain: function () { return 'Trials that stop at look 1 guess an effect ' + (sim5.meanSt / MU).toFixed(1) + ' times the truth on average. Only lucky trials cross the early bar.'; }
   }); h5 = host(c);
 
   // 6: Bayesian rare-disease trial (book table)
+  function flatStop(K, z) { var fr = eq(K), f = null, prev = 0, sp = 0; fr.forEach(function (t) { var d = t - prev, sd = Math.sqrt(d), st = Math.sqrt(t); sp += crossP(f, z * st, sd); f = stepF(f, z * st, sd); prev = t; }); return sp; }
+  var flat3 = flatStop(3, 1.645);
   var BT = [['No effect', 0.095], ['Small', 0.281], ['Moderate', 0.543], ['Large', 0.807]];
   c = Lab.QuestionCard(Q, {
     tag: 'Predict 6', score: score, type: 'choice',
-    q: 'A small trial stops if the chance the drug is better passes 95%. It looks 3 times. The drug does nothing. How often does it wrongly stop?',
+    q: 'A small trial stops if the chance the drug is better passes 95% (one-sided: only the drug’s good side). It looks 3 times. The drug does nothing. How often does it wrongly stop?',
     options: [{ value: 0, label: 'Under 1%' }, { value: 1, label: 'About 5%' }, { value: 2, label: 'About 10%' }, { value: 3, label: 'About 25%' }],
     answer: function () { return nearest([0.005, 0.05, 0.1, 0.25], BT[0][1]); },
-    onReveal: function () { h6.innerHTML = miniBars(BT.map(function (r) { return { label: r[0], vals: [r[1]] }; }), [TEAL], 1, function (v) { return (v * 100).toFixed(v < 0.1 ? 1 : 0) + '%'; }, { hl: 0, ref: { v: 0.05, label: '5%' }, yl: 'Stopped: drug works', aria: 'Book table: probability of stopping for efficacy by true effect' }); },
-    explain: function () { return '9.5% with no effect, nearly double the 5% goal.'; }
+    onReveal: function () { h6.innerHTML = miniBars(BT.map(function (r) { return { label: r[0], vals: [r[1]] }; }), [TEAL], 1, function (v) { return (v * 100).toFixed(v < 0.1 ? 1 : 0) + '%'; }, { hl: 0, ref: { v: 0.025, label: '2.5%' }, yl: 'Stopped: drug works', aria: 'Book table: probability of stopping for efficacy by true effect' }); },
+    explain: function () { return '95% sure is a fair reading of this one trial. But 9.5% is how often a useless drug trips this rule across many looks, and regulators ask about that second number, so the bar is raised. (9.5% is the book table. This page’s own code, with no prior opinion and 3 equal looks, gives ' + pc(flat3) + '. Both are about four times the 2.5% a regulator allows.)'; }
   }); h6 = host(c);
 
   // 7: sample size
@@ -580,7 +578,7 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
     q: 'One final look needs 467 patients. With 4 Pocock looks, at the same false alarm chance and the same chance of finding a real effect, how many extra patients might it need?',
     options: [{ value: 0, label: 'About 11' }, { value: 1, label: 'About 40' }, { value: 2, label: 'About 84' }, { value: 3, label: 'About 150' }],
     answer: function () { return nearest([11, 40, 84, 150], POCN - FIX); },
-    onReveal: function () { h7.innerHTML = miniBars([{ label: 'One look', vals: [FIX] }, { label: 'O’Brien-Fleming', vals: [OBFN] }, { label: 'Pocock', vals: [POCN] }], [TEAL], 600, function (v) { return String(Math.round(v)); }, { yl: 'Most patients needed', hl: 2, aria: 'Maximum sample size by design' }); },
+    onReveal: function () { h7.innerHTML = miniBars([{ label: 'One look', vals: [FIX] }, { label: 'O’Brien-Fleming-type', vals: [OBFN] }, { label: 'Pocock', vals: [POCN] }], [TEAL], 600, function (v) { return String(Math.round(v)); }, { yl: 'Most patients needed', hl: 2, aria: 'Maximum sample size by design' }); },
     explain: function () { return 'Pocock: up to ' + POCN + ' (' + (POCN - FIX) + ' more). O’Brien-Fleming: ' + OBFN + ' (' + (OBFN - FIX) + ' more).'; }
   }); h7 = host(c);
 
@@ -591,16 +589,16 @@ function design(fr,rule){var key=rule+'|'+fr.join(',');if(cache[key])return cach
       'x = rng.standard_normal((sims, n))      # useless drug: no effect\n' +
       'k = np.arange(1, looks + 1) * n // looks  # patients at each look\n' +
       'z = np.cumsum(x, axis=1)[:, k - 1] / np.sqrt(k)\n' +
-      'wins = (np.abs(z) > 1.96).any(axis=1)   # any look "significant"\n' +
-      'print(wins.mean())                      # about 0.14, not 0.05',
+      'wins = (z > 1.96).any(axis=1)           # any look "significant", drug side\n' +
+      'print(wins.mean())                      # about 0.07, not 0.025',
     r: 'set.seed(1)\n' +
       'n <- 100; looks <- 5; sims <- 20000\n' +
       'k <- (1:looks) * n / looks            # patients at each look\n' +
       'win <- replicate(sims, {\n' +
       '  z <- cumsum(rnorm(n))[k] / sqrt(k)  # useless drug: no effect\n' +
-      '  any(abs(z) > 1.96)                  # any look "significant"\n' +
+      '  any(z > 1.96)                       # any look "significant", drug side\n' +
       '})\n' +
-      'mean(win)                             # about 0.14, not 0.05'
+      'mean(win)                             # about 0.07, not 0.025'
   });
 
   S.pre = PRESETS[0]; reset();

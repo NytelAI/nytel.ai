@@ -48,6 +48,7 @@
   <div class="kicker">Module 2</div>
   <h1>What a p-value is (and isn't)</h1>
   <p class="hook">If the drug did nothing, how surprising would this result be?</p>
+  <p class="note">This page compares one group of patients on the drug with a known placebo rate. (Module 0 compared two groups.)</p>
 </section>
 
 <section id="lab" class="labgrid" aria-label="Simulate the null lab">
@@ -65,7 +66,7 @@
     <div class="plotbox"><svg id="plot"></svg>
       <div class="chips" aria-live="polite" id="chips"></div>
       <p class="note" id="plotNote" style="margin:.5rem 0 0">Orange: trials with as many responders as yours, or more. Their share of all trials is the <span class="tip" tabindex="0" data-tip="How often luck alone gives a result at least this good.">p-value</span>.</p>
-      <p class="note" style="margin:.3rem 0 0">We only count results on the drug's good side (one-sided). For that, regulators use a cutoff of 0.025: p below 0.025 is called <b>significant</b>. The familiar 0.05 counts surprises in both directions, so each side gets half, 0.025.</p>
+      <p class="note" style="margin:.3rem 0 0"><b>The rule used from here on:</b> a trial wins if the one-sided p-value (counting only results that favor the drug) is below 0.025. This is the same line as the familiar two-sided 0.05. Different question: the <b>chance the true rate beats placebo</b> chip starts from no opinion (flat prior, module 1) and uses the same data.</p>
     </div>
   </div>
 </section>
@@ -76,9 +77,15 @@
   <div class="qcards" id="qcards"></div>
 </section>
 
+<section class="fig" id="figWins">
+  <h2>Does p = 0.02 mean a 98% chance the drug works?</h2>
+  <p>Test 1,000 drugs. 100 of them (10%) truly work and the trial detects a working drug 80% of the time (power). The other 900 do nothing. A trial wins when the one-sided p is below 0.025.</p>
+  <div id="winQ"></div>
+</section>
+
 <section class="fig" id="figPeek">
   <h2>Peeking at the data</h2>
-  <p>The drug does nothing: half of patients get better, the same as on placebo. Compute p at each look and stop at the first p below 0.05 (<span class="tip" tabindex="0" data-tip="Far enough from 50:50 that p is below 0.05.">significant</span>).</p>
+  <p>The drug does nothing: half of patients get better, the same as on placebo. Compute p at each look and stop at the first one-sided p below 0.025 (<span class="tip" tabindex="0" data-tip="Far enough above 50:50 that the one-sided p is below 0.025.">significant</span>). The height of the line is measured in <b>units of luck</b>. One unit of luck is how far a trial's result typically lands from the truth by chance alone (statisticians call it a standard error). The cutoff is at 1.96 units.</p>
   <div class="figgrid">
     <div>
       <div class="qrow">How often you look:</div>
@@ -97,17 +104,17 @@
     <div>
       <div class="field col"><label for="sT">Number of tests <output id="oT"></output></label><input id="sT" type="range" min="1" max="30" step="1" value="20"></div>
       <div class="row"><button class="btn primary" id="fishBtn" type="button">Run the tests</button></div>
-      <p class="note">Orange dot = a false alarm (p below 0.05). Each number is a p-value.</p>
+      <p class="note">Orange dot = a false alarm (one-sided p below 0.025). Each number is a p-value.</p>
     </div>
-    <div><svg id="dots" class="dots" role="img" aria-label="Dots for each test, orange when p is below 0.05"></svg><div class="chips" id="fishChips" aria-live="polite"></div></div>
+    <div><svg id="dots" class="dots" role="img" aria-label="Dots for each test, orange when p is below 0.025"></svg><div class="chips" id="fishChips" aria-live="polite"></div></div>
   </div>
 </section>
 
 <section class="example">
   <h2>A real example: EOLIA</h2>
-  <p>EOLIA tested ECMO (a machine that does the lungs' work) against usual care in severe lung failure. The p-value for 60-day deaths was 0.09, so the trial was called "not significant".</p>
-  <svg id="eolia" class="plot" role="img" aria-label="A number line from 0 to 0.2 with the 0.05 cutoff and the EOLIA p-value 0.09"></svg>
-  <p>A later reanalysis with priors (module 1) put the chance that ECMO lowers deaths at 88% to 99%. "Not significant" did not mean "no effect".</p>
+  <p>EOLIA tested ECMO (a machine that does the lungs' work) against usual care in severe lung failure. The two-sided p-value for 60-day deaths was 0.09. The two-sided cutoff is 0.05, so the trial was called "not significant".</p>
+  <svg id="eolia" class="plot" role="img" aria-label="A number line from 0 to 0.2 with the two-sided 0.05 cutoff and the EOLIA two-sided p-value 0.09"></svg>
+  <p>A later reanalysis combined the trial data with a prior (prior times likelihood gives the posterior, module 1). Depending on the prior, it put the chance that ECMO lowers deaths at 88% to 99%. "Not significant" did not mean "no effect".</p>
 </section>
 
 <div id="code"></div>
@@ -168,7 +175,7 @@
       if (rng() < 0.5) k++;
       var zz = (2 * k - n) / Math.sqrt(n);
       z.push(zz);
-      if (!stop && n % step === 0 && Math.abs(zz) >= 1.96) stop = n;
+      if (!stop && n % step === 0 && zz >= 1.96) stop = n;
     }
     return { z: z, stop: stop };
   }
@@ -222,8 +229,8 @@
     plot.vline('you', S.k, 'you: ' + S.k, { color: NAVY, dash: '4 3' }, 0);
     drawSim();
     plot.legend([{ label: 'All results (luck only)', color: TEAL, kind: 'box' }, { label: 'As many responders as yours, or more', color: ORANGE, kind: 'box' }, { label: 'Simulated trials', color: NAVY, kind: 'line' }].slice(0, S.total ? 3 : 2));
-    var p = tailBin(S.n, S.k, S.p);
-    var h = '' + chip('p-value', pfmt(p), true);
+    var p = tailBin(S.n, S.k, S.p), post = 1 - Lab.betaCdf(S.p, 1 + S.k, 1 + S.n - S.k);
+    var h = '' + chip('p-value', pfmt(p), true) + chip('Chance true rate beats placebo (flat prior)', post.toFixed(3));
     if (S.total) { var hits = 0, i; for (i = S.k; i <= S.n; i++) hits += S.counts[i]; h += chip('Simulated:', hits + ' of ' + S.total.toLocaleString('en-US')); }
     h += chip('Significant (p below 0.025)?', p < 0.025 ? 'Yes' : 'No');
     $('chips').innerHTML = h;
@@ -278,7 +285,7 @@
   });
 
   // 2: change the plan
-  var pNB = tailNB(9);
+  var pNB = tailNB(9), pPost = 1 - Lab.betaCdf(0.5, 10, 4);
   card = Lab.QuestionCard(Q, {
     tag: 'Predict 2', score: score, type: 'choice',
     q: 'Same 9 responders and 3 non-responders, but the trial plan said: stop at the third non-responder. Does the p-value change?',
@@ -288,13 +295,13 @@
       var pm = []; for (var h = 0; h <= 20; h++) pm.push(nbPmf(h));
       miniPmf(card, pm, 9, 'Responders before the 3rd non-responder (drug does nothing)');
     },
-    explain: function () { return 'p goes from ' + pfmt(p912) + ' to ' + pfmt(pNB) + '. The plan decides which other results were possible, so it changes p.'; }
+    explain: function () { return 'p goes from ' + pfmt(p912) + ' to ' + pfmt(pNB) + '. The plan decides which other results were possible, so it changes p. The posterior does not change: the same 9 and 3 give the same posterior either way (chance the true rate is above 50%: ' + pPost.toFixed(3) + '). Only the p-value does.'; }
   });
 
-  // 4: p = 0.03 means 97% chance drug works?
+  // 4: p = 0.02 means 98% chance drug works?
   card = Lab.QuestionCard(Q, {
     tag: 'True or false', score: score, type: 'choice',
-    q: 'A trial gives p = 0.03. So there is a 97% chance the drug works.',
+    q: 'A trial gives p = 0.02. So there is a 98% chance the drug works.',
     options: [{ value: 'true', label: 'True' }, { value: 'false', label: 'False' }],
     answer: 'false',
     onReveal: function () {
@@ -309,37 +316,62 @@
     explain: 'p assumes the drug does nothing, so it cannot be the chance the drug works.'
   });
 
+  // wins: icon array
+  var WT = 100, WP = 0.8, WA = 0.025, wTrue = WT * WP, wFalse = (1000 - WT) * WA, wReal = wTrue / (wTrue + wFalse);
+  var wcard = Lab.QuestionCard($('winQ'), {
+    tag: 'Predict', score: score, type: 'choice',
+    q: 'Among all the drugs that win the trial, how many truly work?',
+    options: [{ value: 'a', label: 'About 99%' }, { value: 'b', label: 'About 78%' }, { value: 'c', label: 'About 50%' }, { value: 'd', label: 'About 22%' }],
+    answer: function () { return Math.abs(wReal - 0.78) < 0.02 ? 'b' : 'c'; },
+    onReveal: function () {
+      var box = document.createElement('div'); box.className = 'minibox';
+      var cols = 50, r = 5, W = PW, cw = (W - 10) / cols, h = '', i, col;
+      var nTW = Math.round(wTrue), nFW = Math.floor(wFalse), rows = 20;
+      box.innerHTML = '<svg class="dots" role="img" aria-label="1,000 drugs: ' + nTW + ' true wins, about ' + nFW + ' false wins"></svg><div class="chips"></div>';
+      // order: working drugs first (win, then miss), then useless drugs (false win, then quiet)
+      for (i = 0; i < 1000; i++) {
+        var work = i < WT, win = work ? i < nTW : (i - WT) < nFW;
+        col = work ? (win ? TEAL : '#BFE0E0') : (win ? ORANGE : '#E4E7EB');
+        h += '<circle cx="' + (5 + (i % cols) * cw + cw / 2).toFixed(1) + '" cy="' + (8 + Math.floor(i / cols) * (cw)).toFixed(1) + '" r="' + (cw * 0.36).toFixed(1) + '" fill="' + col + '"/>';
+      }
+      var svg = box.querySelector('svg'); svg.setAttribute('viewBox', '0 0 ' + W + ' ' + (16 + rows * cw).toFixed(0)); svg.innerHTML = h;
+      box.querySelector('.chips').innerHTML = chip('True wins (teal)', wTrue) + chip('False wins (orange)', wFalse + ' (900 x 0.025)', true) + chip('Wins that are real', pctf(wReal, 0));
+      wcard.el.appendChild(box);
+    },
+    explain: function () { return wTrue + ' real wins and about ' + Math.floor(wFalse) + ' false wins: ' + pctf(wReal, 0) + ' of wins are real, ' + pctf(1 - wReal, 0) + ' are false. The p-value is not this share. It starts from "the drug does nothing".'; }
+  });
+
   // 5: peeking
   var peekRates = null;
   function getPeek() { if (!peekRates) peekRates = [rate(100, 3000), rate(10, 3000), rate(1, 3000)]; return peekRates; }
-  var peekOpts = [{ value: 'p5', label: 'About 5%', v: 0.05 }, { value: 'p10', label: 'About 10%', v: 0.10 }, { value: 'p20', label: 'About 20%', v: 0.20 }, { value: 'p37', label: 'About 37%', v: 0.37 }];
+  var peekOpts = [{ value: 'p3', label: 'About 2.5%', v: 0.025 }, { value: 'p10', label: 'About 10%', v: 0.10 }, { value: 'p20', label: 'About 20%', v: 0.20 }, { value: 'p40', label: 'About 40%', v: 0.40 }];
   card = Lab.QuestionCard(Q, {
     tag: 'Predict 3', score: score, type: 'choice',
-    q: 'The drug does nothing: half of patients get better, the same as on placebo. You compute p after every patient (up to 100) and stop at the first p below 0.05. How often is the drug called significant?',
+    q: 'The drug does nothing: half of patients get better, the same as on placebo. You compute p after every patient (up to 100) and stop at the first one-sided p below 0.025. How often is the drug called significant?',
     options: peekOpts,
     answer: function () { var r = getPeek()[2], best = peekOpts[0]; peekOpts.forEach(function (o) { if (Math.abs(o.v - r) < Math.abs(best.v - r)) best = o; }); return best.value; },
     onReveal: function () {
       var r = getPeek(), svg = addMini(card);
       groupBars(svg, [{ label: 'Once, at 100 patients', v: [r[0]] }, { label: 'Every 10 patients', v: [r[1]] }, { label: 'Every patient', v: [r[2]] }], [{ name: 'False alarms', color: ORANGE }], 0.5, function (v) { return pctf(v, 0); }, 'Drug called significant (3,000 simulated trials each)');
     },
-    explain: function () { var r = getPeek(); return 'Looking once: ' + pctf(r[0], 0) + '. Every 10 patients: ' + pctf(r[1], 0) + '. Every patient: ' + pctf(r[2], 0) + '. Each extra look is another chance for luck.'; }
+    explain: function () { var r = getPeek(); return 'Looking once: ' + pctf(r[0], 0) + '. Every 10 patients: ' + pctf(r[1], 0) + '. Every patient: ' + pctf(r[2], 0) + '. Each extra look is another chance for luck. Looking once keeps it near the planned 2.5%.'; }
   });
 
   // 6: 20 subgroups
-  var p20 = 1 - Math.pow(0.95, 20);
+  var p20 = 1 - Math.pow(0.975, 20);
   card = Lab.QuestionCard(Q, {
     tag: 'Predict 4', score: score, type: 'choice',
-    q: 'The drug does nothing. You test the drug separately in 20 groups of patients (for example by age or region), each with a 0.05 cutoff. Chance that at least one looks "significant"?',
-    options: [{ value: 'a', label: '5%' }, { value: 'b', label: '20%' }, { value: 'c', label: '64%' }, { value: 'd', label: '95%' }],
-    answer: function () { return Math.abs(p20 - 0.64) < 0.02 ? 'c' : 'b'; },
+    q: 'The drug does nothing. You test the drug separately in 20 groups of patients (for example by age or region), each with the 0.025 cutoff. Chance that at least one looks "significant"?',
+    options: [{ value: 'a', label: '2.5%' }, { value: 'b', label: '20%' }, { value: 'c', label: '40%' }, { value: 'd', label: '97.5%' }],
+    answer: function () { return Math.abs(p20 - 0.40) < 0.02 ? 'c' : 'b'; },
     onReveal: function () {
       var svg = addMini(card), xs = [], ys = [], k;
-      for (k = 1; k <= 40; k++) { xs.push(k); ys.push(1 - Math.pow(0.95, k)); }
+      for (k = 1; k <= 40; k++) { xs.push(k); ys.push(1 - Math.pow(0.975, k)); }
       var pl = Lab.Plot(svg, { w: PW, h: 220, xlim: [1, 40], ylim: [0, 1], xlabel: 'Number of tests', ylabel: 'Chance of a false alarm', yfmt: function (v) { return Math.round(v * 100) + '%'; }, label: 'Curve of the chance of at least one false alarm' });
       pl.line('c', xs, ys, { stroke: ORANGE_D, width: 2.5, fill: ORANGE, opacity: 0.2 }, 800);
       pl.vline('k', 20, '20 tests: ' + pctf(p20, 1), { color: NAVY, dash: '4 3' }, 0);
     },
-    explain: function () { return 'Each test stays quiet 95% of the time. All 20 stay quiet only ' + pctf(1 - p20, 0) + ' of the time (0.95^20), so ' + pctf(p20, 0) + ' raise at least one false alarm.'; }
+    explain: function () { return 'Each test stays quiet 97.5% of the time. All 20 stay quiet only ' + pctf(1 - p20, 0) + ' of the time (0.975^20), so ' + pctf(p20, 0) + ' raise at least one false alarm.'; }
   });
 
   // 7: sample size
@@ -369,13 +401,12 @@
   function newStudy() {
     var st = study(peekStep), xs = [], ys = [], i;
     for (i = 0; i <= 100; i++) { xs.push(i); ys.push(Math.max(-4.2, Math.min(4.2, st.z[i]))); }
-    peekPlot = Lab.Plot($('peekPlot'), { w: PW, h: 280, xlim: [0, 100], ylim: [-4, 4], xlabel: 'Patients so far', ylabel: 'Distance from 50% (units of luck)', label: 'One simulated trial: distance from 50%, with the cutoff lines' });
+    peekPlot = Lab.Plot($('peekPlot'), { w: PW, h: 280, xlim: [0, 100], ylim: [-4, 4], xlabel: 'Patients so far', ylabel: 'Distance from 50% (units of luck)', label: 'One simulated trial: distance from 50%, with the cutoff line' });
     peekPlot.line('hi', [0, 100], [1.96, 1.96], { stroke: ORANGE_D, width: 1.5, dash: '6 4' }, 0);
-    peekPlot.line('lo', [0, 100], [-1.96, -1.96], { stroke: ORANGE_D, width: 1.5, dash: '6 4' }, 0);
     peekPlot.line('z', xs, ys, { stroke: TEAL, width: 2 }, 0);
     if (st.stop) peekPlot.vline('stop', st.stop, 'stop: false alarm at patient ' + st.stop, { color: ORANGE_D }, 0);
     $('peekChips').innerHTML = st.stop ? '' : chip('This trial', 'no false alarm');
-    $('peekNote').textContent = 'A significant result for a drug that does nothing is a false alarm. Dashed lines: p = 0.05.';
+    $('peekNote').textContent = 'A significant result for a drug that does nothing is a false alarm. Dashed line: one-sided p = 0.025 (1.96 units of luck, the good side for the drug).';
   }
   $('peekOne').addEventListener('click', newStudy);
   $('peekMany').addEventListener('click', function () {
@@ -389,18 +420,18 @@
     var svg = $('dots'), n = ps.length, cols = Math.min(PW < 500 ? 5 : 10, n), rows = Math.ceil(n / cols), W = PW, cw = W / cols, H = rows * 64 + 10, h = '';
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
     ps.forEach(function (p, i) {
-      var cx = (i % cols) * cw + cw / 2, cy = Math.floor(i / cols) * 64 + 28, hit = p < 0.05;
+      var cx = (i % cols) * cw + cw / 2, cy = Math.floor(i / cols) * 64 + 28, hit = p < 0.025;
       h += '<circle cx="' + cx + '" cy="' + cy + '" r="20" fill="' + (hit ? ORANGE : '#E8F4F4') + '" stroke="' + (hit ? ORANGE_D : '#1F6B6B') + '" stroke-width="2"/>';
-      h += '<text x="' + cx + '" y="' + (cy + 4) + '" text-anchor="middle" font-size="11" style="font-weight:600;fill:' + (hit ? '#0A1628' : '#1F6B6B') + '">' + p.toFixed(2) + '</text>';
+      h += '<text x="' + cx + '" y="' + (cy + 4) + '" text-anchor="middle" font-size="10" style="font-weight:600;fill:' + (hit ? '#0A1628' : '#1F6B6B') + '">' + p.toFixed(3) + '</text>';
     });
     svg.innerHTML = h;
   }
   function runFish() {
     var k = +$('sT').value, ps = [], hits = 0, i;
-    for (i = 0; i < k; i++) { var p = rng(); ps.push(p); if (p < 0.05) hits++; }
+    for (i = 0; i < k; i++) { var p = rng(); ps.push(p); if (p < 0.025) hits++; }
     fishRuns++; if (hits) fishAny++;
     drawDots(ps);
-    $('fishChips').innerHTML = chip('False alarms this round', hits + ' of ' + k, hits > 0) + chip('Rounds with a false alarm:', fishAny + ' of ' + fishRuns) + chip('Predicted rounds with a false alarm:', pctf(1 - Math.pow(0.95, k), 1));
+    $('fishChips').innerHTML = chip('False alarms this round', hits + ' of ' + k, hits > 0) + chip('Rounds with a false alarm:', fishAny + ' of ' + fishRuns) + chip('Predicted rounds with a false alarm:', pctf(1 - Math.pow(0.975, k), 1));
   }
   $('sT').addEventListener('input', function () { $('oT').textContent = $('sT').value; fishRuns = 0; fishAny = 0; runFish(); });
   $('fishBtn').addEventListener('click', runFish);
@@ -410,8 +441,8 @@
     var W = PW, H = 120, ml = 30, iw = W - 60, sx = function (v) { return ml + v / 0.2 * iw; }, h = '';
     h += '<rect x="' + ml + '" y="50" width="' + (sx(0.05) - ml) + '" height="22" fill="' + TEAL + '" opacity=".6"/><rect x="' + sx(0.05) + '" y="50" width="' + (sx(0.2) - sx(0.05)) + '" height="22" fill="#E8F4F4"/>';
     [0, 0.05, 0.1, 0.15, 0.2].forEach(function (v) { h += '<line class="axis" x1="' + sx(v) + '" x2="' + sx(v) + '" y1="72" y2="80"/><text x="' + sx(v) + '" y="96" text-anchor="middle">' + v.toFixed(2) + '</text>'; });
-    h += '<text x="' + (ml + (sx(0.05) - ml) / 2) + '" y="66" text-anchor="middle" style="fill:#fff;font-weight:600">"significant"</text>';
-    h += '<line x1="' + sx(0.09) + '" x2="' + sx(0.09) + '" y1="30" y2="72" stroke="' + ORANGE_D + '" stroke-width="3"/><text x="' + sx(0.09) + '" y="22" text-anchor="middle" style="fill:' + ORANGE_D + ';font-weight:600">EOLIA p = 0.09</text>';
+    h += '<text x="' + (ml + (sx(0.05) - ml) / 2) + '" y="66" text-anchor="middle" style="fill:#fff;font-weight:600">"significant" (two-sided p below 0.05)</text>';
+    h += '<line x1="' + sx(0.09) + '" x2="' + sx(0.09) + '" y1="30" y2="72" stroke="' + ORANGE_D + '" stroke-width="3"/><text x="' + sx(0.09) + '" y="22" text-anchor="middle" style="fill:' + ORANGE_D + ';font-weight:600">EOLIA two-sided p = 0.09</text>';
     $('eolia').setAttribute('viewBox', '0 0 ' + W + ' ' + H); $('eolia').innerHTML = h;
   })();
 
@@ -424,13 +455,17 @@
       'rng = np.random.default_rng(1)\n' +
       'sims = rng.binomial(12, 0.5, 100_000)  # 100,000 luck-only trials\n' +
       'print((sims >= 9).mean())             # same p-value, by counting\n' +
-      'print(1 - 0.95**20)                   # 20 tests, at least one false alarm: 0.642',
+      'print(1 - 0.975**20)                  # 20 tests at 0.025, at least one false alarm: 0.397\n' +
+      'print(stats.beta.sf(0.5, 10, 4))      # 9 of 12, flat prior: P(true rate > 50%) = 0.954\n' +
+      'print(80 / (80 + 900 * 0.025))        # share of wins that are real: 0.78',
     r: 'print(1 - pbinom(8, 12, 0.5))          # P(9+ responders of 12): 0.073\n' +
       'print(1 - pnbinom(8, 3, 0.5))          # stop at 3rd non-responder:  0.0327\n' +
       'set.seed(1)\n' +
       'sims <- rbinom(100000, 12, 0.5)        # 100,000 luck-only trials\n' +
       'print(mean(sims >= 9))                 # same p-value, by counting\n' +
-      'print(1 - 0.95^20)                     # 20 tests, at least one false alarm: 0.642'
+      'print(1 - 0.975^20)                    # 20 tests at 0.025, at least one false alarm: 0.397\n' +
+      'print(1 - pbeta(0.5, 10, 4))           # 9 of 12, flat prior: P(true rate > 50%) = 0.954\n' +
+      'print(80 / (80 + 900 * 0.025))         # share of wins that are real: 0.78'
   });
 
   /* =============== Start =============== */
