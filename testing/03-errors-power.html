@@ -51,7 +51,10 @@
 .tcard .trow { margin: 2px 0 3px; }
 .tcard b { font-family: var(--mono); }
 .setup { font-size: 1.05rem; color: var(--text-secondary); }
-@media (max-width: 800px) { .exgrid, .truthgrid { grid-template-columns: 1fr; } }
+.nsgrid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 1rem; align-items: start; margin-top: .6rem; }
+.nsgrid .rng input[type=range] { margin-top: .2rem; }
+.formula { overflow-x: auto; padding: .4rem 0; }
+@media (max-width: 800px) { .exgrid, .truthgrid, .nsgrid { grid-template-columns: 1fr; } }
 @media (max-width: 600px) { .plotbox svg text, .figure svg text { font-size: 14px; } }
 </style>
 </head>
@@ -123,6 +126,30 @@
     </div>
   </div>
   <p class="plain" id="tOut"></p>
+</section>
+
+<section class="section" id="size" aria-label="Choosing the sample size">
+  <h2>Choosing the sample size</h2>
+  <p class="setup">Before a trial starts, the team picks the smallest gain worth catching, the false-alarm bar, and the power they want. It also estimates how much patients vary. The only thing left to choose is the number of patients.</p>
+  <p class="note" style="margin:.3rem 0 0">Here the bar is one-sided 2.5% (z = 1.96). That gives the same numbers as the lab's two-sided 5%.</p>
+  <div class="nsgrid">
+    <div class="plotbox">
+      <div class="row" style="margin-bottom:.4rem"><span class="note" style="align-self:center">Gain worth catching (old rate 30%):</span><span class="row" id="szGain" role="group" aria-label="Gain worth catching"></span></div>
+      <div class="row" style="margin-bottom:.4rem"><span class="note" style="align-self:center">Power you want:</span><span class="row" id="szPow" role="group" aria-label="Power you want"></span></div>
+      <svg id="szPlot"></svg>
+      <label class="rng" for="szGuess">Where does the curve reach the dashed line? Patients per group: <output id="szGo"></output></label>
+      <input id="szGuess" type="range" min="10" max="400" step="1" value="200" style="width:100%;accent-color:var(--teal-dark)">
+      <div class="row" style="margin-top:.5rem"><button class="btn primary" id="szCheck" type="button">Check</button></div>
+      <div class="chips" id="szChips" aria-live="polite"></div>
+    </div>
+    <div class="figure" style="margin:0">
+      <h3 style="font-size:1rem">A shortcut</h3>
+      <div class="formula">\[ n \approx \frac{(z_{\alpha} + z_{\beta})^2\,\big[p_0(1-p_0) + p_1(1-p_1)\big]}{(p_1-p_0)^2} \]</div>
+      <p style="margin-top:.2rem"><b>n</b> is patients per group. \(p_0\) and \(p_1\) are the old and new improvement rates. \(z_\alpha = 1.96\) for the bar. \(z_\beta = 0.84\) for 80% power, 1.28 for 90%. The top is how much patients vary. The bottom is the gain, squared. It lands within a few patients of the curve.</p>
+      <p class="note">More in <a href="https://vsokolov.org/books/clinical_trials_in_practice/">Clinical Trials in Practice, chapter 11</a>.</p>
+    </div>
+  </div>
+  <p style="font-size:1.05rem">Halve the gain and you need about 4 times the patients. Going from 80% to 90% power needs about a third more.</p>
 </section>
 
 <section class="section">
@@ -277,11 +304,9 @@
     plot.legend([{ label: 'Drug does nothing', color: ORANGE, kind: 'box' }, { label: 'Drug works', color: TEAL, kind: 'box' }, { label: 'α false alarm', color: DARKO, kind: 'box' }, { label: 'β miss', color: '#59616F', kind: 'box' }, { label: 'Power', color: TEAL, kind: 'box' }]);
     var works = S.p1 > P0 + 1e-9;
     $('p1o').textContent = Math.round(S.p1 * 100) + '%'; $('no').textContent = S.n; $('baro').textContent = c.toFixed(2);
-        var n80 = works ? needN(S.p1, 0.05, 0.8) : null;
     $('chips').innerHTML =
       chip('False alarm (α)', pcs(e.alpha), true) + chip('Miss (β)', works ? pcs(e.beta) : 'n/a') +
-      chip('Power', works ? pcs(e.power) : 'n/a') +
-      chip('Needed for 80% power (5% bar)', works ? fmtN(n80) + ' per group' : 'n/a');
+      chip('Power', works ? pcs(e.power) : 'n/a');
     $('plainOut').innerHTML = works ? '' : 'Slide the drug effect to the right to give it something real to find.';
     document.querySelectorAll('#alphas .btn').forEach(function (b) { b.classList.toggle('on', S.manual == null && +b.dataset.a === S.alpha); });
     truthBars(); truthRun();
@@ -392,6 +417,49 @@
     $('tmode').appendChild(b);
   });
   $('tRun').addEventListener('click', truthRun);
+
+  /* ---------- Choosing the sample size ---------- */
+  var SZ = { p1: 0.45, pw: 0.8, xmax: 400, checked: false };
+  function szNeeded(p1, pw) { var n = 2; while (n < 20000 && errs(p1, n, 1.96).power < pw) n++; return n; }
+  var szPlot = Lab.Plot($('szPlot'), { w: 560, h: 320, xlim: [0, 400], ylim: [0, 1], xlabel: 'Patients per group', ylabel: 'Power', yfmt: pc0, label: 'Power rises with patients per group. A dashed line marks the target power; a vertical marker is your guess.' });
+  function szDraw() {
+    var need = szNeeded(SZ.p1, SZ.pw), top = Math.max(100, Math.ceil(2 * need / 50) * 50);
+    SZ.need = need; SZ.xmax = top;
+    szPlot.setXlim(0, top);
+    var xs = Lab.linspace(2, top, 80);
+    szPlot.line('curve', xs, xs.map(function (n) { return errs(SZ.p1, n, 1.96).power; }), { stroke: TEAL, width: 2.5 }, 0);
+    szPlot.line('t80', [0, top], [0.8, 0.8], { stroke: DARKO, width: 1.5, dash: '5 4' }, 0);
+    szPlot.line('t90', [0, top], [0.9, 0.9], { stroke: DARKO, width: 1.5, dash: '5 4' }, 0);
+    szPlot.remove(SZ.pw === 0.8 ? 't90' : 't80');
+    szPlot.remove('ans');
+    var g = $('szGuess'); g.max = top; g.value = Math.round(top / 5); SZ.checked = false;
+    szGuessMove();
+    $('szChips').innerHTML = '';
+    document.querySelectorAll('#szGain .btn').forEach(function (b) { var on = Math.abs(+b.dataset.p - SZ.p1) < 1e-9; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+    document.querySelectorAll('#szPow .btn').forEach(function (b) { var on = Math.abs(+b.dataset.p - SZ.pw) < 1e-9; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  }
+  function szGuessMove() {
+    var v = +$('szGuess').value; $('szGo').textContent = fmtN(v);
+    szPlot.vline('guess', v, fmtN(v), { color: NAVY, dash: '4 3' }, 0);
+    if (SZ.checked) { SZ.checked = false; szPlot.remove('ans'); $('szChips').innerHTML = ''; }
+  }
+  [[0.45, '30% to 45%'], [0.40, '30% to 40%'], [0.35, '30% to 35%']].forEach(function (g) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.dataset.p = g[0]; b.textContent = g[1];
+    b.addEventListener('click', function () { SZ.p1 = g[0]; szDraw(); }); $('szGain').appendChild(b);
+  });
+  [0.8, 0.9].forEach(function (p) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.dataset.p = p; b.textContent = Math.round(p * 100) + '%';
+    b.addEventListener('click', function () { SZ.pw = p; szDraw(); }); $('szPow').appendChild(b);
+  });
+  $('szGuess').addEventListener('input', szGuessMove);
+  $('szCheck').addEventListener('click', function () {
+    var g = +$('szGuess').value, need = SZ.need;
+    szPlot.vline('guess', g, '', { color: NAVY, dash: '4 3' }, 0);
+    szPlot.vline('ans', need, 'needed: ' + fmtN(need), { color: DARKO }, 0);
+    SZ.checked = true;
+    $('szChips').innerHTML = chip('Needed:', fmtN(need) + ' patients per group', true) + chip('Your guess:', fmtN(g));
+  });
+  szDraw();
 
   /* ---------- Question cards ---------- */
   var score = Lab.Score($('score')), _add = score.add; score.add = function (ok) { _add(ok); try { localStorage.setItem('nytel-testing-3', '1'); } catch (e) {} };
